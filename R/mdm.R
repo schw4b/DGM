@@ -85,8 +85,10 @@ RSt[,,t] = Ct[,,(t-1)] / (S[(t-1)]*delta)
 Rt[,,t] = RSt[,,t] * (S[(t-1)]) 
     
 # One-step forecast: (Y_{t}|y_{t-1}) ~ T_{n_{t-1}}[f_{t}, Q_{t}]
-ft[t] = t(F1[,t]) %*% mt[,(t-1)]
+ft[t] = t(F1[,t]) %*% mt[,(t-1)] # simon
+#ft[t] = F1[,t] %*% mt[,(t-1)]
 QSt = as.vector(1 + t(F1[,t]) %*% RSt[,,t] %*% F1[,t])
+#QSt = as.vector(1 + F1[,t] %*% RSt[,,t] %*% F1[,t])
 Qt[t] = QSt * S[(t-1)]
 et = Y[t] - ft[t]
 ets[t] = et / sqrt(Qt[t])
@@ -103,7 +105,8 @@ CSt[,,t] = RSt[,,t] - (At %*% t(At))*QSt
 Ct[,,t] = S[t]*CSt[,,t]
     
 # Log Predictive Likelihood (degrees of freedom = nt[(t-1)], not nt[t])
-lpl[t] = lgamma((nt[(t-1)]+1)/2)-lgamma(nt[(t-1)]/2)-0.5*log(pi*nt[(t-1)]*Qt[t])-((nt[(t-1)]+1)/2)*log(1+(1/nt[(t-1)])*et^2/Qt[t])}
+lpl[t] = lgamma((nt[(t-1)]+1)/2)-lgamma(nt[(t-1)]/2)-0.5*log(pi*nt[(t-1)]*Qt[t])-((nt[(t-1)]+1)/2)*log(1+(1/nt[(t-1)])*et^2/Qt[t])} # Ruth
+#lpl[t] <- lgamma((nt[t]+1)/2)-lgamma(nt[t]/2)-0.5*log(pi*nt[t]*Qt[t])-((nt[t]+1)/2)*log(1+(1/nt[t])*et^2/Qt[t])} # Lilia
 
 mt = mt[,2:Nt]; Ct = Ct[,,2:Nt]; CSt = CSt[,,2:Nt]; Rt = Rt[,,2:Nt]; RSt = RSt[,,2:Nt]
 nt = nt[2:Nt]; dt = dt[2:Nt]; S = S[2:Nt]; ft = ft[2:Nt]; Qt = Qt[2:Nt]; ets = ets[2:Nt]; lpl = lpl[2:Nt]
@@ -126,26 +129,34 @@ return(filt.output)}
 
 model.generator<-function(Nn,node){
   
-# Create the model 'no parents' (the first column of the matrix is all zeros)
-empt=rep(0,(Nn-1)) 
+  # Create the model 'no parents' (the first column of the matrix is all zeros)
+  empt=rep(0,(Nn-1)) 
   
-for (k in 1:(Nn-1)){
+  for (k in 1:(Nn-1)) {
     
-# Calculate all combinations when number of parents = k
-m=combn(c(1:Nn)[-node],k) 
-    
-# Expand the array so that unconnected edges are represented by zeros  
-empt.new=array(0,dim=c((Nn-1),ncol(m)))
-empt.new[1:k,]=m
-    
-# Bind the matrices together; the next set of models are added to this matrix
-model=cbind(empt,empt.new)
-empt=model}
+    # Calculate all combinations when number of parents = k
+    #m=combn(c(1:Nn)[-node],k)
+    if (Nn==2 & node==1) {
+      model = matrix(c(0,2),1,2)
+    } else { 
+      m=combn(c(1:Nn)[-node],k) 
+      
+      # Expand the array so that unconnected edges are represented by zeros  
+      empt.new=array(0,dim=c((Nn-1),ncol(m)))
+      empt.new[1:k,]=m
+      
+      # Bind the matrices together; the next set of models are added to this matrix
+      model=cbind(empt,empt.new)
+      empt=model
+    } 
+  }
   
-colnames(model)=NULL
-output.model<-model
+  colnames(model)=NULL
+  output.model<-model
   
-return(output.model)}
+  return(output.model)
+  
+}
 
 
 ###############################################################################################
