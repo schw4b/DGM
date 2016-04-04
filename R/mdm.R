@@ -114,7 +114,7 @@ dlm.filt.rh <- function(Yt, Ft, delta, m0 = numeric(nrow(Ft)), CS0 = 3*diag(nrow
   filt.output <- list(mt=mt,Ct=Ct,CSt=CSt,Rt=Rt,RSt=RSt,nt=nt,dt=dt,S=S,ft=ft,Qt=Qt,ets=ets,lpl=lpl)
   return(filt.output)}
 
-
+dlm.filt <- cmpfun(dlm.filt.rh)
 
 ###############################################################################################
 # A function to generate all the possible models. 
@@ -205,7 +205,7 @@ exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01)){
     
     # Calculate the log predictive likelihood, for each value of delta, for the specified models
     for (j in 1:nd){
-      a=dlm.filt.rh(Yt, t(Ft), delta=delta[j])
+      a=dlm.filt(Yt, t(Ft), delta=delta[j])
       lpldet[z,j]=sum(a$lpl[nbf:Nt])}
     
     lplmax[z]=max(lpldet[z,],na.rm=TRUE)
