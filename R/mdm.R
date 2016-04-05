@@ -173,7 +173,7 @@ model.generator<-function(Nn,node){
 # Outputs:
 # model.store = a matrix with the model, LPL and chosen discount factor for all possible models
 
-exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01)){
+exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01)) {
   
   ptm=proc.time()  
   
@@ -196,20 +196,23 @@ exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01)){
   DF.hat=rep(NA,Nm)
   
   # Now create Ft. 
-  for (z in 1:Nm){
+  for (z in 1:Nm) {
     par=models[(2:Nn),z] # par is distinguished from pars, which are the selected parents at each stage
     par=par[par!=0]
     Ft=array(1,dim=c(Nt,length(par)+1))
-    if (ncol(Ft)>1){Ft[,2:ncol(Ft)]=Data[,par]}
-    
+    if (ncol(Ft)>1) {
+      Ft[,2:ncol(Ft)]=Data[,par]
+    }  
     
     # Calculate the log predictive likelihood, for each value of delta, for the specified models
-    for (j in 1:nd){
+    for (j in 1:nd) {
       a=dlm.filt(Yt, t(Ft), delta=delta[j])
-      lpldet[z,j]=sum(a$lpl[nbf:Nt])}
+      lpldet[z,j]=sum(a$lpl[nbf:Nt]) 
+    }
     
     lplmax[z]=max(lpldet[z,],na.rm=TRUE)
-    DF.hat[z]=delta[lpldet[z,]==max(lpldet[z,],na.rm=TRUE)]}
+    DF.hat[z]=delta[lpldet[z,]==max(lpldet[z,],na.rm=TRUE)]
+  }
   
   
   # Output model.store
@@ -219,7 +222,8 @@ exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01)){
   runtime=(proc.time()-ptm)
   
   output<-list(model.store=model.store,runtime=runtime)    
-  return(output)}
+  return(output)
+}
 
 
 #########################################################################################
