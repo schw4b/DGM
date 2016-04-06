@@ -1,42 +1,28 @@
-#!/usr/bin/env/Rscript
-#$ -S /usr/local/packages/R-3.2.1/bin/Rscript
-#$ -l h_rt=04:00:00
-#$ -t 1-384
-#$ -cwd
+library(compiler)
 
-# Code to run on Buster
-# Ruth Harbord
-# 04/02/2015 (date submitted to Buster)
-
-
-#####################################################################################################
-# A FUNCTION TO CALCULATE THE FILTERING DISTRIBUTION FOR A SPECIFIED SET OF PARENTS AND A FIXED DELTA
-#####################################################################################################
-
-# INPUTS:
-# Yt = the time series of the node of interest (dim = Nt)
-# Ft = the time series of the parents (number of parents = p), and 1 for the intercept (dim = p x Nt)
-# delta = the discount factor (scalar)
-
-# PRIORS
-# m0 = the prior means at time t=0 with length p. The default is non-informative prior, with zero mean.
-# CS0 = the squared matrix of prior variance. The default is non-informative prior, with prior variance equal to 3 times the observed variance.
-# n0 and d0 = the prior hypermarameters of precision phi ~ G(n0/2; d0/2). The default is non-informative priors, with value of 0.001. n0 has to be higher than 0.
-
-# Gt is assumed to be the indentity matrix, so is not coded in specifically here.
-
-# OUTPUTS:
-# mt = the filtered posterior mean, dim = p x T
-# Ct = the filtered posterior variance, dim = p x p x T
-# CSt
-# Rt = the prior variance, dim = p X p X T
-# RSt
-# nt and dt = the prior hypermarameters of precision phi with length T
-# ft = the one-step forecast mean with length T
-# Qt = the one-step forecast variance with length T
-# ets = the standardised residuals with length T
-# lpl = Log Predictive Likelihood with length T
-
+#' Calculate the filtering distribution for a specified set of parents and a fixed delta.
+#'
+#' @param Yt time series of the node of interest (dim = Nt).
+#' @param Ft the time series of the parents (number of parents = p), and 1 for the intercept (dim = p x Nt).
+#' @param delta discount factor (scalar).
+#' @param m0 prior means at time t=0 with length p. The default is non-informative prior, with zero mean.
+#' @param CS0 squared matrix of prior variance. The default is non-informative prior, with prior variance equal to 3 times the observed variance.
+#' @param n0 prior hypermarameters of precision phi ~ G(n0/2; d0/2). The default is non-informative priors, with value of 0.001. n0 has to be higher than 0.
+#' @param d0 prior hypermarameters of precision phi ~ G(n0/2; d0/2). The default is non-informative priors, with value of 0.001. n0 has to be higher than 0.
+#'
+#' @return
+#' mt = the filtered posterior mean, dim = p x T.
+#' Ct = the filtered posterior variance, dim = p x p x T.
+#' CSt.
+#' Rt = the prior variance, dim = p X p X T.
+#' RSt
+#' nt and dt = the prior hypermarameters of precision phi with length T.
+#' ft = the one-step forecast mean with length T.
+#' Qt = the one-step forecast variance with length T.
+#' ets = the standardised residuals with length T.
+#' lpl = Log Predictive Likelihood with length T.
+#' 
+#' @export
 dlm.filt.rh <- function(Yt, Ft, delta, m0 = numeric(nrow(Ft)), CS0 = 3*diag(nrow(Ft)), n0 = 0.001, d0 = 0.001){
   
   Nt = length(Yt)+1 # the length of the time series + t0
@@ -116,17 +102,15 @@ dlm.filt.rh <- function(Yt, Ft, delta, m0 = numeric(nrow(Ft)), CS0 = 3*diag(nrow
 
 dlm.filt <- cmpfun(dlm.filt.rh)
 
-###############################################################################################
-# A function to generate all the possible models. 
-###############################################################################################
-
-# Inputs:
-# nn = the number of nodes; the number of columns of the dataset can be used
-# node = the node of interest (i.e. the node to find parents for)
-
-# Outputs:
-# output.model = a matrix with dimensions (nn-1) x number of models, where number of models = 2^(nn-1)
-
+#' A function to generate all the possible models. 
+#'
+#' @param Nn number of nodes; the number of columns of the dataset can be used.
+#' @param node the node of interest (i.e., the node to find parents for).
+#'
+#' @return
+#' output.model = a matrix with dimensions (nn-1) x number of models, where number of models = 2^(nn-1).
+#' 
+#' @export
 model.generator<-function(Nn,node){
   
   # Create the model 'no parents' (the first column of the matrix is all zeros)
@@ -158,21 +142,17 @@ model.generator<-function(Nn,node){
   
 }
 
-
-###############################################################################################
-# A function for an exhaustive search, calculates the optimum value of the discount factor
-###############################################################################################
-
-# Inputs: 
-# Data = Dataset with dimension number of time points Nt x Number of nodes Nn
-# node = the node of interest
-# nbf = the Log Predictive Likelihood will be calculated from this time point. 
-#       It has to be a positive integer number. The default is 15.
-# delta = a vector of potential values for the discount factor
-
-# Outputs:
-# model.store = a matrix with the model, LPL and chosen discount factor for all possible models
-
+#' A function for an exhaustive search, calculates the optimum value of the discount factor.
+#'
+#' @param Data  Dataset with dimension number of time points Nt x Number of nodes Nn.
+#' @param node  node of interest.
+#' @param nbf   Log Predictive Likelihood will be calculated from this time point. 
+#' @param delta a vector of potential values for the discount factor.
+#'
+#' @return
+#' model.store = a matrix with the model, LPL and chosen discount factor for all possible models.
+#' 
+#' @export
 exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01)) {
   
   ptm=proc.time()  
@@ -201,7 +181,7 @@ exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01)) {
     par=par[par!=0]
     Ft=array(1,dim=c(Nt,length(par)+1))
     if (ncol(Ft)>1) {
-      Ft[,2:ncol(Ft)]=Data[,par]
+      Ft[,2:ncol(Ft)]=Data[,par] # selects parents
     }  
     
     # Calculate the log predictive likelihood, for each value of delta, for the specified models
@@ -211,9 +191,8 @@ exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01)) {
     }
     
     lplmax[z]=max(lpldet[z,],na.rm=TRUE)
-    DF.hat[z]=delta[lpldet[z,]==max(lpldet[z,],na.rm=TRUE)]
+    DF.hat[z]=delta[lpldet[z,]==max(lpldet[z,],na.rm=TRUE)] # add which here for index
   }
-  
   
   # Output model.store
   model.store=rbind(models,lplmax,DF.hat)
@@ -224,22 +203,3 @@ exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01)) {
   output<-list(model.store=model.store,runtime=runtime)    
   return(output)
 }
-
-
-#########################################################################################
-# Run the code
-# run=as.numeric(Sys.getenv('SGE_TASK_ID')) # Use the task ID to run the code in parallel
-#   
-# load("Data_NS.Rda") # A list object, as the number of time points differs between subjects
-# Data=Data_NS
-#   
-# Ns=dim(Data)[1]
-# Nn=dim(Data)[3]
-#   
-# subj=as.vector(t(matrix(rep(1:Ns,Nn),Ns,Nn)))
-# nodes=rep(1:Nn,Ns)
-#   
-# model.set=exhaustive.search(Data=Data[subj[run],,],node=nodes[run],nbf=15,delta=seq(0.5,1,0.01))
-# write.table(model.set$model.store,file=paste("NS_redone_subj",subj[run],"_n_",nodes[run],".txt",sep=""))
-# write.table(model.set$runtime[3],file=paste("NS_redone_subj",subj[run],"_n_",nodes[run],"_run_time.txt",sep=""))
-#  

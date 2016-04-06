@@ -6,7 +6,7 @@ source("~/workspace/mdm/R/mdm.R")
 
 # Profiling ----
 Rprof("profile.out")
-mymod = exhaustive.search(ts,1)
+mymod = exhaustive.search(ts,2)
 Rprof(NULL)
 summaryRprof("profile.out")
 
@@ -14,7 +14,9 @@ summaryRprof("profile.out")
 setwd("~/workspace/mdm/data/")
 load('Sim22Sub1.rda')
 
-mymod = exhaustive.search(ts,1)
+mymod = exhaustive.search(ts,2)
 
 # 11 seconds on a i5 1.80GHz
 #  7.5 seconds -> 33% reduction
+
+# crate data for unit testing ----
