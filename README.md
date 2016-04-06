@@ -15,4 +15,4 @@ Multiregression Dynamic Models
     git checkout develop
 
 ## Configure ssh key authentication
-    git remote set-url origin git@github.com:schw4b/emov.git
+    git remote set-url origin git@github.com:schw4b/mdm.git
