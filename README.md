@@ -23,7 +23,7 @@
     git remote set-url origin git@github.com:schw4b/mdm.git
 
 ## Unit Testing
-Test functions are written for the *testthis* package and can be found in the folder `tests`.
+Test functions are written for the *testthat* package and can be found in the folder `tests`.
     
     # load MDM
     setwd('~/workspace')
