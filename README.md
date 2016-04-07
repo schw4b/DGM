@@ -23,14 +23,13 @@
     git remote set-url origin git@github.com:schw4b/mdm.git
 
 ## Unit Testing
-Test functions are written for `testthis` package and can be found in the folder `tests`.
+Test functions are written for the *testthis* package and can be found in the folder `tests`.
     
     # load MDM
     setwd('~/workspace')
     library(devtools)
     load_all('mdm')
     # Run unit tests
-    # Run unit tests ----
     library(testthat)
     test_dir('mdm/tests', reporter = 'Summary')
     
