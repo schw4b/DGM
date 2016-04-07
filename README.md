@@ -15,9 +15,10 @@
 ### Change to master
     git checkout origin/master
     
-### Switch branches
+### Switch branches / push to develop branch
     git checkout master
     git checkout develop
+    git push origin develop
 
 ### Configure ssh key authentication
     git remote set-url origin git@github.com:schw4b/mdm.git
