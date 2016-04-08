@@ -23,6 +23,12 @@
 
 ### Configure ssh key authentication
     git remote set-url origin git@github.com:schw4b/mdm.git
+    
+### Merge develop to master
+    git checkout master
+    git pull               # to update the state to the latest remote master state
+    git merge develop      # to bring changes to local master from your develop branch
+    git push origin master # push current HEAD to remote master branch
 
 ## Unit Testing
 Test functions are written for the *testthat* package and can be found in the folder `tests`.
