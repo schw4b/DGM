@@ -11,13 +11,16 @@ setwd('~/workspace')
 
 library(devtools)
 library(microbenchmark)
+library(Rcpp)
 load_all('mdm')
 # unload("mdm/")
 
+# Call C++ function ----
+sourceCpp("mdm/src/dlmFilt.cpp")
+dlmFiltCpp(101)
 # Run unit tests ----
 library(testthat)
 test_dir('mdm/tests', reporter = 'Summary')
-
 # Benchmark ----
 n=1;   # node to test
 p=2:5; # parent node
@@ -36,14 +39,11 @@ microbenchmark(dlm.filt(Yt,t(Ft),0.93),       # 4 parents
 # cmpfun     200  50 n of timepoints
 # 4 parents  40%  41% reduction in time
 # 1 parent   40%  44%
-
-
 # Profiling ----
 Rprof("profile.out")
 mymod = exhaustive.search(ts,2)
 Rprof(NULL)
 summaryRprof("profile.out")
-
 # Benchmarking speed ----
 setwd("~/workspace/mdm/data/")
 load('Sim22Sub1.rda')
@@ -52,5 +52,4 @@ mymod = exhaustive.search(ts,2)
 
 # 11 seconds on a i5 1.80GHz
 #  7.5 seconds -> 33% reduction
-
 # crate data for unit testing ----

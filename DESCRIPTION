@@ -6,6 +6,8 @@ Author: Ruth Harbord <r.harbord@warwick.ac.uk>, Simon Schwab <schw4b@gmail.com>,
 Maintainer: Simon Schwab <schw4b@gmail.com>
 Depends:
     R (>= 1.8.0)
+Imports: Rcpp
+LinkingTo: Rcpp
 Suggests:
     testthat
 Description: The Multiregression Dynamic Models (MDM) are a multivariate graphical model for a

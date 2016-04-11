@@ -1,4 +1,5 @@
 library(compiler)
+library(Rcpp)
 
 #' Calculate the filtering distribution for a specified set of parents and a fixed delta.
 #'
@@ -69,7 +70,6 @@ dlm.filt.rh <- function(Yt, Ft, delta, m0 = numeric(nrow(Ft)), CS0 = 3*diag(nrow
     # RSt ~ C*_{t-1}/delta
     RSt[,,t] = Ct[,,(t-1)] / (S[(t-1)]*delta)
     Rt[,,t] = RSt[,,t] * (S[(t-1)]) 
-    
     # One-step forecast: (Y_{t}|y_{t-1}) ~ T_{n_{t-1}}[f_{t}, Q_{t}]
     ft[t] = t(F1[,t]) %*% mt[,(t-1)]
     QSt = as.vector(1 + t(F1[,t]) %*% RSt[,,t] %*% F1[,t])
