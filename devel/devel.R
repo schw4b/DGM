@@ -5,13 +5,18 @@
 
 # install packages ----
 install.packages("microbenchmark")
-install.packages("devotools")
+install.packages("devtools")
+install.packages("Rcpp")
+install.packages("RcppArmadillo")
 
+# init ----
 setwd('~/workspace')
 
 library(devtools)
 library(microbenchmark)
 library(Rcpp)
+library(RcppArmadillo)
+
 load_all('mdm')
 # unload("mdm/")
 
@@ -21,7 +26,7 @@ dlmFiltCpp(101)
 # Run unit tests ----
 library(testthat)
 test_dir('mdm/tests', reporter = 'Summary')
-# Benchmark ----
+# C++ development ----
 n=1;   # node to test
 p=2:5; # parent node
 nP=length(p);  # n parents
@@ -31,6 +36,14 @@ Yt = myts[,n]
 Ft=array(1,dim=c(200,nP+1))
 Ft[,2:ncol(Ft)]=myts[,p]
 
+x=dlm.filt.rh(Yt,t(Ft),0.93)
+
+# C++
+x=dlmFiltCpp(Yt,t(Ft),0.93)
+
+
+
+# Benchmark ----
 microbenchmark(dlm.filt.rh(Yt,t(Ft),0.93),dlm.filt(Yt,t(Ft),0.93))
 microbenchmark(dlm.filt(Yt,t(Ft),0.93),       # 4 parents
                dlm.filt(Yt,t(Ft[,1:4]),0.93), # 3
