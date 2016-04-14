@@ -1,5 +1,4 @@
 library(compiler)
-library(Rcpp)
 
 #' Calculate the filtering distribution for a specified set of parents and a fixed delta.
 #'
