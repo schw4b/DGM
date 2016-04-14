@@ -7,14 +7,14 @@
 using namespace Rcpp;
 
 // dlmFiltCpp
-arma::mat dlmFiltCpp(NumericVector Yt_, NumericMatrix Ft_, int delta);
+arma::rowvec dlmFiltCpp(NumericVector Yt_, NumericMatrix Ft_, float delta);
 RcppExport SEXP mdmwarwick_dlmFiltCpp(SEXP Yt_SEXP, SEXP Ft_SEXP, SEXP deltaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< NumericVector >::type Yt_(Yt_SEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type Ft_(Ft_SEXP);
-    Rcpp::traits::input_parameter< int >::type delta(deltaSEXP);
+    Rcpp::traits::input_parameter< float >::type delta(deltaSEXP);
     __result = Rcpp::wrap(dlmFiltCpp(Yt_, Ft_, delta));
     return __result;
 END_RCPP
