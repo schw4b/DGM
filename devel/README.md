@@ -42,4 +42,8 @@ Test functions are written for the *testthat* package and can be found in the fo
     testthat results ================================================================
     OK: 6 SKIPPED: 0 FAILED: 0
     
-    
+## Benchmarks
+Unit: microseconds
+                            expr      min        lq       mean    median        uq       max neval
+    dlm.filt.rh(Yt, t(Ft), 0.93) 14161.16 14418.930 15197.0242 14719.324 14990.811 18437.171   100
+     dlmFiltCpp(Yt, t(Ft), 0.93)   285.78   306.124   362.2461   327.562   421.552   457.031   100
