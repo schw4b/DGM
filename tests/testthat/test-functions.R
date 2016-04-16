@@ -29,10 +29,13 @@ test_that("Running filtering distribution: 1 parent", {
   # setwd("~/workspace/mdm/data/")
   # save(myts, utestdata, file = "utestdata.RData")
 
-  a=dlm.filt(Yt,t(Ft),0.93)
-  #expect_that(length(a$lpl), equals(200))
+  a=dlm.filt.rh(Yt,t(Ft),0.93)
   expect_that(sum(a$lpl[15:200]), equals(utestdata$Np1.lplsum))
-  expect_that(a$lpl[15:200], equals(utestdata$Np1.lpl[15:200]))
+  expect_that(a$lpl, equals(utestdata$Np1.lpl))
+  
+  lpl=c(dlmFiltCpp(Yt,t(Ft),0.93))
+  expect_equal(sum(lpl[15:200]), utestdata$Np1.lplsum)
+  expect_equal(lpl, utestdata$Np1.lpl, tolerance=1e-07)
 
 })
 
@@ -47,7 +50,6 @@ test_that("Running filtering distribution: 2 parents", {
   Yt = myts[,n]
   Ft=array(1,dim=c(200,nP+1))
   Ft[,2:ncol(Ft)]=myts[,p]
-  a=dlm.filt(Yt,t(Ft),0.93)
   
   # # initial preparation of true values to test against later on
   # utestdata$Np2.lpl=a$lpl
@@ -55,8 +57,13 @@ test_that("Running filtering distribution: 2 parents", {
   # setwd("mdm/data/")
   # save(myts, utestdata, file = "utestdata.RData")
   
+  a=dlm.filt.rh(Yt,t(Ft),0.93)
   expect_that(sum(a$lpl[15:200]), equals(utestdata$Np2.lplsum))
-  expect_that(a$lpl[15:200], equals(utestdata$Np2.lpl[15:200]))
+  expect_that(a$lpl, equals(utestdata$Np2.lpl))
+  
+  lpl=c(dlmFiltCpp(Yt,t(Ft),0.93))
+  expect_equal(sum(lpl[15:200]), utestdata$Np2.lplsum)
+  expect_equal(lpl, utestdata$Np2.lpl, tolerance=1e-07)
   
 })
 
@@ -71,7 +78,6 @@ test_that("Running filtering distribution: 3 parents", {
   Yt = myts[,n]
   Ft=array(1,dim=c(200,nP+1))
   Ft[,2:ncol(Ft)]=myts[,p]
-  a=dlm.filt(Yt,t(Ft),0.93)
   
   # # initial preparation of true values to test against later on
   # utestdata$Np3.lpl=a$lpl
@@ -79,8 +85,13 @@ test_that("Running filtering distribution: 3 parents", {
   # setwd("mdm/data/")
   # save(myts, utestdata, file = "utestdata.RData")
   
+  a=dlm.filt.rh(Yt,t(Ft),0.93)
   expect_that(sum(a$lpl[15:200]), equals(utestdata$Np3.lplsum))
-  expect_that(a$lpl[15:200], equals(utestdata$Np3.lpl[15:200]))
+  expect_that(a$lpl, equals(utestdata$Np3.lpl))
+  
+  lpl=c(dlmFiltCpp(Yt,t(Ft),0.93))
+  expect_equal(sum(lpl[15:200]), utestdata$Np3.lplsum)
+  expect_equal(lpl, utestdata$Np3.lpl, tolerance=1e-07)
   
 })
 
@@ -94,7 +105,6 @@ test_that("Running filtering distribution: 4 parents", {
   Yt = myts[,n]
   Ft=array(1,dim=c(200,nP+1))
   Ft[,2:ncol(Ft)]=myts[,p]
-  a=dlm.filt(Yt,t(Ft),0.93)
   
   # # initial preparation of true values to test against later on
   # utestdata$Np4.lpl=a$lpl
@@ -102,8 +112,34 @@ test_that("Running filtering distribution: 4 parents", {
   # setwd("mdm/data/")
   # save(myts, utestdata, file = "utestdata.RData")
   
+  a=dlm.filt.rh(Yt,t(Ft),0.93)
   expect_that(sum(a$lpl[15:200]), equals(utestdata$Np4.lplsum))
-  expect_that(a$lpl[15:200], equals(utestdata$Np4.lpl[15:200]))
+  expect_that(a$lpl, equals(utestdata$Np4.lpl))
+  
+  lpl=c(dlmFiltCpp(Yt,t(Ft),0.93))
+  expect_equal(sum(lpl[15:200]), utestdata$Np4.lplsum)
+  expect_equal(lpl, utestdata$Np4.lpl, tolerance=1e-07)
   
 })
 
+test_that("Exhaustive search, 5 node network", {
+  
+  data("utestdata")
+  
+  # # generate test values with original function for all 5 nodes
+  # models = array(NA, dim=c(7,16,5))
+  # for (n in 1:5) {
+  #   mymod = exhaustive.search(myts,n)
+  #   models[,,n] = mymod$model.store
+  # }
+  # utestdata$models=models
+  # setwd("mdm/data/")
+  # save(myts, utestdata, file = "utestdata.RData")
+  
+  # calculate every parent and compare
+  for (n in 1:5) {
+    mymod = exhaustive.search(myts,n)
+    expect_equivalent(mymod$model.store,utestdata$models[,,n])
+  }
+  
+})

@@ -4,7 +4,8 @@
 \alias{exhaustive.search}
 \title{A function for an exhaustive search, calculates the optimum value of the discount factor.}
 \usage{
-exhaustive.search(Data, node, nbf = 15, delta = seq(0.5, 1, 0.01))
+exhaustive.search(Data, node, nbf = 15, delta = seq(0.5, 1, 0.01),
+  cpp = TRUE)
 }
 \arguments{
 \item{Data}{Dataset with dimension number of time points Nt x Number of nodes Nn.}
@@ -14,6 +15,8 @@ exhaustive.search(Data, node, nbf = 15, delta = seq(0.5, 1, 0.01))
 \item{nbf}{Log Predictive Likelihood will be calculated from this time point.}
 
 \item{delta}{a vector of potential values for the discount factor.}
+
+\item{cpp}{boolean true (default): fast C++ implementation, false: native R code}
 }
 \value{
 model.store = a matrix with the model, LPL and chosen discount factor for all possible models.

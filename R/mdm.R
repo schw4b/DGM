@@ -1,5 +1,3 @@
-library(compiler)
-
 #' Calculate the filtering distribution for a specified set of parents and a fixed delta.
 #'
 #' @param Yt time series of the node of interest (dim = Nt).
@@ -69,7 +67,6 @@ dlm.filt.rh <- function(Yt, Ft, delta, m0 = numeric(nrow(Ft)), CS0 = 3*diag(nrow
     # RSt ~ C*_{t-1}/delta
     RSt[,,t] = Ct[,,(t-1)] / (S[(t-1)]*delta)
     Rt[,,t] = RSt[,,t] * (S[(t-1)]) 
-    
     # One-step forecast: (Y_{t}|y_{t-1}) ~ T_{n_{t-1}}[f_{t}, Q_{t}]
     ft[t] = t(F1[,t]) %*% mt[,(t-1)]
     QSt = as.vector(1 + t(F1[,t]) %*% RSt[,,t] %*% F1[,t])
@@ -98,8 +95,6 @@ dlm.filt.rh <- function(Yt, Ft, delta, m0 = numeric(nrow(Ft)), CS0 = 3*diag(nrow
   filt.output <- list(mt=mt,Ct=Ct,CSt=CSt,Rt=Rt,RSt=RSt,nt=nt,dt=dt,S=S,ft=ft,Qt=Qt,ets=ets,lpl=lpl)
   return(filt.output)
 }
-
-dlm.filt <- cmpfun(dlm.filt.rh)
 
 #' A function to generate all the possible models. 
 #'
@@ -147,12 +142,13 @@ model.generator<-function(Nn,node){
 #' @param node  node of interest.
 #' @param nbf   Log Predictive Likelihood will be calculated from this time point. 
 #' @param delta a vector of potential values for the discount factor.
+#' @param cpp boolean true (default): fast C++ implementation, false: native R code
 #'
 #' @return
 #' model.store = a matrix with the model, LPL and chosen discount factor for all possible models.
 #' 
 #' @export
-exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01)) {
+exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01),cpp=TRUE) {
   
   ptm=proc.time()  
   
@@ -185,8 +181,15 @@ exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01)) {
     
     # Calculate the log predictive likelihood, for each value of delta, for the specified models
     for (j in 1:nd) {
-      a=dlm.filt(Yt, t(Ft), delta=delta[j])
-      lpldet[z,j]=sum(a$lpl[nbf:Nt]) 
+      if (cpp) {
+        # new C++ implementation
+        lpl=c(dlmFiltCpp(Yt,t(Ft),delta[j]))
+        lpldet[z,j]=sum(lpl[nbf:Nt])
+      } else {
+        # original native R
+        a=dlm.filt.rh(Yt, t(Ft), delta=delta[j])
+        lpldet[z,j]=sum(a$lpl[nbf:Nt])
+      }
     }
     
     lplmax[z]=max(lpldet[z,],na.rm=TRUE)
