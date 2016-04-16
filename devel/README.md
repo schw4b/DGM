@@ -56,3 +56,12 @@ Test functions are written for the *testthat* package and can be found in the fo
              exhaustive.search(myts, 3)   186.8651   190.8783   193.6154   191.9987   193.3332   297.144   100
 
 60-fold speed improvement compared to the native R implementation (cpp=F).
+
+## Run benchmarks
+
+    setwd('~/workspace')
+    library(devtools)
+    load_all('mdm')
+    library(microbenchmark)
+    data("utestdata")
+    microbenchmark(exhaustive.search(myts,3,cpp=F),exhaustive.search(myts,3))
