@@ -47,3 +47,12 @@ Test functions are written for the *testthat* package and can be found in the fo
                             expr      min        lq       mean    median        uq       max neval
     dlm.filt.rh(Yt, t(Ft), 0.93) 14161.16 14418.930 15197.0242 14719.324 14990.811 18437.171   100
      dlmFiltCpp(Yt, t(Ft), 0.93)   285.78   306.124   362.2461   327.562   421.552   457.031   100
+
+40-fold speed improvements of the C++ function compared to R.
+
+    Unit: milliseconds
+                                   expr        min         lq       mean     median         uq       max neval
+    exhaustive.search(myts, 3, cpp = F) 11356.4994 11462.7909 11597.2890 11559.1692 11651.8035 13080.311   100
+             exhaustive.search(myts, 3)   186.8651   190.8783   193.6154   191.9987   193.3332   297.144   100
+
+60-fold speed improvement compared to the native R implementation (cpp=F).
