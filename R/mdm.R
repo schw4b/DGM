@@ -142,12 +142,13 @@ model.generator<-function(Nn,node){
 #' @param node  node of interest.
 #' @param nbf   Log Predictive Likelihood will be calculated from this time point. 
 #' @param delta a vector of potential values for the discount factor.
+#' @param cpp boolean true (default): fast C++ implementation, false: native R code
 #'
 #' @return
 #' model.store = a matrix with the model, LPL and chosen discount factor for all possible models.
 #' 
 #' @export
-exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01)) {
+exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01),cpp=TRUE) {
   
   ptm=proc.time()  
   
@@ -180,8 +181,15 @@ exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01)) {
     
     # Calculate the log predictive likelihood, for each value of delta, for the specified models
     for (j in 1:nd) {
-      a=dlm.filt.rh(Yt, t(Ft), delta=delta[j])
-      lpldet[z,j]=sum(a$lpl[nbf:Nt]) 
+      if (cpp) {
+        # new C++ implementation
+        lpl=c(dlmFiltCpp(Yt,t(Ft),delta[j]))
+        lpldet[z,j]=sum(lpl[nbf:Nt])
+      } else {
+        # original native R
+        a=dlm.filt.rh(Yt, t(Ft), delta=delta[j])
+        lpldet[z,j]=sum(a$lpl[nbf:Nt])
+      }
     }
     
     lplmax[z]=max(lpldet[z,],na.rm=TRUE)

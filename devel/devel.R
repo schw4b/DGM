@@ -11,6 +11,8 @@ setwd('~/workspace')
 library(devtools)
 load_all('mdm')
 # unload("mdm/")
+# @install directly from github ----
+#install_github("schw4b/mdm")
 
 # @Source a C++ function ----
 sourceCpp("mdm/src/dlmFilt.cpp")
@@ -34,12 +36,15 @@ sourceCpp('mdm/src/dlmFilt.cpp')
 lpl=dlmFiltCpp(Yt,t(Ft),0.93)
 boxplot(x$lpl - c(lpl[2:length(lpl)]))
 
-# Proper benchmark ----
+# @Proper benchmark ----
 library(microbenchmark)
 # 4 parents
 microbenchmark(dlm.filt.rh(Yt,t(Ft),0.93),dlmFiltCpp(Yt,t(Ft),0.93))
 
-# Quick and dirty benchmark ----
+data("utestdata")
+microbenchmark(exhaustive.search(myts,3,cpp=F),exhaustive.search(myts,3))
+
+# @Quick and dirty benchmark ----
 n = 1000;
 start = Sys.time ()
 #for (i in 1:n) {x = dlm.filt.rh(Yt,t(Ft),0.93)}  # 15.7 s
@@ -56,17 +61,9 @@ microbenchmark(dlm.filt(Yt,t(Ft),0.93),       # 4 parents
 # cmpfun     200  50 n of timepoints
 # 4 parents  40%  41% reduction in time
 # 1 parent   40%  44%
-# Profiling ----
+# @Profiling ----
+data("utestdata")
 Rprof("profile.out")
-mymod = exhaustive.search(ts,2)
+mymod = exhaustive.search(myts,2)
 Rprof(NULL)
 summaryRprof("profile.out")
-# Benchmarking speed ----
-setwd("~/workspace/mdm/data/")
-load('Sim22Sub1.rda')
-
-mymod = exhaustive.search(ts,2)
-
-# 11 seconds on a i5 1.80GHz
-#  7.5 seconds -> 33% reduction
-# crate data for unit testing ----

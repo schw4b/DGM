@@ -122,3 +122,24 @@ test_that("Running filtering distribution: 4 parents", {
   
 })
 
+test_that("Exhaustive search, 5 node network", {
+  
+  data("utestdata")
+  
+  # # generate test values with original function for all 5 nodes
+  # models = array(NA, dim=c(7,16,5))
+  # for (n in 1:5) {
+  #   mymod = exhaustive.search(myts,n)
+  #   models[,,n] = mymod$model.store
+  # }
+  # utestdata$models=models
+  # setwd("mdm/data/")
+  # save(myts, utestdata, file = "utestdata.RData")
+  
+  # calculate every parent and compare
+  for (n in 1:5) {
+    mymod = exhaustive.search(myts,n)
+    expect_equivalent(mymod$model.store,utestdata$models[,,n])
+  }
+  
+})
