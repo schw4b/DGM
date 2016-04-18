@@ -10,17 +10,17 @@ using namespace Rcpp;
 using namespace arma;
 
 // [[Rcpp::export]]
-arma::rowvec dlmFiltCpp(NumericVector Yt_, NumericMatrix Ft_, float delta) {
+arma::rowvec dlmFiltCpp(NumericVector Yt_, NumericMatrix Ft_, double delta) {
   
   rowvec Yt(Yt_.begin(), Yt_.size(), false); // reuses memory and avoids extra copy
   mat Ft(Ft_.begin(), Ft_.nrow(), Ft_.ncol(), false);
   
-  int Nt = Yt.n_cols + 1; // the length of the time series + t0
-  int  p = Ft.n_rows;     // the number of parents and one for an intercept (i.e. the number of thetas)
+  uword Nt = Yt.n_cols + 1; // the length of the time series + t0
+  uword  p = Ft.n_rows;     // the number of parents and one for an intercept (i.e. the number of thetas)
   
   rowvec m0 = zeros<rowvec>(p);
   mat CS0 = eye<mat>(p,p) * 3;
-  float n0 = 0.001; float d0 = 0.001;
+  double n0 = 0.001; double d0 = 0.001;
   
   rowvec Y(Yt);
   Y = join_rows(zeros<rowvec>(1), Yt);
@@ -56,12 +56,12 @@ arma::rowvec dlmFiltCpp(NumericVector Yt_, NumericMatrix Ft_, float delta) {
   rowvec prod(1); // variables for result from matrix products
   rowvec QSt(1);
   
-  float et;
+  double et;
   colvec At(p);
   
   // Filtering
   
-  for(uword t=1; t<Nt; ++t) {
+  for(uword t=1; t<Nt; ++t) { // unsigned signed problem
     
     // Posterior at {t-1}: (theta_{t-1}|y_{t-1}) ~ T_{n_{t-1}}[m_{t-1}, C_{t-1} = C*_{t-1} x d_{t-1}/n_{t-1}]
     // Prior at {t}: (theta_{t}|y_{t-1}) ~ T_{n_{t-1}}[m_{t}, R_{t}]

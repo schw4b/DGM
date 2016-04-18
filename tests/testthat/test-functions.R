@@ -35,7 +35,7 @@ test_that("Running filtering distribution: 1 parent", {
   
   lpl=c(dlmFiltCpp(Yt,t(Ft),0.93))
   expect_equal(sum(lpl[15:200]), utestdata$Np1.lplsum)
-  expect_equal(lpl, utestdata$Np1.lpl, tolerance=1e-07)
+  expect_equal(lpl, utestdata$Np1.lpl)
 
 })
 
@@ -63,7 +63,7 @@ test_that("Running filtering distribution: 2 parents", {
   
   lpl=c(dlmFiltCpp(Yt,t(Ft),0.93))
   expect_equal(sum(lpl[15:200]), utestdata$Np2.lplsum)
-  expect_equal(lpl, utestdata$Np2.lpl, tolerance=1e-07)
+  expect_equal(lpl, utestdata$Np2.lpl)
   
 })
 
@@ -91,7 +91,7 @@ test_that("Running filtering distribution: 3 parents", {
   
   lpl=c(dlmFiltCpp(Yt,t(Ft),0.93))
   expect_equal(sum(lpl[15:200]), utestdata$Np3.lplsum)
-  expect_equal(lpl, utestdata$Np3.lpl, tolerance=1e-07)
+  expect_equal(lpl, utestdata$Np3.lpl)
   
 })
 
@@ -118,7 +118,7 @@ test_that("Running filtering distribution: 4 parents", {
   
   lpl=c(dlmFiltCpp(Yt,t(Ft),0.93))
   expect_equal(sum(lpl[15:200]), utestdata$Np4.lplsum)
-  expect_equal(lpl, utestdata$Np4.lpl, tolerance=1e-07)
+  expect_equal(lpl, utestdata$Np4.lpl)
   
 })
 
