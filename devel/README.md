@@ -23,6 +23,7 @@
     git remote set-url origin git@github.com:schw4b/mdm.git
     
 ### Merge develop to master
+    # update DESCRIPTION file with new version if applicable
     git checkout master
     git pull               # to update the state to the latest remote master state
     git merge develop      # to bring changes to local master from your develop branch
