@@ -5,9 +5,9 @@
 
 ### Install specific release from github
 
-    install.packages("devtools")
+    install.packages("devtools") # run only once
     library(devtools)
-    install_github("schw4b/mdm@v1.1.1")
+    install_github("schw4b/mdm@v1.1.1") # run only once
     library(mdmwarwick)
 
 ### Find parents for node 3
@@ -35,13 +35,11 @@ Model number 3 with node 2 as a parent is most likely.
 ### Install MDM on Buster Supercomputer
     module load gcc
     module load R/3.2.4
-    # for automatic loading of R
-    echo "module load gcc" >> .bash_aliases
-    echo "module load R/3.2.4" >> .bash_aliases
     R
 
     # within R
-    > install.packages("devtools") # type 22 and then 1 to select http mirror (https not working)
+    > install.packages("devtools") # run only once
+    # type 22 and then 1 to select http mirror (https not working)
     > library(devtools)
-    > install_github("schw4b/mdm@v1.1.1")
+    > install_github("schw4b/mdm@v1.1.1") # run only once -- or if you want to update to a new release/tag
     > library(mdmwarwick)
