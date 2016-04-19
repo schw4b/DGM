@@ -5,15 +5,16 @@
 
 ### Install specific release from github
 
-    install.packages("devtools") # run only once
-    library(devtools)
-    install_github("schw4b/mdm@v1.1.1") # run only once
-    library(mdmwarwick)
+    > install.packages("devtools") # run only once
+    > library(devtools)
+    > install_github("schw4b/mdm@v1.1.1") # run only once
+    > library(mdmwarwick)
 
 ### Find parents for node 3
 
-    data("utestdata")
-    result=exhaustive.search(myts,3)
+    > data("utestdata")
+    > result=exhaustive.search(myts,3)
+    > result
     $model.store
               [,1]      [,2]      [,3]      [,4]      [,5]      [,6]     [,7]      [,8]      [,9]     [,10]     [,11]     [,12]     [,13]     [,14]     [,15]     [,16]
     [1,]    1.0000    2.0000    3.0000    4.0000    5.0000    6.0000    7.000    8.0000    9.0000   10.0000   11.0000   12.0000   13.0000   14.0000   15.0000   16.0000
@@ -30,12 +31,13 @@ Model number 3 with node 2 as a parent is most likely.
 
   
 ### Remove package
-    R --vanilla CMD REMOVE emov
+    $ R --vanilla CMD REMOVE emov
 
 ### Install MDM on Buster Supercomputer
-    module load gcc
-    module load R/3.2.4
-    R
+    # from terminal on buster
+    $ module load gcc
+    $ module load R/3.2.4
+    $ R
 
     # within R
     > install.packages("devtools") # run only once
