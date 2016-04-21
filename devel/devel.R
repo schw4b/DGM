@@ -2,8 +2,11 @@
 # Copyright (C) 2016 Simon Schwab, Ruth Harbord, and Thomas Nichols.
 
 # @install packages ----
-install.packages("microbenchmark")
 install.packages("devtools")
+install.packages("roxygen2")
+install.packages("testthat")
+install.packages("microbenchmark")
+
 install.packages("Rcpp")
 install.packages("RcppArmadillo")
 
@@ -45,11 +48,49 @@ microbenchmark(dlm.filt.rh(Yt,t(Ft),0.93),dlmFiltCpp(Yt,t(Ft),0.93))
 data("utestdata")
 microbenchmark(exhaustive.search(myts,3,cpp=F),exhaustive.search(myts,3), times=10L)
 
-# 1200 volume bench
+# 1200 volume benchmark
 M=matrix(rnorm(1200*5), ncol=5)
 microbenchmark(exhaustive.search(M,3,cpp=F),exhaustive.search(M,3), times=1L)
+# @Benchmark and prediction on Buster ----
+n=20
+M=matrix(rnorm(1200*n), ncol=n)
 
-# @Quick and dirty benchmark ----
+bench = microbenchmark(
+  exhaustive.search(M[,1:3],3),
+  exhaustive.search(M[,1:4],3),
+  exhaustive.search(M[,1:5],3),
+  exhaustive.search(M[,1:6],3),
+  exhaustive.search(M[,1:7],3),
+  exhaustive.search(M[,1:8],3),
+  exhaustive.search(M[,1:9],3),
+  exhaustive.search(M[,1:10],3),
+  exhaustive.search(M[,1:11],3),
+  exhaustive.search(M[,1:12],3),
+  exhaustive.search(M[,1:13],3),
+  times=1L)
+
+plot(bench)
+p=print(bench)
+plot(p$mean/1000)
+n=3:13
+model <- lm(log(p$mean/1000)~ n)
+summary(model)
+
+# result from buster
+# intercept
+exp(-3.815996)
+exp(0.769737)
+
+# prediction
+n=20;0.022*2.159^n # seconds
+n=20;(0.022*2.159^n)/(60*60) # hours
+
+# prediction
+n_=3:20
+modpred=exp(predict(model,list(n=n_)))
+plot(n_,modpred)
+
+# @Quick benchmark ----
 n = 1000;
 start = Sys.time ()
 #for (i in 1:n) {x = dlm.filt.rh(Yt,t(Ft),0.93)}  # 15.7 s
