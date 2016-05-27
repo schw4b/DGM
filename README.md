@@ -19,11 +19,13 @@ Reference to scientific articles see at the bottom.
 ### Run a MDM example with simulated data from Smith (2015).
 
 We load exaple data from Smith et al. (2011) simulating a 5-node network with 200 samples.
+
     > data("utestdata")
     > dim(myts)
     [1] 200   5
 
 Now, let's do a full search across all possible parent models of 2^(n-1), here with n=5, we have 16 models.
+
     > result=exhaustive.search(myts,3)
     > result
     $model.store
@@ -36,7 +38,7 @@ Now, let's do a full search across all possible parent models of 2^(n-1), here w
     [6,] -353.6734 -348.1476 -329.9119 -359.3472 -346.9735 -348.4044 -355.495 -347.4541 -337.3578 -333.6073 -353.8772 -349.6878 -346.9843 -358.2056 -341.7462 -355.5821
     [7,]    0.5000    0.7300    0.6800    0.7700    0.7600    0.7800    0.800    0.7900    0.7300    0.7700    0.8100    0.7900    0.8300    0.8400    0.7800    0.8300
 
-The table colums are the 16 different models. First row indicates model number, rows 2-5 the parents coding, row 6 the log predictive likelihood, and row 7 the discount factor (delta).
+The table colums are the 16 different models. First row indicates model number, rows 2-5 the parents, row 6 the log predictive likelihood, and row 7 the discount factor (delta). To get the winning model, we simply maximaze across likelihood.
 
     which.max(result$model.store[6,])
 
