@@ -6,7 +6,7 @@ Multiregression Dynamic Models (MDM) belong to the family of Dynamic Bayesian Ne
 Current research aims to fully characterize MDM using big data from the Human Connectome Project (HCP) in order to test validity and different aspects of reliability (test-retest reliability, out-of-sample reliability).
 
 ## References
-Costa, L., Smith, J., Nichols, T., Cussens, J., Duff, E. P., and Makin, T. R. (2015). Searching Multiregression Dynamic Models of resting-statetate fMRI networks using integer programming. Bayesian Analysis TBA, 1-38. [10.1214/14-BA913](http://dx.doi.org/10.1214/14-BA913).
+Costa, L., Smith, J., Nichols, T., Cussens, J., Duff, E. P., and Makin, T. R. (2015). Searching Multiregression Dynamic Models of resting-state fMRI networks using integer programming. Bayesian Analysis, 10(2), 441-478. [10.1214/14-BA913](http://dx.doi.org/10.1214/14-BA913).
 
 ## User Guide
 
