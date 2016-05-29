@@ -9,16 +9,16 @@ Reference to scientific articles see at the bottom.
 
 ## User Guide
 
-### Install specific release from github
+### Install latest release from github
 
     > install.packages("devtools") # run only once
     > library(devtools)
     > install_github("schw4b/mdm@v1.1.1") # run only once
     > library(mdmwarwick)
 
-### Run a MDM example with simulated data from Smith (2015).
+### Running a MDM example with simulated data
 
-We load example data from Smith et al. (2011) simulating a 5-node network with 200 samples.
+We load simulation data from Smith et al. (2011) of a 5-node network with 200 samples (time points) of one subject.
 
     > data("utestdata")
     > dim(myts)
