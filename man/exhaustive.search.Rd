@@ -16,7 +16,7 @@ exhaustive.search(Data, node, nbf = 15, delta = seq(0.5, 1, 0.01),
 
 \item{delta}{a vector of potential values for the discount factor.}
 
-\item{cpp}{boolean true (default): fast C++ implementation, false: native R code}
+\item{cpp}{boolean true (default): fast C++ implementation, false: native R code.}
 }
 \value{
 model.store = a matrix with the model, LPL and chosen discount factor for all possible models.
