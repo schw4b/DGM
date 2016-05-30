@@ -25,7 +25,7 @@ We load simulation data from Smith et al. (2011) of a 5-node network with 200 sa
     dim(myts)
     [1] 200   5
 
-Now, let's do a full search across all possible parent models of <img src="http://www.sciweavers.org/tex2img.php?eq=2%5E%7Bn-1%7D&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0" align="center" border="0" alt="2^{n-1}" width="40" height="18" />. Here, with n=5, we have 16 possible models.
+Now, let's do a full search across all possible parent models of 2^(n-1). Here, with n=5, we have 16 possible models.
 
     result=exhaustive.search(myts,3)
     result$model.store
@@ -48,7 +48,7 @@ Model number 3 with node 2 as a parent is most likely.
 ### Analysis on the subject level
 We do a full search on the subject level (exhautive search on each node). The list returned contains all the models, the winning models, and an adjacency matrix of the network.
 
-    s=subject(myts)
+    s=subject(myts)
     names(s)
     [1] "models" "winner" "adj"
 
