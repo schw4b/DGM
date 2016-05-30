@@ -9,7 +9,7 @@ Imports:
     Rcpp (>= 0.12.4)
 LinkingTo: Rcpp, RcppArmadillo
 Suggests:
-    testthat
+    testthat, igraph
 Description: The Multiregression Dynamic Models (MDM) are a multivariate
     graphical model for a multidimensional time series that allows the estimation of
     time-varying effective connectivity.
