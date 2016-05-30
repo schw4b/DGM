@@ -322,7 +322,6 @@ getAdjacencyMatrix <- function(winner, nodes) {
 #' @param adj, 2D adjacency matrix.
 #'
 #' @export
-plot.net <- function(adj) {
-  
+plotNet <- function(adj) {
   plot.igraph(graph.adjacency(adj, mode="directed", weighted=T, diag=F))
 }

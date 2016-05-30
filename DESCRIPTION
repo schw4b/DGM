@@ -1,15 +1,15 @@
 Package: mdmwarwick
-Version: 1.1
-Date: 2016-04-06
+Version: 1.1.2
+Date: 2016-05-30
 Title: Multiregression Dynamic Models
 Author: Simon Schwab <schw4b@gmail.com>, Ruth Harbord <r.harbord@warwick.ac.uk>,
     Thomas Nichols <t.e.nichols@warwick.ac.uk>
 Maintainer: Simon Schwab <schw4b@gmail.com>
 Imports:
-    Rcpp (>= 0.12.4)
+    Rcpp (>= 0.12.4), igraph (>= 1.0.1)
 LinkingTo: Rcpp, RcppArmadillo
 Suggests:
-    testthat, igraph
+    testthat
 Description: The Multiregression Dynamic Models (MDM) are a multivariate
     graphical model for a multidimensional time series that allows the estimation of
     time-varying effective connectivity.
