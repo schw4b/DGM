@@ -142,7 +142,7 @@ model.generator<-function(Nn,node){
 #' @param node  node of interest.
 #' @param nbf   Log Predictive Likelihood will be calculated from this time point. 
 #' @param delta a vector of potential values for the discount factor.
-#' @param cpp boolean true (default): fast C++ implementation, false: native R code
+#' @param cpp boolean true (default): fast C++ implementation, false: native R code.
 #'
 #' @return
 #' model.store = a matrix with the model, LPL and chosen discount factor for all possible models.
@@ -204,4 +204,124 @@ exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01),cpp=TRUE) {
   
   output<-list(model.store=model.store,runtime=runtime)    
   return(output)
+}
+
+#' Mean centers timeseries in a 3D array timeseries x nodes x subjects,
+#' i.e. each timeseries of each node and subject has mean of zero.
+#'
+#' @param X 3D array with dimensions timeseries x nodes x subjects.
+#'
+#' @return M 3D array.
+#' @export
+center <- function(X) {
+  d = dim(X)
+  M = array(rep(NA, d[1]*d[2]*d[3]), dim=c(d[1],d[2],d[3]))
+  
+  for (i in 1:d[3]) {
+    M[,,i]=scale(X[,,i], center = T, scale = F)
+  }
+  
+  return(M)
+}
+
+#' Search a subject's network; runs exhaustive search on very node.
+#'
+#' @param X 3D array with dimensions timeseries x nodes x subjects.
+#' @param id subject ID. If set, results are saved to a txt file.
+#'
+#' @return store list with results.
+#' @export
+subject <- function(X, id=NULL) {
+  N=ncol(X)  # nodes
+  M=2^(N-1)  # rows/models
+  models = array(rep(0,(N+2)*M*N),dim=c(N+2,M,N))
+  
+  for (n in 1:N) {
+    tmp=exhaustive.search(X,n)
+    models[,,n]=tmp$model.store
+  }
+  
+  if (!is.null(id)) {
+    for (n in 1:N) {
+      write(t(models[,,n]), file=sprintf("%s_node_%03d.txt", id, n), ncolumns = M)
+    }
+  }
+  store=list()
+  store$models=models
+  store$winner=getWinner(models,N)
+  store$adj=getAdjacencyMatrix(store$winner,N)
+  
+  return(store)
+}
+
+#' Reads single subject's network from text files.
+#'
+#' @param id subject ID.
+#' @param nodes number of nodes.
+#'
+#' @return store list with results.
+#' @export
+read.subject <- function(id, nodes) {
+  
+  models = array(0,dim=c(nodes+2,2^(nodes-1),nodes))
+  for (n in 1:nodes) {
+    file=sprintf("%s_node_%03d.txt", id, n)
+    models[,,n] = as.matrix(read.table(file))
+  }
+  store=list()
+  store$models=models
+  store$winner=getWinner(models,nodes)
+  store$adj=getAdjacencyMatrix(store$winner,nodes)
+  
+  return(store)
+}
+
+#' Get winner network by maximazing log predictive likelihood (LPL)
+#' from a set of models.
+#'
+#' @param models 2D matrix, or 3D models x node.
+#' @param nodes number of nodes.
+#'
+#' @return winner array with highest scored model(s).
+#' @export
+getWinner <- function(models, nodes) {
+  
+  dims=length(dim(models))
+  
+  if (dims==2) {
+    winner = models[,which.max(models[nodes+1,])]
+  } else if (dims==3) {
+    winner = array(0, dim=c(nodes+2,nodes))
+    for (n in 1:nodes) {
+      winner[,n]=models[,which.max(models[nodes+1,,n]),n]
+    }
+  }
+  return(winner)
+}
+
+#' Get adjacency matrix from winning models.
+#'
+#' @param winner, 2D matrix.
+#' @param nodes number of nodes.
+#'
+#' @return adj, 2D adjacency matrix.
+#' @export
+getAdjacencyMatrix <- function(winner, nodes) {
+  
+  adj = array(rep(0,nodes*nodes),dim=c(nodes,nodes))
+  for (n in 1:nodes) {
+    p = winner[2:nodes,n]  # parents
+    p = p[p>0]
+    adj[p,n] = 1
+  }
+  return(adj)
+}
+
+#' Plots network as graph.
+#'
+#' @param adj, 2D adjacency matrix.
+#'
+#' @export
+plotNet <- function(adj) {
+  plot.igraph(graph.adjacency(adj, mode="directed", weighted=T, diag=F))
 }

@@ -28,7 +28,7 @@ test_that("Running filtering distribution: 1 parent", {
   # utestdata$Np1.lplsum=sum(a$lpl[15:200])
   # setwd("~/workspace/mdm/data/")
   # save(myts, utestdata, file = "utestdata.RData")
-
+  
   a=dlm.filt.rh(Yt,t(Ft),0.93)
   expect_that(sum(a$lpl[15:200]), equals(utestdata$Np1.lplsum))
   expect_that(a$lpl, equals(utestdata$Np1.lpl))
@@ -36,7 +36,7 @@ test_that("Running filtering distribution: 1 parent", {
   lpl=c(dlmFiltCpp(Yt,t(Ft),0.93))
   expect_equal(sum(lpl[15:200]), utestdata$Np1.lplsum)
   expect_equal(lpl, utestdata$Np1.lpl)
-
+  
 })
 
 test_that("Running filtering distribution: 2 parents", {
@@ -141,5 +141,18 @@ test_that("Exhaustive search, 5 node network", {
     mymod = exhaustive.search(myts,n)
     expect_equivalent(mymod$model.store,utestdata$models[,,n])
   }
+})
+
+test_that("center", {
   
+  a = c(11,22,28,44,55,99)
+  b = 1.2*a + 0.2
+  X = array(c(a,b), dim=c(3,2,2))
+  M = X
+  M[,1,1] = X[,1,1] - mean(X[,1,1])
+  M[,2,1] = X[,2,1] - mean(X[,2,1])
+  M[,1,2] = X[,1,2] - mean(X[,1,2])
+  M[,2,2] = X[,2,2] - mean(X[,2,2])
+  
+  expect_equal(center(X), M)
 })
