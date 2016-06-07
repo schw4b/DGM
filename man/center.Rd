@@ -2,19 +2,19 @@
 % Please edit documentation in R/mdm.R
 \name{center}
 \alias{center}
-\title{Mean centers timeseries in a 3D array timeseries x nodes x subjects,
-i.e. each timeseries of each node and subject has mean of zero.}
+\title{Mean centers timeseries in a 2D array timeseries x nodes,
+i.e. each timeseries of each node has mean of zero.}
 \usage{
 center(X)
 }
 \arguments{
-\item{X}{3D array with dimensions timeseries x nodes x subjects.}
+\item{X}{2D array with dimensions timeseries x nodes.}
 }
 \value{
-M 3D array.
+M 2D array.
 }
 \description{
-Mean centers timeseries in a 3D array timeseries x nodes x subjects,
-i.e. each timeseries of each node and subject has mean of zero.
+Mean centers timeseries in a 2D array timeseries x nodes,
+i.e. each timeseries of each node has mean of zero.
 }
 

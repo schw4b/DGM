@@ -145,14 +145,10 @@ test_that("Exhaustive search, 5 node network", {
 
 test_that("center", {
   
-  a = c(11,22,28,44,55,99)
-  b = 1.2*a + 0.2
-  X = array(c(a,b), dim=c(3,2,2))
+  X = array(c(11,22,28,44,55,99), dim=c(2,2))
   M = X
-  M[,1,1] = X[,1,1] - mean(X[,1,1])
-  M[,2,1] = X[,2,1] - mean(X[,2,1])
-  M[,1,2] = X[,1,2] - mean(X[,1,2])
-  M[,2,2] = X[,2,2] - mean(X[,2,2])
+  M[,1] = X[,1] - mean(X[,1])
+  M[,2] = X[,2] - mean(X[,2])
   
   expect_equal(center(X), M)
 })
