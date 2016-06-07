@@ -60,18 +60,20 @@ We do a full search on the subject level (exhautive search on each node). The li
 ![Network example](https://cloud.githubusercontent.com/assets/11832548/15656327/d1f13cf4-269d-11e6-95cb-c6bc1f190cf6.png)
 
 ## HPC guide (high performance computing)
-### Install MDM on Buster super-computer (buster.stats.warwick.ac.uk)
-    # from terminal on buster
+### Install or update  MDM on Buster super-computer (buster.stats.warwick.ac.uk)
+From bash terminal on buster run:
+
     $ module load gcc
     $ module load R/3.2.4
     $ R
 
-    # within R
-    > install.packages("devtools") # run only once
+And from R run:
+
+    install.packages("devtools") # run only once
     # type 22 and then 1 to select http mirror (https not working)
-    > library(devtools)
-    > install_github("schw4b/mdm@v1.1.1") # run only once -- or if you want to update to a new release/tag
-    > library(mdmwarwick)
+    library(devtools)
+    install_github("schw4b/mdm@v1.1.3")
+    library(mdmwarwick)
 
 ## References
 1. Costa, L., Smith, J., Nichols, T., Cussens, J., Duff, E. P., and Makin, T. R. (2015). Searching Multiregression Dynamic Models of resting-state fMRI networks using integer programming. *Bayesian Analysis*, 10(2), 441–478. [doi:10.1214/14-BA913](http://dx.doi.org/10.1214/14-BA913).

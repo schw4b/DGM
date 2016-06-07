@@ -12,9 +12,6 @@ setwd('~/workspace')
 library(devtools)
 load_all('mdm')
 # unload("mdm/")
-# @install directly from github ----
-install_github("schw4b/mdm@v1.1")
-
 # @Source a C++ function ----
 library(Rcpp)
 sourceCpp("mdm/src/dlmFilt.cpp")
