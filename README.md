@@ -58,6 +58,30 @@ We do a full search on the subject level (exhautive search on each node). The li
 ![Network example](https://cloud.githubusercontent.com/assets/11832548/15656327/d1f13cf4-269d-11e6-95cb-c6bc1f190cf6.png)
 
 ## HPC guide (high performance computing)
+
+### Timing estmates
+Estimates for a time-series with 1200 samples (HCP), and for a 2.8GHz CPU.
+
+| No. of nodes  | Time     |
+| ------------- |:--------:|
+| 3             | 0.2 sec  |
+| 4             | 0.5 sec  |
+| 5             | 1 sec  |
+| 6             | 2.2 sec  |
+| 7             | 4.8 sec  |
+| 8             | 10 sec  |
+| 9             | 22 sec  |
+| 10            | 48 sec  |
+| 11            | 1 min 46 sec  |
+| 12            | 3 min 44 sec  |
+| 13            | 8 min  8 sec  |
+| 15            | 38 min |
+| 20            | 30 hours |
+| 25            | 58 days |
+
+Timings are for one node only. To estimate the full network (all parents of all the nodes, the numbers above have to be multiplied by the number of nodes (e.g., a 10 node network takes approx. 10 minutes)
+
+
 ### Install or update  MDM on Buster super-computer (buster.stats.warwick.ac.uk)
 From bash terminal on buster run:
 
