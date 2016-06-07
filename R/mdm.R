@@ -239,13 +239,11 @@ subject <- function(X, id=NULL) {
   for (n in 1:N) {
     tmp=exhaustive.search(X,n)
     models[,,n]=tmp$model.store
-  }
-  
-  if (!is.null(id)) {
-    for (n in 1:N) {
+    if (!is.null(id)) {
       write(t(models[,,n]), file=sprintf("%s_node_%03d.txt", id, n), ncolumns = M)
     }
   }
+  
   store=list()
   store$models=models
   store$winner=getWinner(models,N)
