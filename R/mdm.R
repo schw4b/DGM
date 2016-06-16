@@ -252,6 +252,26 @@ subject <- function(X, id=NULL) {
   return(store)
 }
 
+#' Runs exhautive search on a single node. In addition to exhautive.search() 
+#' this function can save results in txt file.
+#'
+#' @param X 3D array with dimensions timeseries x nodes x subjects.
+#' @param n node number.
+#' @param id subject ID. If set, results are saved to a txt file.
+#'
+#' @return store list with results.
+#' @export
+node <- function(X, n, id=NULL) {
+  N=ncol(X)  # nodes
+  M=2^(N-1)  # rows/models
+  
+  store=exhaustive.search(X,n)
+  if (!is.null(id)) {
+    write(t(store$model.store), file=sprintf("%s_node_%03d.txt", id, n), ncolumns = M)
+  }
+  return(store)
+}
+
 #' Reads single subject's network from text files.
 #'
 #' @param id subject ID.
@@ -317,9 +337,27 @@ getAdjacencyMatrix <- function(winner, nodes) {
 
 #' Plots network as graph.
 #'
-#' @param adj, 2D adjacency matrix.
+#' @param adj 2D adjacency matrix.
 #'
 #' @export
 plotNet <- function(adj) {
   plot.igraph(graph.adjacency(adj, mode="directed", weighted=T, diag=F))
+}
+
+#' Plots network as adjacency matrix.
+#'
+#' @param adj 2D adjacency matrix.
+#' @param col color palette.
+#' @param lab labels as character array.
+#' @param lim vector with two min and max values for color scaling.
+#'
+#' @export
+plotMat <- function(adj, col=heat.colors(12), lab=NULL, lim = c(0,1)) {
+  n=nrow(betw_adj_r1)
+  adj_ = t(apply(adj, 2, rev))
+  par(mai=c(1,1,0.5,1.1))
+  image(adj_, col=col, axes=F, zlim=lim)
+  mtext(text=rev(lab), side=2, line=0.3, at=seq(0,1,1/(n-1)), las=1, cex=0.8)
+  mtext(text=lab, side=1, line=0.3, at=seq(0,1,1/(n-1)), las=2, cex=0.8)
+  image.plot(adj_, legend.only=T, col=col, zlim=lim)
 }

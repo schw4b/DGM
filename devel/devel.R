@@ -2,9 +2,14 @@
 # Copyright (C) 2016 Simon Schwab, Ruth Harbord, and Thomas Nichols.
 
 # @install packages ----
-install.packages("microbenchmark")
 install.packages("devtools")
+install.packages("roxygen2")
+install.packages("igraph")
+install.packages("testthat")
+install.packages("testit")
 install.packages("Rcpp")
+
+install.packages("microbenchmark")
 install.packages("RcppArmadillo")
 
 # @load package with devtools ----
@@ -53,6 +58,9 @@ start = Sys.time ()
 #for (i in 1:n) {x = dlm.filt(Yt,t(Ft),0.93)}     #  9.26 s
 for (i in 1:n) {x = dlmFiltCpp(Yt,t(Ft),0.93)}    #  0.347 s
 Sys.time () - start
+# extrapolation
+n=20;(0.022*2.159^n)/(60*60) # hours
+
 # @Profiling ----
 data("utestdata")
 Rprof("profile.out")
@@ -60,3 +68,8 @@ Rprof("profile.out")
 mymod = exhaustive.search(myts,2)
 Rprof(NULL)
 summaryRprof("profile.out")
+
+# @plot adjacency matrix
+x = matrix(c(0,0,3,1,0,0,0,2,0), 3, 3)
+image.plot(x)
+image.plot(t(apply(x, 2, rev)))
