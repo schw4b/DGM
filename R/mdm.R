@@ -353,7 +353,7 @@ plotNet <- function(adj) {
 #'
 #' @export
 plotMat <- function(adj, col=heat.colors(12), lab=NULL, lim = c(0,1)) {
-  n=nrow(betw_adj_r1)
+  n=nrow(adj)
   adj_ = t(apply(adj, 2, rev))
   par(mai=c(1,1,0.5,1.1))
   image(adj_, col=col, axes=F, zlim=lim)

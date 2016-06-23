@@ -7,7 +7,7 @@
 plotNet(adj)
 }
 \arguments{
-\item{adj, }{2D adjacency matrix.}
+\item{adj}{2D adjacency matrix.}
 }
 \description{
 Plots network as graph.
