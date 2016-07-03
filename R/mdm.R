@@ -274,7 +274,7 @@ node <- function(X, n, id=NULL) {
 
 #' Reads single subject's network from text files.
 #'
-#' @param id subject ID.
+#' @param id identifier to select all subjects' nodes, e.g. pattern containing subject ID and session number.
 #' @param nodes number of nodes.
 #'
 #' @return store list with results.
@@ -283,7 +283,8 @@ read.subject <- function(id, nodes) {
   
   models = array(0,dim=c(nodes+2,2^(nodes-1),nodes))
   for (n in 1:nodes) {
-    file=sprintf("%s_node_%03d.txt", id, n)
+    #file=sprintf("%s_node_%03d.txt", id, n)
+    file=list.files(pattern=glob2rx(sprintf("%s*_node_%03d.txt", id, n)))
     models[,,n] = as.matrix(read.table(file))
   }
   store=list()
@@ -350,9 +351,13 @@ plotNet <- function(adj) {
 #' @param col color palette.
 #' @param lab labels as character array.
 #' @param lim vector with two min and max values for color scaling.
+#' @param diag true or false, if true showing values on the diagnoal line.
 #'
 #' @export
-plotMat <- function(adj, col=heat.colors(12), lab=NULL, lim = c(0,1)) {
+plotMat <- function(adj, col=heat.colors(12), lab=NULL, lim = c(0,1), diag=FALSE) {
+  if (!diag) {
+    adj[row(adj) == col(adj)]=NA
+  }
   n=nrow(adj)
   adj_ = t(apply(adj, 2, rev))
   par(mai=c(1,1,0.5,1.1))
