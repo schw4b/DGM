@@ -7,7 +7,7 @@
 read.subject(id, nodes)
 }
 \arguments{
-\item{id}{subject ID.}
+\item{id}{identifier to select all subjects' nodes, e.g. pattern containing subject ID and session number.}
 
 \item{nodes}{number of nodes.}
 }

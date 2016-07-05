@@ -365,4 +365,56 @@ plotMat <- function(adj, col=heat.colors(12), lab=NULL, lim = c(0,1), diag=FALSE
   mtext(text=rev(lab), side=2, line=0.3, at=seq(0,1,1/(n-1)), las=1, cex=0.8)
   mtext(text=lab, side=1, line=0.3, at=seq(0,1,1/(n-1)), las=2, cex=0.8)
   image.plot(adj_, legend.only=T, col=col, zlim=lim)
+  grid(n, n, lwd = 1)
+}
+
+#' Performes a binomial test with FDR correction for network edges in an adjacency matrix.
+#'
+#' @param adj adjacency matrix, Subj x nodes x nodes, or Subj x runs x nodes x nodes.
+#' @param alter type of binomial test, "two.sided" (default), "less", or "greater"
+#'
+#' @return store list with results.
+#' @export
+binom.nettest <- function(adj, alter="two.sided") {
+  
+  mydim=dim(adj)
+  M = sum(adj) # total edges over all N subjects, all R(R-1) edges
+  
+  if (length(mydim) == 3) { # without runs
+    N=mydim[1] # No. of subjects
+    N_Comp=mydim[2]
+    adj_ = apply(adj, c(2,3), sum)
+    
+  } else if (length(mydim) == 4) { # with runs
+    N=mydim[1] # No. of subjects
+    N_runs=mydim[2]
+    N_Comp=mydim[3]
+    N=N*N_runs # adjust N by for no. of runs
+    adj_ = apply(adj, c(3,4), sum) # sum acrosss subjects and runs
+  }
+  
+  # binom test for every edge occurance
+  p0 = M/N/N_Comp/(N_Comp-1) # H0 edge probability
+  
+  p = array(NA, dim=c(N_Comp,N_Comp))
+  for (i in 1:N_Comp) {
+    for (j in 1:N_Comp) {
+      tmp=binom.test(adj_[i,j],N,p=p0, alternative=alter)
+      p[i,j]=tmp$p.value
+    }
+  }
+  
+  # FDR
+  p_fdr=matrix(p.adjust(p, method = "fdr"),N_Comp,N_Comp)
+  adj_fdr=adj_
+  adj_fdr[p_fdr>=0.05]=NA
+  
+  store=list()
+  store$p0=p0
+  store$p=p
+  store$p_fdr=p_fdr
+  store$adj=adj_/N
+  store$adj_fdr=adj_fdr/N # significant proportions
+  
+  return(store)
 }
