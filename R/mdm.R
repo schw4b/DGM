@@ -175,10 +175,10 @@ exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01),cpp=TRUE) {
     pars=pars[pars!=0]
     Ft=array(1,dim=c(Nt,length(pars)+1))
     if (ncol(Ft)>1) {
-      Ft[,2:ncol(Ft)]=Data[,pars] # selects parents
+      Ft[,2:ncol(Ft)]=Data[,pars] # selects parents 
     }  
     
-    # Calculate the log predictive likelihood, for each value of delta, for the specified models
+    # Calculate the log predictive likelihood, for each value of delta
     for (j in 1:nd) {
       if (cpp) {
         # new C++ implementation
