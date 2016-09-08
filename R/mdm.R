@@ -1,24 +1,25 @@
 #' Calculate the filtering distribution for a specified set of parents and a fixed delta.
 #'
-#' @param Yt time series of the node of interest (dim = Nt).
-#' @param Ft the time series of the parents (number of parents = p), and 1 for the intercept (dim = p x Nt).
+#' @param Yt the vector of observed time series, length T
+#' @param Ft the matrix of covariates, dim = number of thetas (p) x number of time points (T), usually a column of 1s to represent an intercept and the time series of the parent nodes.
 #' @param delta discount factor (scalar).
-#' @param m0 prior means at time t=0 with length p. The default is non-informative prior, with zero mean.
-#' @param CS0 squared matrix of prior variance. The default is non-informative prior, with prior variance equal to 3 times the observed variance.
-#' @param n0 prior hypermarameters of precision phi ~ G(n0/2; d0/2). The default is non-informative priors, with value of 0.001. n0 has to be higher than 0.
-#' @param d0 prior hypermarameters of precision phi ~ G(n0/2; d0/2). The default is non-informative priors, with value of 0.001. n0 has to be higher than 0.
+#' @param m0 the vector of the prior mean at time t=0, length p. The default is a non-informative prior with zero mean. (theta0 | y0, phi) ~ N(m0,CS0*phi^-1).
+#' @param CS0 the prior scale matrix at time t=0, dim = p x p. The default is a non-informative prior, 3 * identity matrix.
+#' @param n0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001. n0 has to be higher than 0.
+#' @param d0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001. 
 #'
 #' @return
-#' mt = the filtered posterior mean, dim = p x T.
-#' Ct = the filtered posterior variance, dim = p x p x T.
-#' CSt.
-#' Rt = the prior variance, dim = p X p X T.
-#' RSt
-#' nt and dt = the prior hypermarameters of precision phi with length T.
-#' ft = the one-step forecast mean with length T.
-#' Qt = the one-step forecast variance with length T.
-#' ets = the standardised residuals with length T.
-#' lpl = Log Predictive Likelihood with length T.
+#' mt the vector or matrix of the posterior mean (location parameter), dim = p x T.
+#' Ct the posterior scale matrix, dim = p x p x T, Ct = CSt * S, where S is a point estimate for the observational variance phi^-1. 
+#' CSt the posterior scale matrix, dim = p x p x T, Ct = CSt * S, where S is a point estimate for the observational variance phi^-1.
+#' Rt the prior scale matrix, dim = p x p x T. Rt = RSt * S_{t-1}, where S_{t-1} is a point estimate for the observational variance phi^-1 at the previous time point.
+#' RSt the prior scale matrix, dim = p X p X T. Rt = RSt * S_{t-1}, where S_{t-1} is a point estimate for the observational variance phi^-1 at the previous time point.
+#' nt and dt the vectors of the hyperparameters for the precision phi with length T.
+#' S the vector of the point estimate for the observational variance phi^-1 with length T.
+#' ft the vector of the one-step forecast location parameter with length T.
+#' Qt the vector of the one-step forecast scale parameter with length T.
+#' ets the vector of the standardised residuals with length T
+#' lpl the vector of the Log Predictive Likelihood with length T.
 #' 
 #' @export
 dlm.filt.rh <- function(Yt, Ft, delta, m0 = numeric(nrow(Ft)), CS0 = 3*diag(nrow(Ft)), n0 = 0.001, d0 = 0.001){
@@ -62,7 +63,7 @@ dlm.filt.rh <- function(Yt, Ft, delta, m0 = numeric(nrow(Ft)), CS0 = 3*diag(nrow
   for (t in 2:Nt){
     
     # Posterior at {t-1}: (theta_{t-1}|y_{t-1}) ~ T_{n_{t-1}}[m_{t-1}, C_{t-1} = C*_{t-1} x d_{t-1}/n_{t-1}]
-    # Prior at {t}: (theta_{t}|y_{t-1}) ~ T_{n_{t-1}}[m_{t}, R_{t}]
+    # Prior at {t}: (theta_{t}|y_{t-1}) ~ T_{n_{t-1}}[m_{t-1}, R_{t}]
     
     # RSt ~ C*_{t-1}/delta
     RSt[,,t] = Ct[,,(t-1)] / (S[(t-1)]*delta)
@@ -85,7 +86,7 @@ dlm.filt.rh <- function(Yt, Ft, delta, m0 = numeric(nrow(Ft)), CS0 = 3*diag(nrow
     CSt[,,t] = RSt[,,t] - (At %*% t(At))*QSt
     Ct[,,t] = S[t]*CSt[,,t]
     
-    # Log Predictive Likelihood (degrees of freedom = nt[(t-1)], not nt[t])
+    # Log Predictive Likelihood 
     lpl[t] = lgamma((nt[(t-1)]+1)/2)-lgamma(nt[(t-1)]/2)-0.5*log(pi*nt[(t-1)]*Qt[t])-((nt[(t-1)]+1)/2)*log(1+(1/nt[(t-1)])*et^2/Qt[t])
   }
   
@@ -140,13 +141,13 @@ model.generator<-function(Nn,node){
 #'
 #' @param Data  Dataset with dimension number of time points Nt x Number of nodes Nn.
 #' @param node  node of interest.
-#' @param nbf   Log Predictive Likelihood will be calculated from this time point. 
+#' @param nbf   Log Predictive Likelihood will be calculated from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
 #'
 #' @return
-#' model.store = a matrix with the model, LPL and chosen discount factor for all possible models.
-#' 
+#' model.store a matrix with the model, LPL and chosen discount factor for all possible models.
+#' runtime an estimate of the run time of the function, using proc.time().
 #' @export
 exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01),cpp=TRUE) {
   
@@ -156,11 +157,9 @@ exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01),cpp=TRUE) {
   Nm=2^(Nn-1)   # the number of models per node
   
   M=model.generator(Nn,node) # Generate all the possible models
-  #M=cbind(M,M[,1]) # Add in a model to represent the AR alternative
   models=rbind(1:Nm,M) # Label each model with a 'model number'
   
   
-  # Find the Log Predicitive Likelihood and associated discount factor for the zero parent model
   Yt=Data[,node]    # the time series of the node we wish to find parents for
   Nt=length(Yt)     # the number of time points
   nd=length(delta)  # the number of deltas
@@ -172,14 +171,14 @@ exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01),cpp=TRUE) {
   
   # Now create Ft. 
   for (z in 1:Nm) {
-    par=models[(2:Nn),z] # par is distinguished from pars, which are the selected parents at each stage
-    par=par[par!=0]
-    Ft=array(1,dim=c(Nt,length(par)+1))
+    pars=models[(2:Nn),z] 
+    pars=pars[pars!=0]
+    Ft=array(1,dim=c(Nt,length(pars)+1))
     if (ncol(Ft)>1) {
-      Ft[,2:ncol(Ft)]=Data[,par] # selects parents
+      Ft[,2:ncol(Ft)]=Data[,pars] # selects parents 
     }  
     
-    # Calculate the log predictive likelihood, for each value of delta, for the specified models
+    # Calculate the log predictive likelihood, for each value of delta
     for (j in 1:nd) {
       if (cpp) {
         # new C++ implementation
