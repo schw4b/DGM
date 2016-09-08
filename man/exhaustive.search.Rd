@@ -12,14 +12,15 @@ exhaustive.search(Data, node, nbf = 15, delta = seq(0.5, 1, 0.01),
 
 \item{node}{node of interest.}
 
-\item{nbf}{Log Predictive Likelihood will be calculated from this time point.}
+\item{nbf}{Log Predictive Likelihood will be calculated from (and including) this time point.}
 
 \item{delta}{a vector of potential values for the discount factor.}
 
 \item{cpp}{boolean true (default): fast C++ implementation, false: native R code.}
 }
 \value{
-model.store = a matrix with the model, LPL and chosen discount factor for all possible models.
+model.store a matrix with the model, LPL and chosen discount factor for all possible models.
+runtime an estimate of the run time of the function, using proc.time().
 }
 \description{
 A function for an exhaustive search, calculates the optimum value of the discount factor.

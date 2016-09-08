@@ -2,12 +2,12 @@
 % Please edit documentation in R/mdm.R
 \name{subject}
 \alias{subject}
-\title{Search a subject's network; runs exhaustive search on very node.}
+\title{Estimate subject's full network: runs exhaustive search on very node.}
 \usage{
 subject(X, id = NULL)
 }
 \arguments{
-\item{X}{3D array with dimensions timeseries x nodes x subjects.}
+\item{X}{array with dimensions timeseries x nodes.}
 
 \item{id}{subject ID. If set, results are saved to a txt file.}
 }
@@ -15,6 +15,6 @@ subject(X, id = NULL)
 store list with results.
 }
 \description{
-Search a subject's network; runs exhaustive search on very node.
+Estimate subject's full network: runs exhaustive search on very node.
 }
 

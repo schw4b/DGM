@@ -14,7 +14,7 @@ Run these commands only once, or if you want to upgrade to a new release.
 
     install.packages("devtools")
     library(devtools)
-    install_github("schw4b/mdm@v1.1.1")
+    install_github("schw4b/mdm@v1.3")
 
 ### Running a MDM example with simulated data
 We load simulation data from Smith et al. (2011) of a 5-node network with 200 samples (time points) of one subject. Time series should be mean centered.

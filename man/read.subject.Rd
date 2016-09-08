@@ -2,7 +2,7 @@
 % Please edit documentation in R/mdm.R
 \name{read.subject}
 \alias{read.subject}
-\title{Reads single subject's network from text files.}
+\title{Reads single subject's network from txt files.}
 \usage{
 read.subject(id, nodes)
 }
@@ -15,6 +15,6 @@ read.subject(id, nodes)
 store list with results.
 }
 \description{
-Reads single subject's network from text files.
+Reads single subject's network from txt files.
 }
 

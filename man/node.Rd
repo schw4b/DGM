@@ -2,13 +2,12 @@
 % Please edit documentation in R/mdm.R
 \name{node}
 \alias{node}
-\title{Runs exhautive search on a single node. In addition to exhautive.search() 
-this function can save results in txt file.}
+\title{Runs exhaustive search on a single node and saves results in txt file.}
 \usage{
 node(X, n, id = NULL)
 }
 \arguments{
-\item{X}{3D array with dimensions timeseries x nodes x subjects.}
+\item{X}{array with dimensions timeseries x nodes.}
 
 \item{n}{node number.}
 
@@ -18,7 +17,6 @@ node(X, n, id = NULL)
 store list with results.
 }
 \description{
-Runs exhautive search on a single node. In addition to exhautive.search() 
-this function can save results in txt file.
+Runs exhaustive search on a single node and saves results in txt file.
 }
 
