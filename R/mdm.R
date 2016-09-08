@@ -224,9 +224,9 @@ center <- function(X) {
   return(M)
 }
 
-#' Search a subject's network; runs exhaustive search on very node.
+#' Estimate subject's full network: runs exhaustive search on very node.
 #'
-#' @param X 3D array with dimensions timeseries x nodes x subjects.
+#' @param X array with dimensions timeseries x nodes.
 #' @param id subject ID. If set, results are saved to a txt file.
 #'
 #' @return store list with results.
@@ -247,15 +247,14 @@ subject <- function(X, id=NULL) {
   store=list()
   store$models=models
   store$winner=getWinner(models,N)
-  store$adj=getAdjacencyMatrix(store$winner,N)
+  store$adj=getAdjacency(store$winner,N)
   
   return(store)
 }
 
-#' Runs exhautive search on a single node. In addition to exhautive.search() 
-#' this function can save results in txt file.
+#' Runs exhaustive search on a single node and saves results in txt file.
 #'
-#' @param X 3D array with dimensions timeseries x nodes x subjects.
+#' @param X array with dimensions timeseries x nodes.
 #' @param n node number.
 #' @param id subject ID. If set, results are saved to a txt file.
 #'
@@ -272,7 +271,7 @@ node <- function(X, n, id=NULL) {
   return(store)
 }
 
-#' Reads single subject's network from text files.
+#' Reads single subject's network from txt files.
 #'
 #' @param id identifier to select all subjects' nodes, e.g. pattern containing subject ID and session number.
 #' @param nodes number of nodes.
@@ -290,7 +289,7 @@ read.subject <- function(id, nodes) {
   store=list()
   store$models=models
   store$winner=getWinner(models,nodes)
-  store$adj=getAdjacencyMatrix(store$winner,nodes)
+  store$adj=getAdjacency(store$winner,nodes)
   
   return(store)
 }
@@ -318,22 +317,25 @@ getWinner <- function(models, nodes) {
   return(winner)
 }
 
-#' Get adjacency matrix from winning models.
+#' Get adjacency and associated likelihoods (LPL) and disount factros (df) of winning models.
 #'
 #' @param winner, 2D matrix.
 #' @param nodes number of nodes.
 #'
 #' @return adj, 2D adjacency matrix.
 #' @export
-getAdjacencyMatrix <- function(winner, nodes) {
+getAdjacency <- function(winner, nodes) {
   
-  adj = array(rep(0,nodes*nodes),dim=c(nodes,nodes))
+  am = array(rep(0,nodes*nodes),dim=c(nodes,nodes))
+  lpl = df = array(rep(NA,nodes*nodes),dim=c(nodes,nodes))
   for (n in 1:nodes) {
     p = winner[2:nodes,n]  # parents
     p = p[p>0]
-    adj[p,n] = 1
+    am[p,n] = 1
+    lpl[p,n] = winner[nodes+1,n]
+    df[p,n]  = winner[nodes+2,n]
   }
-  return(adj)
+  return(list(am=am, lpl=lpl, df=df))
 }
 
 #' Plots network as graph.
