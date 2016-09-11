@@ -419,3 +419,39 @@ binom.nettest <- function(adj, alter="two.sided") {
   
   return(store)
 }
+
+#' Reshapes a 2D concatenated time series into 3D according to no. of subjects and volumes.
+#'
+#' @param ts, a 2D time series volumes x nodes.
+#' @param N No. of subjects.
+#' @param V No. of volumes.
+#' 
+#' @return M 3D matrix, time series x nodes x subjects.
+#' @export
+reshapeTs <- function(ts, N, V) {
+  NC = ncol(ts)
+  M = array(NA, dim=c(V,NC,N))
+  for (i in 1:N) {
+    idx = ((i-1)*V+1):(V*i)
+    M[,,i] = ts[idx,]
+  }
+  return(M)
+}
+
+#' Correlation of time series.
+#'
+#' @param ts, a 3D time series time series x nodes x subjects.
+#' 
+#' @return M correlation matrix.
+#' @export
+corTs <- function(ts) {
+  d=dim(ts)
+  N=d[3] # No. subjects
+  N_nodes=d[2]
+  R=array(NA, dim=c(N_nodes,N_nodes,N))
+  for (s in 1:N) {
+    R[,,s]=cor(ts[,,s])
+  }
+  M = apply(R, c(1,2), mean)
+  return(M)
+}
