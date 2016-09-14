@@ -7,7 +7,7 @@
 reshapeTs(ts, N, V)
 }
 \arguments{
-\item{ts, }{a 2D time series volumes x nodes.}
+\item{ts}{a 2D time series volumes x nodes.}
 
 \item{N}{No. of subjects.}
 

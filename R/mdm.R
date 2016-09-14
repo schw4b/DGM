@@ -247,6 +247,7 @@ subject <- function(X, id=NULL) {
   store$models=models
   store$winner=getWinner(models,N)
   store$adj=getAdjacency(store$winner,N)
+  store$thr=getThreshAdj(store$adj, store$models, store$winner)
   
   return(store)
 }
@@ -289,6 +290,7 @@ read.subject <- function(id, nodes) {
   store$models=models
   store$winner=getWinner(models,nodes)
   store$adj=getAdjacency(store$winner,nodes)
+  store$thr=getThreshAdj(store$adj, store$models, store$winner)
   
   return(store)
 }
@@ -371,7 +373,7 @@ plotMat <- function(adj, col=heat.colors(12), lab=NULL, lim = c(0,1), diag=FALSE
 
 #' Performes a binomial test with FDR correction for network edges in an adjacency matrix.
 #'
-#' @param adj adjacency matrix, Subj x nodes x nodes, or Subj x runs x nodes x nodes.
+#' @param adj adjacency matrix, nodes x nodes x subj, ornodes x nodes x runs x subj.
 #' @param alter type of binomial test, "two.sided" (default), "less", or "greater"
 #'
 #' @return store list with results.
@@ -382,16 +384,16 @@ binom.nettest <- function(adj, alter="two.sided") {
   M = sum(adj) # total edges over all N subjects, all R(R-1) edges
   
   if (length(mydim) == 3) { # without runs
-    N=mydim[1] # No. of subjects
-    N_Comp=mydim[2]
-    adj_ = apply(adj, c(2,3), sum)
+    N=mydim[3] # No. of subjects
+    N_Comp=mydim[1]
+    adj_ = apply(adj, c(1,2), sum)
     
   } else if (length(mydim) == 4) { # with runs
-    N=mydim[1] # No. of subjects
-    N_runs=mydim[2]
-    N_Comp=mydim[3]
+    N=mydim[4] # No. of subjects
+    N_runs=mydim[3]
+    N_Comp=mydim[1]
     N=N*N_runs # adjust N by for no. of runs
-    adj_ = apply(adj, c(3,4), sum) # sum acrosss subjects and runs
+    adj_ = apply(adj, c(1,2), sum) # sum acrosss subjects and runs
   }
   
   # binom test for every edge occurance
@@ -422,7 +424,7 @@ binom.nettest <- function(adj, alter="two.sided") {
 
 #' Reshapes a 2D concatenated time series into 3D according to no. of subjects and volumes.
 #'
-#' @param ts, a 2D time series volumes x nodes.
+#' @param ts a 2D time series volumes x nodes.
 #' @param N No. of subjects.
 #' @param V No. of volumes.
 #' 
@@ -440,7 +442,7 @@ reshapeTs <- function(ts, N, V) {
 
 #' Correlation of time series.
 #'
-#' @param ts, a 3D time series time series x nodes x subjects.
+#' @param ts a 3D time series time series x nodes x subjects.
 #' 
 #' @return M correlation matrix.
 #' @export
@@ -455,3 +457,167 @@ corTs <- function(ts) {
   M = apply(R, c(1,2), mean)
   return(M)
 }
+
+#' Get specific parent model from all models.
+#'
+#' @param models a 2D model matrix.
+#' @param parents a vector with parent nodes.
+#' 
+#' @return mod specific parent model.
+#' @export
+getModel <- function(models, parents) {
+  Nn = nrow(models) - 2 # No. of nodes
+  Nm = ncol(models) # No. of models
+  parents = c(parents, rep(0, (Nn - 1) - length(parents))) # add fill zeros
+  for (m in 1:Nm) {
+    if (sum(models[2:Nn,m] == parents) == Nn - 1) {
+      mod = models[,m]
+    }
+  }
+  return(mod)
+}
+
+#' A group is a list containing restructured data from subejcts for easier group analysis.
+#'
+#' @param subj a list of subjects.
+#' 
+#' @return group a list.
+#' @export
+group <- function(subj) {
+  Nn=ncol(subj[[1]]$adj$am)
+  N=length(subj)
+  
+  am = lpl = df = tam = tbi = array(rep(NA,N*Nn*Nn),dim=c(Nn,Nn,N))
+  tlpls = array(rep(NA,N*Nn*Nn*2),dim=c(Nn,Nn,2,N))
+  for (s in 1:N) {
+    am[,,s]  = subj[[s]]$adj$am
+    lpl[,,s] = subj[[s]]$adj$lpl
+    df[,,s]  = subj[[s]]$adj$df
+    
+    # thresholded measures
+    tam[,,s]  = subj[[s]]$thr$am
+    tbi[,,s]  = subj[[s]]$thr$bi
+    tlpls[,,,s]= subj[[s]]$thr$lpls
+  }
+  
+  group=list(am=am,lpl=lpl,df=df,tam=tam,tbi=tbi,tlpls=tlpls)
+  return(group)
+}
+
+#' Get thresholded adjacency network.
+#'
+#' @param adj list with network adjacency from getAdjacency().
+#' @param models matrix 3D with full model estimates.
+#' @param winner matrix 2D with winning models.
+#' 
+#' @return thr list with thresholded network adjacency.
+#' @export
+getThreshAdj <- function(adj, models, winner) {
+  
+  Nn = ncol(adj$am)
+  # determine bidirectional edges
+  bi = array(0, dim=c(Nn, Nn))
+  for (i in 1:Nn) {
+    for (j in 1:Nn) {
+      if (adj$am[i,j] == 1 & adj$am[j,i] == 1) {
+        bi[i,j] = 1
+      }
+    }
+  }
+  
+  # Calculate models
+  B=bi*upper.tri(bi)
+  lpls=array(NA, dim=c(Nn, Nn, 2))
+  for (i in 1:Nn) {
+    for (j in 1:Nn) {
+      # if bidirectional, calculate 3 models
+      # A+B:i<>j, A:i>j, B:i<j
+      # A+B: LPLj + LPLi
+      # A  : LPLj + LPLi-j
+      # B  : LPLi + LPLj-i
+      if (B[i,j] == 1) {
+        
+        # bidirectional LPL
+        lpls[i,j,1] = lpls[j,i,1] = adj$lpl[i,j] + adj$lpl[j,i]
+        
+        # uni i->j
+        p = winner[,i][2:Nn]
+        p = p[p != j & p!= 0] # remove node j
+        lpls[i,j,2] = adj$lpl[i,j] + getModel(models[,,i], p)[Nn+1]
+        
+        # uni j->i
+        p = winner[,j][2:Nn]
+        p = p[p != i & p!= 0] # remove node i
+        lpls[j,i,2] = adj$lpl[j,i] + getModel(models[,,j], p)[Nn+1]
+      }
+    }
+  }
+  
+  # am matrix
+  am=adj$am
+  BF=20 # bayes factor threshold
+  for (i in 1:Nn) {
+    for (j in 1:Nn) {
+      if (B[i,j] == 1) {
+        if (lpls[i,j,1] - BF <= max(lpls[i,j,2], lpls[j,i,2]) ) {
+          if (lpls[i,j,2] > lpls[j,i,2]) {
+            am[i,j] = 1; am[j,i] = 0
+          } else {
+            am[i,j] = 0; am[j,i] = 1
+          }
+        }
+      }
+    }
+  }
+    
+  thr=list()
+  thr$bi=bi # bidirectional edges
+  thr$lpls=lpls # lpls
+  thr$am=am # adjacency matrix (thresholded)
+  
+  return(thr)
+}
+
+#' Performance of estimates, such as sensitivity, specificity, and more.
+#'
+#' @param x estimated binary network matrix.
+#' @param xtrue, true binary network matrix.
+#' 
+#' @return perf vector.
+#' @export
+perf <- function(x, xtrue) {
+  
+  d = dim(x)
+  Nn=d[1]
+  if (length(d) == 3) {
+    N=d[3]
+  } else if (length(d) == 2) {
+    x=array(x, dim=c(Nn,Nn,1))
+    N=1
+  }
+  
+  perf=array(NA,dim=c(N,8))
+  
+  for (i in 1:N) {
+    # see https://en.wikipedia.org/wiki/Sensitivity_and_specificity
+    TP = sum(x[,,i] & xtrue)
+    FP = sum((x[,,i] - xtrue) == 1)
+    FN = sum((xtrue - x[,,i]) == 1)
+    TN = sum(!x[,,i] & !xtrue) - ncol(x[,,i])
+    
+    tpr = TP/(TP+FN) # 1
+    spc = TN/(TN+FP) # 2
+    ppv = TP/(TP+FP) # 3
+    npv = TN/(TN+FN) # 4
+    fpr = FP/(FP+TN) # 5
+    fnr = FN/(TP+FN) # 6
+    fdr = FP/(TP+FP) # 7
+    acc = (TP+TN)/(TP+FP+FN+TN) # 8
+    
+    perf[i,]=c(tpr,spc,ppv,npv,fpr,fnr,fdr,acc)
+  }
+  
+  return(perf)
+}
+  
+  

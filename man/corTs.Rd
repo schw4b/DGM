@@ -7,7 +7,7 @@
 corTs(ts)
 }
 \arguments{
-\item{ts, }{a 3D time series time series x nodes x subjects.}
+\item{ts}{a 3D time series time series x nodes x subjects.}
 }
 \value{
 M correlation matrix.

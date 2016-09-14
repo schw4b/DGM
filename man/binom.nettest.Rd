@@ -7,7 +7,7 @@
 binom.nettest(adj, alter = "two.sided")
 }
 \arguments{
-\item{adj}{adjacency matrix, Subj x nodes x nodes, or Subj x runs x nodes x nodes.}
+\item{adj}{adjacency matrix, nodes x nodes x subj, ornodes x nodes x runs x subj.}
 
 \item{alter}{type of binomial test, "two.sided" (default), "less", or "greater"}
 }
