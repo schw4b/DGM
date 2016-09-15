@@ -4,8 +4,7 @@
 \alias{dlm.filt.rh}
 \title{Calculate the filtering distribution for a specified set of parents and a fixed delta.}
 \usage{
-dlm.filt.rh(Yt, Ft, delta, m0 = numeric(nrow(Ft)), CS0 = 3 * diag(nrow(Ft)),
-  n0 = 0.001, d0 = 0.001)
+dlm.filt.rh(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001)
 }
 \arguments{
 \item{Yt}{the vector of observed time series, length T}

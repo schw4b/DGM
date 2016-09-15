@@ -33,7 +33,7 @@ test_that("Running filtering distribution: 1 parent", {
   expect_that(sum(a$lpl[15:200]), equals(utestdata$Np1.lplsum))
   expect_that(a$lpl, equals(utestdata$Np1.lpl))
   
-  lpl=c(dlmFiltCpp(Yt,t(Ft),0.93))
+  lpl=c(dlmFiltCpp(Yt,t(Ft),0.93,0,3,0.001,0.001))
   expect_equal(sum(lpl[15:200]), utestdata$Np1.lplsum)
   expect_equal(lpl, utestdata$Np1.lpl)
   
@@ -61,7 +61,7 @@ test_that("Running filtering distribution: 2 parents", {
   expect_that(sum(a$lpl[15:200]), equals(utestdata$Np2.lplsum))
   expect_that(a$lpl, equals(utestdata$Np2.lpl))
   
-  lpl=c(dlmFiltCpp(Yt,t(Ft),0.93))
+  lpl=c(dlmFiltCpp(Yt,t(Ft),0.93,0,3,0.001,0.001))
   expect_equal(sum(lpl[15:200]), utestdata$Np2.lplsum)
   expect_equal(lpl, utestdata$Np2.lpl)
   
@@ -89,7 +89,7 @@ test_that("Running filtering distribution: 3 parents", {
   expect_that(sum(a$lpl[15:200]), equals(utestdata$Np3.lplsum))
   expect_that(a$lpl, equals(utestdata$Np3.lpl))
   
-  lpl=c(dlmFiltCpp(Yt,t(Ft),0.93))
+  lpl=c(dlmFiltCpp(Yt,t(Ft),0.93,0,3,0.001,0.001))
   expect_equal(sum(lpl[15:200]), utestdata$Np3.lplsum)
   expect_equal(lpl, utestdata$Np3.lpl)
   
@@ -116,7 +116,7 @@ test_that("Running filtering distribution: 4 parents", {
   expect_that(sum(a$lpl[15:200]), equals(utestdata$Np4.lplsum))
   expect_that(a$lpl, equals(utestdata$Np4.lpl))
   
-  lpl=c(dlmFiltCpp(Yt,t(Ft),0.93))
+  lpl=c(dlmFiltCpp(Yt,t(Ft),0.93,0,3,0.001,0.001))
   expect_equal(sum(lpl[15:200]), utestdata$Np4.lplsum)
   expect_equal(lpl, utestdata$Np4.lpl)
   
@@ -140,6 +140,10 @@ test_that("Exhaustive search, 5 node network", {
   for (n in 1:5) {
     mymod = exhaustive.search(myts,n)
     expect_equivalent(mymod$model.store,utestdata$models[,,n])
+    
+    # this can take a few minutes, can be turned off:
+    #mymod = exhaustive.search(myts,n,cpp=FALSE)
+    #expect_equivalent(mymod$model.store,utestdata$models[,,n])
   }
 })
 

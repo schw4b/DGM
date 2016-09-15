@@ -7,15 +7,19 @@
 using namespace Rcpp;
 
 // dlmFiltCpp
-arma::rowvec dlmFiltCpp(NumericVector Yt_, NumericMatrix Ft_, double delta);
-RcppExport SEXP mdmwarwick_dlmFiltCpp(SEXP Yt_SEXP, SEXP Ft_SEXP, SEXP deltaSEXP) {
+arma::rowvec dlmFiltCpp(NumericVector Yt_, NumericMatrix Ft_, double delta, double m0_, double CS0_, double n0, double d0);
+RcppExport SEXP mdmwarwick_dlmFiltCpp(SEXP Yt_SEXP, SEXP Ft_SEXP, SEXP deltaSEXP, SEXP m0_SEXP, SEXP CS0_SEXP, SEXP n0SEXP, SEXP d0SEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< NumericVector >::type Yt_(Yt_SEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type Ft_(Ft_SEXP);
     Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
-    __result = Rcpp::wrap(dlmFiltCpp(Yt_, Ft_, delta));
+    Rcpp::traits::input_parameter< double >::type m0_(m0_SEXP);
+    Rcpp::traits::input_parameter< double >::type CS0_(CS0_SEXP);
+    Rcpp::traits::input_parameter< double >::type n0(n0SEXP);
+    Rcpp::traits::input_parameter< double >::type d0(d0SEXP);
+    __result = Rcpp::wrap(dlmFiltCpp(Yt_, Ft_, delta, m0_, CS0_, n0, d0));
     return __result;
 END_RCPP
 }

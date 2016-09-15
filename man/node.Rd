@@ -4,7 +4,8 @@
 \alias{node}
 \title{Runs exhaustive search on a single node and saves results in txt file.}
 \usage{
-node(X, n, id = NULL)
+node(X, n, id = NULL, nbf = 15, delta = seq(0.5, 1, 0.01), cpp = TRUE,
+  m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001)
 }
 \arguments{
 \item{X}{array with dimensions timeseries x nodes.}
@@ -12,6 +13,20 @@ node(X, n, id = NULL)
 \item{n}{node number.}
 
 \item{id}{subject ID. If set, results are saved to a txt file.}
+
+\item{nbf}{Log Predictive Likelihood will be calculated from (and including) this time point.}
+
+\item{delta}{a vector of potential values for the discount factor.#'}
+
+\item{cpp}{boolean true (default): fast C++ implementation, false: native R code.}
+
+\item{m0}{the vector of the prior mean at time t=0, length p. The default is a non-informative prior with zero mean. (theta0 | y0, phi) ~ N(m0,CS0*phi^-1).}
+
+\item{CS0}{the prior scale matrix at time t=0, dim = p x p. The default is a non-informative prior, 3 * identity matrix.}
+
+\item{n0}{prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001. n0 has to be higher than 0.}
+
+\item{d0}{prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001.}
 }
 \value{
 store list with results.

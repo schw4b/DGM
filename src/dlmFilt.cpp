@@ -10,7 +10,7 @@ using namespace Rcpp;
 using namespace arma;
 
 // [[Rcpp::export]]
-arma::rowvec dlmFiltCpp(NumericVector Yt_, NumericMatrix Ft_, double delta) {
+arma::rowvec dlmFiltCpp(NumericVector Yt_, NumericMatrix Ft_, double delta, double m0_, double CS0_, double n0, double d0) {
   
   rowvec Yt(Yt_.begin(), Yt_.size(), false); // reuses memory and avoids extra copy
   mat Ft(Ft_.begin(), Ft_.nrow(), Ft_.ncol(), false);
@@ -19,8 +19,9 @@ arma::rowvec dlmFiltCpp(NumericVector Yt_, NumericMatrix Ft_, double delta) {
   uword  p = Ft.n_rows;     // the number of parents and one for an intercept (i.e. the number of thetas)
   
   rowvec m0 = zeros<rowvec>(p);
-  mat CS0 = eye<mat>(p,p) * 3;
-  double n0 = 0.001; double d0 = 0.001;
+  m0.ones();
+  m0 = m0 * m0_;
+  mat CS0 = eye<mat>(p,p) * CS0_;
   
   rowvec Y(Yt);
   Y = join_rows(zeros<rowvec>(1), Yt);

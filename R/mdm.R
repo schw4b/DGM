@@ -22,8 +22,10 @@
 #' lpl the vector of the Log Predictive Likelihood with length T.
 #' 
 #' @export
-dlm.filt.rh <- function(Yt, Ft, delta, m0 = numeric(nrow(Ft)), CS0 = 3*diag(nrow(Ft)), n0 = 0.001, d0 = 0.001){
+dlm.filt.rh <- function(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001){
   
+  CS0 = CS0*diag(nrow(Ft))
+  m0 = rep(m0,nrow(Ft))
   Nt = length(Yt)+1 # the length of the time series + t0
   p = nrow(Ft)      # the number of parents and one for an intercept (i.e. the number of thetas)
   
@@ -144,12 +146,16 @@ model.generator<-function(Nn,node){
 #' @param nbf   Log Predictive Likelihood will be calculated from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
+#' @param m0 the vector of the prior mean at time t=0, length p. The default is a non-informative prior with zero mean. (theta0 | y0, phi) ~ N(m0,CS0*phi^-1).
+#' @param CS0 the prior scale matrix at time t=0, dim = p x p. The default is a non-informative prior, 3 * identity matrix.
+#' @param n0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001. n0 has to be higher than 0.
+#' @param d0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001. 
 #'
 #' @return
 #' model.store a matrix with the model, LPL and chosen discount factor for all possible models.
 #' runtime an estimate of the run time of the function, using proc.time().
 #' @export
-exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01),cpp=TRUE) {
+exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001) {
   
   ptm=proc.time()  
   
@@ -182,11 +188,11 @@ exhaustive.search <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01),cpp=TRUE) {
     for (j in 1:nd) {
       if (cpp) {
         # new C++ implementation
-        lpl=c(dlmFiltCpp(Yt,t(Ft),delta[j]))
+        lpl=c(dlmFiltCpp(Yt, t(Ft), delta[j], m0, CS0, n0, d0))
         lpldet[z,j]=sum(lpl[nbf:Nt])
       } else {
         # original native R
-        a=dlm.filt.rh(Yt, t(Ft), delta=delta[j])
+        a=dlm.filt.rh(Yt, t(Ft), delta=delta[j], m0=m0, CS0=CS0, n0=n0, d0=d0)
         lpldet[z,j]=sum(a$lpl[nbf:Nt])
       }
     }
@@ -227,16 +233,23 @@ center <- function(X) {
 #'
 #' @param X array with dimensions timeseries x nodes.
 #' @param id subject ID. If set, results are saved to a txt file.
+#' @param nbf   Log Predictive Likelihood will be calculated from (and including) this time point. 
+#' @param delta a vector of potential values for the discount factor.
+#' @param cpp boolean true (default): fast C++ implementation, false: native R code.
+#' @param m0 the vector of the prior mean at time t=0, length p. The default is a non-informative prior with zero mean. (theta0 | y0, phi) ~ N(m0,CS0*phi^-1).
+#' @param CS0 the prior scale matrix at time t=0, dim = p x p. The default is a non-informative prior, 3 * identity matrix.
+#' @param n0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001. n0 has to be higher than 0.
+#' @param d0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001. 
 #'
 #' @return store list with results.
 #' @export
-subject <- function(X, id=NULL) {
+subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001) {
   N=ncol(X)  # nodes
   M=2^(N-1)  # rows/models
   models = array(rep(0,(N+2)*M*N),dim=c(N+2,M,N))
   
   for (n in 1:N) {
-    tmp=exhaustive.search(X,n)
+    tmp=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, m0=m0, CS0=CS0, n0=n0, d0=d0)
     models[,,n]=tmp$model.store
     if (!is.null(id)) {
       write(t(models[,,n]), file=sprintf("%s_node_%03d.txt", id, n), ncolumns = M)
@@ -257,14 +270,21 @@ subject <- function(X, id=NULL) {
 #' @param X array with dimensions timeseries x nodes.
 #' @param n node number.
 #' @param id subject ID. If set, results are saved to a txt file.
-#'
+#' @param nbf   Log Predictive Likelihood will be calculated from (and including) this time point. 
+#' @param delta a vector of potential values for the discount factor.#'
+#' @param cpp boolean true (default): fast C++ implementation, false: native R code.
+#' @param m0 the vector of the prior mean at time t=0, length p. The default is a non-informative prior with zero mean. (theta0 | y0, phi) ~ N(m0,CS0*phi^-1).
+#' @param CS0 the prior scale matrix at time t=0, dim = p x p. The default is a non-informative prior, 3 * identity matrix.
+#' @param n0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001. n0 has to be higher than 0.
+#' @param d0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001. 
+#' 
 #' @return store list with results.
 #' @export
-node <- function(X, n, id=NULL) {
+node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001) {
   N=ncol(X)  # nodes
   M=2^(N-1)  # rows/models
   
-  store=exhaustive.search(X,n)
+  store=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, m0=m0, CS0=CS0, n0=n0, d0=d0)
   if (!is.null(id)) {
     write(t(store$model.store), file=sprintf("%s_node_%03d.txt", id, n), ncolumns = M)
   }
