@@ -379,11 +379,11 @@ plotNet <- function(adj) {
 #' @export
 plotMat <- function(adj, col=heat.colors(12), lab=NULL, lim = c(0,1), diag=FALSE) {
   if (!diag) {
-    adj[row(adj) == col(adj)]=NA
+    adj[row(adj) == col(adj)]= 0
   }
   n=nrow(adj)
   adj_ = t(apply(adj, 2, rev))
-  par(mai=c(1,1,0.5,1.1))
+  par(mai=c(1/4,1/4,1/4,2/3)) # margin size in inch for bottom, left, top, right
   image(adj_, col=col, axes=F, zlim=lim)
   mtext(text=rev(lab), side=2, line=0.3, at=seq(0,1,1/(n-1)), las=1, cex=0.8)
   mtext(text=lab, side=1, line=0.3, at=seq(0,1,1/(n-1)), las=2, cex=0.8)
@@ -640,4 +640,37 @@ perf <- function(x, xtrue) {
   return(perf)
 }
   
+#' Scaling data. Zero centers and scales the nodes (SD=1).
+#'
+#' @param X time x node 2D matrix, or 3D with subjects as the 3rd dimension.
+#'
+#' @return S centered and scaled matrix.
+#' @export
+scaleTs <- function(X) {
+  D=dim(X)
+  if (length(D)==2) {
+    tmp=array(NA, dim=c(D[1],D[2],1))
+    tmp[,,1]=X
+    X=tmp
+    D=dim(X)
+  }
   
+  S=array(NA, dim=c(D[1],D[2],D[3]))
+  
+  # center data
+  for (s in 1:D[3]) {
+    colm=colMeans(X[,,s])
+    S[,,s]=X[,,s]-t(array(rep(colm, D[1]), dim=c(D[2],D[1])))
+  }
+  
+  # scale data
+  for (s in 1:D[3]) {
+    SD=sqrt(mean(apply(S[,,s], 2, var)))
+    S[,,s]=S[,,s]/SD
+  }
+  
+  if (D[3]==1) {
+    S=S[,,1]
+  }
+  return(S)
+}
