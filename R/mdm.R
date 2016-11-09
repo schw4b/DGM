@@ -674,3 +674,56 @@ scaleTs <- function(X) {
   }
   return(S)
 }
+
+#' Patel.
+#'
+#' @param X time x node 2D matrix.
+#'
+#' @return PT list with strength kappa, direction tau, and net structure
+#' @export
+patel <- function(X) {
+  
+  nt=nrow(X)
+  nn=ncol(X)
+  
+  # scale data into 0,1 interval
+  X10 = apply(X, 2, quantile, 0.1) # cutoff 0.1 percentile
+  X90 = apply(X, 2, quantile, 0.9) # cutoff 0.9 percentile
+  a = sweep(sweep(X, 2, X10), 2, X90-X10, FUN="/") # center, scale data
+  X2 = apply(a, c(1,2), function(v) max(min(v,1),0)) # keep between 0,1
+  
+  # binarize
+  X2=(X2>0.75)*1 # convert to double
+  # Joint activation probability of timeseries a, b
+  # See Table 2, Patel et al. 2006
+  theta1 = crossprod(X2)/nt        # a=1, b=1 -- a and b active
+  theta2 = crossprod(X2,1-X2)/nt   # a=1, b=0 -- a active, b not
+  theta3 = crossprod(1-X2,X2)/nt   # a=0, b=1
+  theta4 = crossprod(1-X2,1-X2)/nt # a=0, b=0
+  
+  # directionality tau
+  tau = matrix(0, ncol(X2), ncol(X2))
+  inds = theta2 >= theta3
+  tau[inds] = 1 - (theta1[inds] + theta3[inds])/(theta1[inds] + theta2[inds])
+  tau[!inds] = (theta1[!inds] + theta2[!inds])/(theta1[!inds] + theta3[!inds]) - 1
+  tau=-tau
+  # tau(a,b) positive, a is ascendant to b (a is parent)
+  
+  # functional connectivity kappa
+  E=(theta1+theta2)*(theta1+theta3)
+  max_theta1=min(theta1+theta2,theta1+theta3)
+  min_theta1=max(0,2*theta1+theta2+theta3-1)
+  inds = theta1>=E
+  D = matrix(0, ncol(X2), ncol(X2))
+  D[inds]=0.5+(theta1[inds]-E[inds])/(2*(max_theta1-E[inds]))
+  D[!inds]=0.5-(theta1[!inds]-E[!inds])/(2*(E[!inds]-min_theta1))
+  
+  kappa=(theta1-E)/(D*(max_theta1-E) + (1-D)*(E-min_theta1))
+  kappa[as.logical(diag(nn))]=NA
+  
+  # directed graph
+  net = kappa*(tau>0)
+  
+  PT=list(kappa=kappa, tau=tau, net=net)
+  return(PT)
+}
