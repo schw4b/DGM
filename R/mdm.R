@@ -761,7 +761,7 @@ perm.test <- function(X) {p
     for (n in 1:Nn) {
       X_[,n,s]=X[,n,sample(N,1)] # draw a random subject (with repetition)
     }
-
+    p=patel(X_[,,s])
     K[,,s]=p$kappa
   }
   
