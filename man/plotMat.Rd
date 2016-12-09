@@ -4,8 +4,8 @@
 \alias{plotMat}
 \title{Plots network as adjacency matrix.}
 \usage{
-plotMat(adj, col = heat.colors(12), lab = NULL, lim = c(0, 1),
-  diag = FALSE)
+plotMat(adj, col = NULL, lab = 1:ncol(adj), lim = c(0, 1), diag = FALSE,
+  xorient = 1)
 }
 \arguments{
 \item{adj}{2D adjacency matrix.}
@@ -17,6 +17,8 @@ plotMat(adj, col = heat.colors(12), lab = NULL, lim = c(0, 1),
 \item{lim}{vector with two min and max values for color scaling.}
 
 \item{diag}{true or false, if true showing values on the diagnoal line.}
+
+\item{xorient, }{orientation of labels on x axis, 1 is default, 2 is 90deg.}
 }
 \description{
 Plots network as adjacency matrix.

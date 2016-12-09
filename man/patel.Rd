@@ -4,13 +4,21 @@
 \alias{patel}
 \title{Patel.}
 \usage{
-patel(X)
+patel(X, lower = 0.1, upper = 0.9, P = 0.2, bin = 0.75)
 }
 \arguments{
 \item{X}{time x node 2D matrix.}
+
+\item{lower}{percentile cuttoff.}
+
+\item{upper}{percentile cuttoff for 0-1 scaling.}
+
+\item{P}{probability threshold for connection strength kappa.}
+
+\item{bin}{threshold for conversion to binary values.}
 }
 \value{
-PT list with strength kappa, direction tau, and net structure
+PT list with strengths kappa, direction tau, and net structure.
 }
 \description{
 Patel.

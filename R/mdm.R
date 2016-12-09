@@ -720,6 +720,7 @@ patel <- function(X, lower=0.1, upper=0.9, P=0.2, bin=0.75) {
   tau[inds] = 1 - (theta1[inds] + theta3[inds])/(theta1[inds] + theta2[inds])
   tau[!inds] = (theta1[!inds] + theta2[!inds])/(theta1[!inds] + theta3[!inds]) - 1
   tau=-tau
+  tau[as.logical(diag(nn))]=NA
   # tau(a,b) positive, a is ascendant to b (a is parent)
   
   # functional connectivity kappa [-1, 1]
@@ -746,32 +747,35 @@ patel <- function(X, lower=0.1, upper=0.9, P=0.2, bin=0.75) {
 #' kappa under the null hypothesis.
 #'
 #' @param X time x node x subjects 3D matrix.
+#' @param alpha sign. level
 #'
-#' @return K95
+#' @return stat lower and upper significance thresholds.
 #' @export
-perm.test <- function(X) {p
-
+perm.test <- function(X, alpha=0.05) {
+  
+  low = alpha/2      # two sided test
+  up  = 1 - alpha/2
+  
   N  = dim(X)[3] # Nr. of subjects
   Nn = dim(X)[2] # Nr. of nodes
   
   # shuffle across subjects with fixed nodes
-  K = array(NA,dim=c(Nn,Nn,N)) # kappa null distribution
+  ka = array(NA,dim=c(Nn,Nn,N)) # kappa null distribution
+  ta = array(NA,dim=c(Nn,Nn,N)) # kappa null distribution
   X_= array(NA, dim=dim(X))
   for (s in 1:N) {
     for (n in 1:Nn) {
       X_[,n,s]=X[,n,sample(N,1)] # draw a random subject (with repetition)
     }
     p=patel(X_[,,s])
-    K[,,s]=p$kappa
+    ka[,,s]=p$kappa
+    ta[,,s]=p$tau
   }
   
-  # determine upper 95% of dist.
-  K95 =  array(NA,dim=c(Nn,Nn))
-  for (i in 1:Nn) {
-    for (j in 1:Nn) {
-      if (i != j) {K95[i,j] = quantile(K[i,j,], probs=0.95)}
-    }
-  }
+  # two sided sign. test
+  stat = list()
+  stat$kappa = quantile(ka[!is.na(ka)], probs=c(low, up)) # two sided
+  stat$tau   = quantile(ta[!is.na(ta)], probs=c(low, up)) # two sided
   
-  return(K95)
+  return(stat)
 }
