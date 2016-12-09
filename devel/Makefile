@@ -12,6 +12,8 @@ doc:
 	echo "importFrom("utils", "glob2rx")" >> ./mdm/NAMESPACE
 	echo "importFrom("stats", "cor")" >> ./mdm/NAMESPACE
 	echo "importFrom("stats", "var")" >> ./mdm/NAMESPACE
+	echo "importFrom("stats", "quantile")" >> ./mdm/NAMESPACE
+	echo "importFrom("RColorBrewer", "brewer.pal")" >> ./mdm/NAMESPACE
 
 	#echo "exportPattern("^[[:alpha:]]+")" >> ./mdm/NAMESPACE
 	cd mdm; sed -i '1iuseDynLib(mdmwarwick)' NAMESPACE; cd ..
