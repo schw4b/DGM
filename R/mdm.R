@@ -375,18 +375,24 @@ plotNet <- function(adj) {
 #' @param lab labels as character array.
 #' @param lim vector with two min and max values for color scaling.
 #' @param diag true or false, if true showing values on the diagnoal line.
+#' @param xorient, orientation of labels on x axis, 1 is default, 2 is 90deg.
 #'
 #' @export
-plotMat <- function(adj, col=heat.colors(12), lab=NULL, lim = c(0,1), diag=FALSE) {
+plotMat <- function(adj, col=NULL, lab=1:ncol(adj), lim = c(0,1), diag=FALSE, xorient=1) {
+  
+  # colors
+  #col=heat.colors(12)
+  col=brewer.pal(n = 8, name = 'YlOrRd')
+  
   if (!diag) {
-    adj[row(adj) == col(adj)]= 0
+    adj[row(adj) == col(adj)]= NA
   }
   n=nrow(adj)
   adj_ = t(apply(adj, 2, rev))
-  par(mai=c(1/4,1/4,1/4,2/3)) # margin size in inch for bottom, left, top, right
+  par(mai=c(1/4,1/4,1/4,6/5)) # margin size in inch for bottom, left, top, right
   image(adj_, col=col, axes=F, zlim=lim)
   mtext(text=rev(lab), side=2, line=0.3, at=seq(0,1,1/(n-1)), las=1, cex=0.8)
-  mtext(text=lab, side=1, line=0.3, at=seq(0,1,1/(n-1)), las=2, cex=0.8)
+  mtext(text=lab, side=1, line=0.3, at=seq(0,1,1/(n-1)), las=xorient, cex=0.8)
   image.plot(adj_, legend.only=T, col=col, zlim=lim)
   grid(n, n, lwd = 1)
 }
@@ -607,6 +613,9 @@ getThreshAdj <- function(adj, models, winner) {
 #' @export
 perf <- function(x, xtrue) {
   
+  # in case xtrue continas NA instead of 0
+  xtrue[is.na(xtrue)]=0
+  
   d = dim(x)
   Nn=d[1]
   if (length(d) == 3) {
@@ -678,22 +687,26 @@ scaleTs <- function(X) {
 #' Patel.
 #'
 #' @param X time x node 2D matrix.
+#' @param lower percentile cuttoff.
+#' @param upper percentile cuttoff for 0-1 scaling.
+#' @param bin threshold for conversion to binary values.
+#' @param P probability threshold for connection strength kappa.
 #'
-#' @return PT list with strength kappa, direction tau, and net structure
+#' @return PT list with strengths kappa, direction tau, and net structure.
 #' @export
-patel <- function(X) {
+patel <- function(X, lower=0.1, upper=0.9, P=0.2, bin=0.75) {
   
   nt=nrow(X)
   nn=ncol(X)
   
   # scale data into 0,1 interval
-  X10 = apply(X, 2, quantile, 0.1) # cutoff 0.1 percentile
-  X90 = apply(X, 2, quantile, 0.9) # cutoff 0.9 percentile
+  X10 = apply(X, 2, quantile, lower) # cutoff 0.1 percentile
+  X90 = apply(X, 2, quantile, upper) # cutoff 0.9 percentile
   a = sweep(sweep(X, 2, X10), 2, X90-X10, FUN="/") # center, scale data
   X2 = apply(a, c(1,2), function(v) max(min(v,1),0)) # keep between 0,1
   
   # binarize
-  X2=(X2>0.75)*1 # convert to double
+  X2=(X2>bin)*1 # convert to double
   # Joint activation probability of timeseries a, b
   # See Table 2, Patel et al. 2006
   theta1 = crossprod(X2)/nt        # a=1, b=1 -- a and b active
@@ -709,7 +722,7 @@ patel <- function(X) {
   tau=-tau
   # tau(a,b) positive, a is ascendant to b (a is parent)
   
-  # functional connectivity kappa
+  # functional connectivity kappa [-1, 1]
   E=(theta1+theta2)*(theta1+theta3)
   max_theta1=min(theta1+theta2,theta1+theta3)
   min_theta1=max(0,2*theta1+theta2+theta3-1)
@@ -722,8 +735,43 @@ patel <- function(X) {
   kappa[as.logical(diag(nn))]=NA
   
   # directed graph
-  net = kappa*(tau>0)
+  net = kappa*(tau>0) # filter directionality
+  net[net<=P]=0 # filter strengths
   
   PT=list(kappa=kappa, tau=tau, net=net)
   return(PT)
+}
+
+#' Permutation test for Patel's kappa. Creates a distribution of values
+#' kappa under the null hypothesis.
+#'
+#' @param X time x node x subjects 3D matrix.
+#'
+#' @return K95
+#' @export
+perm.test <- function(X) {p
+
+  N  = dim(X)[3] # Nr. of subjects
+  Nn = dim(X)[2] # Nr. of nodes
+  
+  # shuffle across subjects with fixed nodes
+  K = array(NA,dim=c(Nn,Nn,N)) # kappa null distribution
+  X_= array(NA, dim=dim(X))
+  for (s in 1:N) {
+    for (n in 1:Nn) {
+      X_[,n,s]=X[,n,sample(N,1)] # draw a random subject (with repetition)
+    }
+
+    K[,,s]=p$kappa
+  }
+  
+  # determine upper 95% of dist.
+  K95 =  array(NA,dim=c(Nn,Nn))
+  for (i in 1:Nn) {
+    for (j in 1:Nn) {
+      if (i != j) {K95[i,j] = quantile(K[i,j,], probs=0.95)}
+    }
+  }
+  
+  return(K95)
 }
