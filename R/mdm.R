@@ -509,12 +509,12 @@ getModel <- function(models, parents) {
 #' 
 #' @return group a list.
 #' @export
-group <- function(subj) {
+mdm.group <- function(subj) {
   Nn=ncol(subj[[1]]$adj$am)
   N=length(subj)
   
-  am = lpl = df = tam = tbi = array(rep(NA,N*Nn*Nn),dim=c(Nn,Nn,N))
-  tlpls = array(rep(NA,N*Nn*Nn*2),dim=c(Nn,Nn,2,N))
+  am = lpl = df = tam = tbi = array(NA, dim=c(Nn,Nn,N))
+  tlpls = array(NA, dim=c(Nn,Nn,2,N))
   for (s in 1:N) {
     am[,,s]  = subj[[s]]$adj$am
     lpl[,,s] = subj[[s]]$adj$lpl
@@ -527,6 +527,30 @@ group <- function(subj) {
   }
   
   group=list(am=am,lpl=lpl,df=df,tam=tam,tbi=tbi,tlpls=tlpls)
+  return(group)
+}
+
+#' A group is a list containing restructured data from subejcts for easier group analysis.
+#'
+#' @param subj a list of subjects.
+#' 
+#' @return group a list.
+#' @export
+patel.group <- function(subj) {
+  Nn=ncol(subj[[1]]$kappa)
+  N=length(subj)
+  
+  kappa = tkappa = tau = ttau = net = tnet = array(NA, dim=c(Nn,Nn,N))
+  for (s in 1:N) {
+    kappa[,,s]  = subj[[s]]$kappa
+    tkappa[,,s] = subj[[s]]$tkappa
+    tau[,,s]    = subj[[s]]$tau
+    ttau[,,s]   = subj[[s]]$ttau
+    net[,,s]    = subj[[s]]$net
+    tnet[,,s]   = subj[[s]]$tnet
+  }
+  
+  group=list(kappa=kappa,tkappa=tkappa,tau=tau,ttau=ttau,net=net,tnet=tnet)
   return(group)
 }
 
@@ -690,11 +714,12 @@ scaleTs <- function(X) {
 #' @param lower percentile cuttoff.
 #' @param upper percentile cuttoff for 0-1 scaling.
 #' @param bin threshold for conversion to binary values.
-#' @param P probability threshold for connection strength kappa.
+#' @param TK significance threshold for connection strength kappa.
+#' @param TT significance threshold for direction tau.
 #'
 #' @return PT list with strengths kappa, direction tau, and net structure.
 #' @export
-patel <- function(X, lower=0.1, upper=0.9, P=0.2, bin=0.75) {
+patel <- function(X, lower=0.1, upper=0.9, bin=0.75, TK=0, TT=0) {
   
   nt=nrow(X)
   nn=ncol(X)
@@ -714,7 +739,7 @@ patel <- function(X, lower=0.1, upper=0.9, P=0.2, bin=0.75) {
   theta3 = crossprod(1-X2,X2)/nt   # a=0, b=1
   theta4 = crossprod(1-X2,1-X2)/nt # a=0, b=0
   
-  # directionality tau
+  # directionality tau [-1, 1]
   tau = matrix(0, ncol(X2), ncol(X2))
   inds = theta2 >= theta3
   tau[inds] = 1 - (theta1[inds] + theta3[inds])/(theta1[inds] + theta2[inds])
@@ -735,11 +760,19 @@ patel <- function(X, lower=0.1, upper=0.9, P=0.2, bin=0.75) {
   kappa=(theta1-E)/(D*(max_theta1-E) + (1-D)*(E-min_theta1))
   kappa[as.logical(diag(nn))]=NA
   
-  # directed graph
-  net = kappa*(tau>0) # filter directionality
-  net[net<=P]=0 # filter strengths
+  # theresholding
+  tkappa = kappa
+  tkappa[kappa >= TK[1] & kappa <= TK[2]] = 0
+  ttau = tau
+  ttau[tau >= TT[1] & tau <= TT[2]] = 0
   
-  PT=list(kappa=kappa, tau=tau, net=net)
+  # binary nets: we focus on positive associations
+  net = (tkappa > 0)*(tau > 0)  # only kappa thresholded
+  net[diag(nn)==1]=0 # remove NA
+  tnet = (tkappa > 0)*(ttau > 0) # both tau and kappa thresholded
+  tnet[diag(nn)==1]=0 # remove NA
+  
+  PT=list(kappa=kappa, tau=tau, tkappa=tkappa, ttau=ttau, net=net, tnet=tnet)
   return(PT)
 }
 

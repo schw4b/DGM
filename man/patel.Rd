@@ -4,7 +4,7 @@
 \alias{patel}
 \title{Patel.}
 \usage{
-patel(X, lower = 0.1, upper = 0.9, P = 0.2, bin = 0.75)
+patel(X, lower = 0.1, upper = 0.9, bin = 0.75, TK = 0, TT = 0)
 }
 \arguments{
 \item{X}{time x node 2D matrix.}
@@ -13,9 +13,11 @@ patel(X, lower = 0.1, upper = 0.9, P = 0.2, bin = 0.75)
 
 \item{upper}{percentile cuttoff for 0-1 scaling.}
 
-\item{P}{probability threshold for connection strength kappa.}
-
 \item{bin}{threshold for conversion to binary values.}
+
+\item{TK}{significance threshold for connection strength kappa.}
+
+\item{TT}{significance threshold for direction tau.}
 }
 \value{
 PT list with strengths kappa, direction tau, and net structure.
