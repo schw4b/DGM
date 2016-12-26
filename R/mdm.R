@@ -1,19 +1,19 @@
-#' Calculate the filtering distribution for a specified set of parents and a fixed delta.
+#' Calculate the log predictive likelihood for a specified set of parents and a fixed delta.
 #'
 #' @param Yt the vector of observed time series, length T
-#' @param Ft the matrix of covariates, dim = number of thetas (p) x number of time points (T), usually a column of 1s to represent an intercept and the time series of the parent nodes.
+#' @param Ft the matrix of covariates, dim = number of thetas (p) x number of time points (T), usually a row of 1s to represent an intercept and the time series of the parent nodes.
 #' @param delta discount factor (scalar).
-#' @param m0 the vector of the prior mean at time t=0, length p. The default is a non-informative prior with zero mean. (theta0 | y0, phi) ~ N(m0,CS0*phi^-1).
-#' @param CS0 the prior scale matrix at time t=0, dim = p x p. The default is a non-informative prior, 3 * identity matrix.
+#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta0 | y0, phi) ~ N(m0,C*0 x phi^-1).
+#' @param CS0 controls the scaling of the prior variance matrix C*0 at time t=0. The default is 3, giving a non-informative prior, 3 x (p x p) identity matrix.
 #' @param n0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001. n0 has to be higher than 0.
 #' @param d0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001. 
 #'
 #' @return
 #' mt the vector or matrix of the posterior mean (location parameter), dim = p x T.
-#' Ct the posterior scale matrix, dim = p x p x T, Ct = CSt * S, where S is a point estimate for the observational variance phi^-1. 
-#' CSt the posterior scale matrix, dim = p x p x T, Ct = CSt * S, where S is a point estimate for the observational variance phi^-1.
-#' Rt the prior scale matrix, dim = p x p x T. Rt = RSt * S_{t-1}, where S_{t-1} is a point estimate for the observational variance phi^-1 at the previous time point.
-#' RSt the prior scale matrix, dim = p X p X T. Rt = RSt * S_{t-1}, where S_{t-1} is a point estimate for the observational variance phi^-1 at the previous time point.
+#' Ct the posterior scale matrix, dim = p x p x T, C_{t} = C*_{t} x S_{t}, where S_{t} is a point estimate for the observational variance phi^-1. 
+#' CSt the posterior scale matrix, dim = p x p x T, C_{t} = C*_{t} x S_{t}, where S_{t} is a point estimate for the observational variance phi^-1.
+#' Rt the prior scale matrix, dim = p x p x T. R_{t} = R*_{t} x S_{t-1}, where S_{t-1} is a point estimate for the observational variance phi^-1 at the previous time point.
+#' RSt the prior scale matrix, dim = p x p x T. R_{t} = R*_{t} x S_{t-1}, where S_{t-1} is a point estimate for the observational variance phi^-1 at the previous time point.
 #' nt and dt the vectors of the hyperparameters for the precision phi with length T.
 #' S the vector of the point estimate for the observational variance phi^-1 with length T.
 #' ft the vector of the one-step forecast location parameter with length T.
@@ -22,7 +22,7 @@
 #' lpl the vector of the Log Predictive Likelihood with length T.
 #' 
 #' @export
-dlm.filt.rh <- function(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001){
+dlm.lpl <- function(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001){
   
   CS0 = CS0*diag(nrow(Ft))
   m0 = rep(m0,nrow(Ft))
@@ -40,8 +40,8 @@ dlm.filt.rh <- function(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001){
   mt[,1]=m0
   
   Ct = array(0,dim=c(p,p,Nt))
-  Ct[,,1] = CS0
   CSt = array(0,dim=c(p,p,Nt))
+  CSt[,,1] = CS0
   
   Rt = array(0,dim=c(p,p,Nt))
   RSt = array(0,dim=c(p,p,Nt))
@@ -60,7 +60,7 @@ dlm.filt.rh <- function(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001){
   ets = numeric(Nt)
   lpl = numeric(Nt)
   
-  # Filtering
+  # Updating
   
   for (t in 2:Nt){
     
@@ -68,8 +68,8 @@ dlm.filt.rh <- function(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001){
     # Prior at {t}: (theta_{t}|y_{t-1}) ~ T_{n_{t-1}}[m_{t-1}, R_{t}]
     
     # RSt ~ C*_{t-1}/delta
-    RSt[,,t] = Ct[,,(t-1)] / (S[(t-1)]*delta)
-    Rt[,,t] = RSt[,,t] * (S[(t-1)]) 
+    RSt[,,t] = CSt[,,(t-1)] / delta
+    Rt[,,t] = RSt[,,t] * S[(t-1)] 
     # One-step forecast: (Y_{t}|y_{t-1}) ~ T_{n_{t-1}}[f_{t}, Q_{t}]
     ft[t] = t(F1[,t]) %*% mt[,(t-1)]
     QSt = as.vector(1 + t(F1[,t]) %*% RSt[,,t] %*% F1[,t])
@@ -95,8 +95,8 @@ dlm.filt.rh <- function(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001){
   mt = mt[,2:Nt]; Ct = Ct[,,2:Nt]; CSt = CSt[,,2:Nt]; Rt = Rt[,,2:Nt]; RSt = RSt[,,2:Nt]
   nt = nt[2:Nt]; dt = dt[2:Nt]; S = S[2:Nt]; ft = ft[2:Nt]; Qt = Qt[2:Nt]; ets = ets[2:Nt]; lpl = lpl[2:Nt]
   
-  filt.output <- list(mt=mt,Ct=Ct,CSt=CSt,Rt=Rt,RSt=RSt,nt=nt,dt=dt,S=S,ft=ft,Qt=Qt,ets=ets,lpl=lpl)
-  return(filt.output)
+  output <- list(mt=mt,Ct=Ct,CSt=CSt,Rt=Rt,RSt=RSt,nt=nt,dt=dt,S=S,ft=ft,Qt=Qt,ets=ets,lpl=lpl)
+  return(output)
 }
 
 #' A function to generate all the possible models. 
@@ -105,7 +105,7 @@ dlm.filt.rh <- function(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001){
 #' @param node the node of interest (i.e., the node to find parents for).
 #'
 #' @return
-#' output.model = a matrix with dimensions (nn-1) x number of models, where number of models = 2^(nn-1).
+#' output.model = a matrix with dimensions (nn-1) x number of models, where number of models = 2^(Nn-1).
 #' 
 #' @export
 model.generator<-function(Nn,node){
@@ -146,8 +146,8 @@ model.generator<-function(Nn,node){
 #' @param nbf   Log Predictive Likelihood will be calculated from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
-#' @param m0 the vector of the prior mean at time t=0, length p. The default is a non-informative prior with zero mean. (theta0 | y0, phi) ~ N(m0,CS0*phi^-1).
-#' @param CS0 the prior scale matrix at time t=0, dim = p x p. The default is a non-informative prior, 3 * identity matrix.
+#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta0 | y0, phi) ~ N(m0,C*0 x phi^-1).
+#' @param CS0 controls the scaling of the prior variance matrix C*0 at time t=0. The default is 3, giving a non-informative prior, 3 x (p x p) identity matrix.
 #' @param n0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001. n0 has to be higher than 0.
 #' @param d0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001. 
 #'
@@ -192,7 +192,7 @@ exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRU
         lpldet[z,j]=sum(lpl[nbf:Nt])
       } else {
         # original native R
-        a=dlm.filt.rh(Yt, t(Ft), delta=delta[j], m0=m0, CS0=CS0, n0=n0, d0=d0)
+        a=dlm.lpl(Yt, t(Ft), delta=delta[j], m0=m0, CS0=CS0, n0=n0, d0=d0)
         lpldet[z,j]=sum(a$lpl[nbf:Nt])
       }
     }
@@ -236,8 +236,8 @@ center <- function(X) {
 #' @param nbf   Log Predictive Likelihood will be calculated from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
-#' @param m0 the vector of the prior mean at time t=0, length p. The default is a non-informative prior with zero mean. (theta0 | y0, phi) ~ N(m0,CS0*phi^-1).
-#' @param CS0 the prior scale matrix at time t=0, dim = p x p. The default is a non-informative prior, 3 * identity matrix.
+#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta0 | y0, phi) ~ N(m0,C*0 x phi^-1).
+#' @param CS0 controls the scaling of the prior variance matrix C*0 at time t=0. The default is 3, giving a non-informative prior, 3 x (p x p) identity matrix.
 #' @param n0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001. n0 has to be higher than 0.
 #' @param d0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001. 
 #'
@@ -273,8 +273,8 @@ subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0,
 #' @param nbf   Log Predictive Likelihood will be calculated from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.#'
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
-#' @param m0 the vector of the prior mean at time t=0, length p. The default is a non-informative prior with zero mean. (theta0 | y0, phi) ~ N(m0,CS0*phi^-1).
-#' @param CS0 the prior scale matrix at time t=0, dim = p x p. The default is a non-informative prior, 3 * identity matrix.
+#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta0 | y0, phi) ~ N(m0,C*0 x phi^-1).
+#' @param CS0 controls the scaling of the prior variance matrix C*0 at time t=0. The default is 3, giving a non-informative prior, 3 x (p x p) identity matrix.
 #' @param n0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001. n0 has to be higher than 0.
 #' @param d0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001. 
 #' 
