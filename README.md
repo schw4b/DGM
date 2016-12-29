@@ -99,4 +99,4 @@ And from R run:
 
 ## References
 1. Costa, L., Smith, J., Nichols, T., Cussens, J., Duff, E. P., and Makin, T. R. (2015). Searching Multiregression Dynamic Models of resting-state fMRI networks using integer programming. *Bayesian Analysis*, 10(2), 441–478. [doi:10.1214/14-BA913](http://dx.doi.org/10.1214/14-BA913).
-2. Smith, S. M., Miller, K. L., Salimi-Khorshidi, G., Webster, M., Beckmann, C. F., Nichols, T. E., et al. (2011). Network modelling methods for FMRI. *NeuroImage*, 54(2), 875–91. [doi:10.1016/j.neuroimage.2010.08.063](http://doi.org/10.1016/j.neuroimage.2010.08.063).
+2. Smith, S. M., Miller, K. L., Salimi-Khorshidi, G., Webster, M., Beckmann, C. F., Nichols, T. E., et al. (2011). Network modelling methods for FMRI. *NeuroImage*, 54(2), 875–91. [doi:10.1016/j.neuroimage.2010.08.063](http://dx.doi.org/10.1016/j.neuroimage.2010.08.063).

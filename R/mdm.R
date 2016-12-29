@@ -375,25 +375,32 @@ plotNet <- function(adj) {
 #' @param lab labels as character array.
 #' @param lim vector with two min and max values for color scaling.
 #' @param diag true or false, if true showing values on the diagnoal line.
+#' @param xorient, orientation of labels on x axis, 1 is default, 2 is 90deg.
 #'
 #' @export
-plotMat <- function(adj, col=heat.colors(12), lab=NULL, lim = c(0,1), diag=FALSE) {
+plotMat <- function(adj, col=brewer.pal(n = 8, name = 'PuBu'), lab=1:ncol(adj), lim = c(0,1), diag=FALSE, xorient=1) {
+  
+  # colors
+  #col=heat.colors(12)
+  #col=brewer.pal(n = 8, name = 'YlOrRd')
+  #col=brewer.pal(n = 8, name = 'PuBu')
+  
   if (!diag) {
-    adj[row(adj) == col(adj)]=NA
+    adj[row(adj) == col(adj)]= NA
   }
   n=nrow(adj)
   adj_ = t(apply(adj, 2, rev))
-  par(mai=c(1,1,0.5,1.1))
+  par(mai=c(1,1,1/2,6/5)) # margin size in inch for bottom, left, top, right
   image(adj_, col=col, axes=F, zlim=lim)
   mtext(text=rev(lab), side=2, line=0.3, at=seq(0,1,1/(n-1)), las=1, cex=0.8)
-  mtext(text=lab, side=1, line=0.3, at=seq(0,1,1/(n-1)), las=2, cex=0.8)
+  mtext(text=lab, side=1, line=0.3, at=seq(0,1,1/(n-1)), las=xorient, cex=0.8)
   image.plot(adj_, legend.only=T, col=col, zlim=lim)
   grid(n, n, lwd = 1)
 }
 
 #' Performes a binomial test with FDR correction for network edges in an adjacency matrix.
 #'
-#' @param adj adjacency matrix, nodes x nodes x subj, ornodes x nodes x runs x subj.
+#' @param adj adjacency matrix, nodes x nodes x subj, or nodes x nodes x runs x subj.
 #' @param alter type of binomial test, "two.sided" (default), "less", or "greater"
 #'
 #' @return store list with results.
@@ -503,12 +510,12 @@ getModel <- function(models, parents) {
 #' 
 #' @return group a list.
 #' @export
-group <- function(subj) {
+mdm.group <- function(subj) {
   Nn=ncol(subj[[1]]$adj$am)
   N=length(subj)
   
-  am = lpl = df = tam = tbi = array(rep(NA,N*Nn*Nn),dim=c(Nn,Nn,N))
-  tlpls = array(rep(NA,N*Nn*Nn*2),dim=c(Nn,Nn,2,N))
+  am = lpl = df = tam = tbi = array(NA, dim=c(Nn,Nn,N))
+  tlpls = array(NA, dim=c(Nn,Nn,2,N))
   for (s in 1:N) {
     am[,,s]  = subj[[s]]$adj$am
     lpl[,,s] = subj[[s]]$adj$lpl
@@ -521,6 +528,30 @@ group <- function(subj) {
   }
   
   group=list(am=am,lpl=lpl,df=df,tam=tam,tbi=tbi,tlpls=tlpls)
+  return(group)
+}
+
+#' A group is a list containing restructured data from subejcts for easier group analysis.
+#'
+#' @param subj a list of subjects.
+#' 
+#' @return group a list.
+#' @export
+patel.group <- function(subj) {
+  Nn=ncol(subj[[1]]$kappa)
+  N=length(subj)
+  
+  kappa = tkappa = tau = ttau = net = tnet = array(NA, dim=c(Nn,Nn,N))
+  for (s in 1:N) {
+    kappa[,,s]  = subj[[s]]$kappa
+    tkappa[,,s] = subj[[s]]$tkappa
+    tau[,,s]    = subj[[s]]$tau
+    ttau[,,s]   = subj[[s]]$ttau
+    net[,,s]    = subj[[s]]$net
+    tnet[,,s]   = subj[[s]]$tnet
+  }
+  
+  group=list(kappa=kappa,tkappa=tkappa,tau=tau,ttau=ttau,net=net,tnet=tnet)
   return(group)
 }
 
@@ -607,6 +638,9 @@ getThreshAdj <- function(adj, models, winner) {
 #' @export
 perf <- function(x, xtrue) {
   
+  # in case xtrue continas NA instead of 0
+  xtrue[is.na(xtrue)]=0
+  
   d = dim(x)
   Nn=d[1]
   if (length(d) == 3) {
@@ -640,4 +674,142 @@ perf <- function(x, xtrue) {
   return(perf)
 }
   
+#' Scaling data. Zero centers and scales the nodes (SD=1).
+#'
+#' @param X time x node 2D matrix, or 3D with subjects as the 3rd dimension.
+#'
+#' @return S centered and scaled matrix.
+#' @export
+scaleTs <- function(X) {
+  D=dim(X)
+  if (length(D)==2) {
+    tmp=array(NA, dim=c(D[1],D[2],1))
+    tmp[,,1]=X
+    X=tmp
+    D=dim(X)
+  }
   
+  S=array(NA, dim=c(D[1],D[2],D[3]))
+  
+  # center data
+  for (s in 1:D[3]) {
+    colm=colMeans(X[,,s])
+    S[,,s]=X[,,s]-t(array(rep(colm, D[1]), dim=c(D[2],D[1])))
+  }
+  
+  # scale data
+  for (s in 1:D[3]) {
+    SD=sqrt(mean(apply(S[,,s], 2, var)))
+    S[,,s]=S[,,s]/SD
+  }
+  
+  if (D[3]==1) {
+    S=S[,,1]
+  }
+  return(S)
+}
+
+#' Patel.
+#'
+#' @param X time x node 2D matrix.
+#' @param lower percentile cuttoff.
+#' @param upper percentile cuttoff for 0-1 scaling.
+#' @param bin threshold for conversion to binary values.
+#' @param TK significance threshold for connection strength kappa.
+#' @param TT significance threshold for direction tau.
+#'
+#' @return PT list with strengths kappa, direction tau, and net structure.
+#' @export
+patel <- function(X, lower=0.1, upper=0.9, bin=0.75, TK=0, TT=0) {
+  
+  nt=nrow(X)
+  nn=ncol(X)
+  
+  # scale data into 0,1 interval
+  X10 = apply(X, 2, quantile, lower) # cutoff 0.1 percentile
+  X90 = apply(X, 2, quantile, upper) # cutoff 0.9 percentile
+  a = sweep(sweep(X, 2, X10), 2, X90-X10, FUN="/") # center, scale data
+  X2 = apply(a, c(1,2), function(v) max(min(v,1),0)) # keep between 0,1
+  
+  # binarize
+  X2=(X2>bin)*1 # convert to double
+  # Joint activation probability of timeseries a, b
+  # See Table 2, Patel et al. 2006
+  theta1 = crossprod(X2)/nt        # a=1, b=1 -- a and b active
+  theta2 = crossprod(X2,1-X2)/nt   # a=1, b=0 -- a active, b not
+  theta3 = crossprod(1-X2,X2)/nt   # a=0, b=1
+  theta4 = crossprod(1-X2,1-X2)/nt # a=0, b=0
+  
+  # directionality tau [-1, 1]
+  tau = matrix(0, ncol(X2), ncol(X2))
+  inds = theta2 >= theta3
+  tau[inds] = 1 - (theta1[inds] + theta3[inds])/(theta1[inds] + theta2[inds])
+  tau[!inds] = (theta1[!inds] + theta2[!inds])/(theta1[!inds] + theta3[!inds]) - 1
+  tau=-tau
+  tau[as.logical(diag(nn))]=NA
+  # tau(a,b) positive, a is ascendant to b (a is parent)
+  
+  # functional connectivity kappa [-1, 1]
+  E=(theta1+theta2)*(theta1+theta3)
+  max_theta1=min(theta1+theta2,theta1+theta3)
+  min_theta1=max(0,2*theta1+theta2+theta3-1)
+  inds = theta1>=E
+  D = matrix(0, ncol(X2), ncol(X2))
+  D[inds]=0.5+(theta1[inds]-E[inds])/(2*(max_theta1-E[inds]))
+  D[!inds]=0.5-(theta1[!inds]-E[!inds])/(2*(E[!inds]-min_theta1))
+  
+  kappa=(theta1-E)/(D*(max_theta1-E) + (1-D)*(E-min_theta1))
+  kappa[as.logical(diag(nn))]=NA
+  
+  # theresholding
+  tkappa = kappa
+  tkappa[kappa >= TK[1] & kappa <= TK[2]] = 0
+  ttau = tau
+  ttau[tau >= TT[1] & tau <= TT[2]] = 0
+  
+  # binary nets: we focus on positive associations
+  net = (tkappa > 0)*(tau > 0)  # only kappa thresholded
+  net[diag(nn)==1]=0 # remove NA
+  tnet = (tkappa > 0)*(ttau > 0) # both tau and kappa thresholded
+  tnet[diag(nn)==1]=0 # remove NA
+  
+  PT=list(kappa=kappa, tau=tau, tkappa=tkappa, ttau=ttau, net=net, tnet=tnet)
+  return(PT)
+}
+
+#' Permutation test for Patel's kappa. Creates a distribution of values
+#' kappa under the null hypothesis.
+#'
+#' @param X time x node x subjects 3D matrix.
+#' @param alpha sign. level
+#'
+#' @return stat lower and upper significance thresholds.
+#' @export
+perm.test <- function(X, alpha=0.05) {
+  
+  low = alpha/2      # two sided test
+  up  = 1 - alpha/2
+  
+  N  = dim(X)[3] # Nr. of subjects
+  Nn = dim(X)[2] # Nr. of nodes
+  
+  # shuffle across subjects with fixed nodes
+  ka = array(NA,dim=c(Nn,Nn,N)) # kappa null distribution
+  ta = array(NA,dim=c(Nn,Nn,N)) # kappa null distribution
+  X_= array(NA, dim=dim(X))
+  for (s in 1:N) {
+    for (n in 1:Nn) {
+      X_[,n,s]=X[,n,sample(N,1)] # draw a random subject (with repetition)
+    }
+    p=patel(X_[,,s])
+    ka[,,s]=p$kappa
+    ta[,,s]=p$tau
+  }
+  
+  # two sided sign. test
+  stat = list()
+  stat$kappa = quantile(ka[!is.na(ka)], probs=c(low, up)) # two sided
+  stat$tau   = quantile(ta[!is.na(ta)], probs=c(low, up)) # two sided
+  
+  return(stat)
+}
