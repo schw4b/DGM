@@ -4,8 +4,8 @@
 \alias{plotMat}
 \title{Plots network as adjacency matrix.}
 \usage{
-plotMat(adj, col = NULL, lab = 1:ncol(adj), lim = c(0, 1), diag = FALSE,
-  xorient = 1)
+plotMat(adj, col = brewer.pal(n = 8, name = "PuBu"), lab = 1:ncol(adj),
+  lim = c(0, 1), diag = FALSE, xorient = 1)
 }
 \arguments{
 \item{adj}{2D adjacency matrix.}
