@@ -20,9 +20,9 @@ node(X, n, id = NULL, nbf = 15, delta = seq(0.5, 1, 0.01), cpp = TRUE,
 
 \item{cpp}{boolean true (default): fast C++ implementation, false: native R code.}
 
-\item{m0}{the vector of the prior mean at time t=0, length p. The default is a non-informative prior with zero mean. (theta0 | y0, phi) ~ N(m0,CS0*phi^-1).}
+\item{m0}{the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta0 | y0, phi) ~ N(m0,C*0 x phi^-1).}
 
-\item{CS0}{the prior scale matrix at time t=0, dim = p x p. The default is a non-informative prior, 3 * identity matrix.}
+\item{CS0}{controls the scaling of the prior variance matrix C*0 at time t=0. The default is 3, giving a non-informative prior, 3 x (p x p) identity matrix.}
 
 \item{n0}{prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001. n0 has to be higher than 0.}
 
