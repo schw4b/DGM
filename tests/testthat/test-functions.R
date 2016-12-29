@@ -29,7 +29,7 @@ test_that("Running filtering distribution: 1 parent", {
   # setwd("~/workspace/mdm/data/")
   # save(myts, utestdata, file = "utestdata.RData")
   
-  a=dlm.filt.rh(Yt,t(Ft),0.93)
+  a=dlm.lpl(Yt,t(Ft),0.93)
   expect_that(sum(a$lpl[15:200]), equals(utestdata$Np1.lplsum))
   expect_that(a$lpl, equals(utestdata$Np1.lpl))
   
@@ -57,7 +57,7 @@ test_that("Running filtering distribution: 2 parents", {
   # setwd("mdm/data/")
   # save(myts, utestdata, file = "utestdata.RData")
   
-  a=dlm.filt.rh(Yt,t(Ft),0.93)
+  a=dlm.lpl(Yt,t(Ft),0.93)
   expect_that(sum(a$lpl[15:200]), equals(utestdata$Np2.lplsum))
   expect_that(a$lpl, equals(utestdata$Np2.lpl))
   
@@ -85,7 +85,7 @@ test_that("Running filtering distribution: 3 parents", {
   # setwd("mdm/data/")
   # save(myts, utestdata, file = "utestdata.RData")
   
-  a=dlm.filt.rh(Yt,t(Ft),0.93)
+  a=dlm.lpl(Yt,t(Ft),0.93)
   expect_that(sum(a$lpl[15:200]), equals(utestdata$Np3.lplsum))
   expect_that(a$lpl, equals(utestdata$Np3.lpl))
   
@@ -112,7 +112,7 @@ test_that("Running filtering distribution: 4 parents", {
   # setwd("mdm/data/")
   # save(myts, utestdata, file = "utestdata.RData")
   
-  a=dlm.filt.rh(Yt,t(Ft),0.93)
+  a=dlm.lpl(Yt,t(Ft),0.93)
   expect_that(sum(a$lpl[15:200]), equals(utestdata$Np4.lplsum))
   expect_that(a$lpl, equals(utestdata$Np4.lpl))
   
