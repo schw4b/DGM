@@ -378,18 +378,19 @@ plotNet <- function(adj) {
 #' @param xorient, orientation of labels on x axis, 1 is default, 2 is 90deg.
 #'
 #' @export
-plotMat <- function(adj, col=NULL, lab=1:ncol(adj), lim = c(0,1), diag=FALSE, xorient=1) {
+plotMat <- function(adj, col=brewer.pal(n = 8, name = 'PuBu'), lab=1:ncol(adj), lim = c(0,1), diag=FALSE, xorient=1) {
   
   # colors
   #col=heat.colors(12)
-  col=brewer.pal(n = 8, name = 'YlOrRd')
+  #col=brewer.pal(n = 8, name = 'YlOrRd')
+  #col=brewer.pal(n = 8, name = 'PuBu')
   
   if (!diag) {
     adj[row(adj) == col(adj)]= NA
   }
   n=nrow(adj)
   adj_ = t(apply(adj, 2, rev))
-  par(mai=c(1/4,1/4,1/4,6/5)) # margin size in inch for bottom, left, top, right
+  par(mai=c(1,1,1/2,6/5)) # margin size in inch for bottom, left, top, right
   image(adj_, col=col, axes=F, zlim=lim)
   mtext(text=rev(lab), side=2, line=0.3, at=seq(0,1,1/(n-1)), las=1, cex=0.8)
   mtext(text=lab, side=1, line=0.3, at=seq(0,1,1/(n-1)), las=xorient, cex=0.8)
@@ -399,7 +400,7 @@ plotMat <- function(adj, col=NULL, lab=1:ncol(adj), lim = c(0,1), diag=FALSE, xo
 
 #' Performes a binomial test with FDR correction for network edges in an adjacency matrix.
 #'
-#' @param adj adjacency matrix, nodes x nodes x subj, ornodes x nodes x runs x subj.
+#' @param adj adjacency matrix, nodes x nodes x subj, or nodes x nodes x runs x subj.
 #' @param alter type of binomial test, "two.sided" (default), "less", or "greater"
 #'
 #' @return store list with results.
