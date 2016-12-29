@@ -22,4 +22,4 @@ build:
 	R CMD build mdm
 
 check:
-	R CMD check --as-cran  mdmwarwick_1.3.tar.gz 
+	R CMD check --as-cran  mdmwarwick_1.4.tar.gz 
