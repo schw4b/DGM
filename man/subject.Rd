@@ -20,11 +20,11 @@ subject(X, id = NULL, nbf = 15, delta = seq(0.5, 1, 0.01), cpp = TRUE,
 
 \item{m0}{the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta0 | y0, phi) ~ N(m0,C*0 x phi^-1).}
 
-\item{CS0}{controls the scaling of the prior variance matrix C*0 at time t=0. The default is 3, giving a non-informative prior, 3 x (p x p) identity matrix.}
+\item{CS0}{controls the scaling of the prior variance matrix C*0 at time t=0. The default is 3, giving a non-informative prior for C*0, 3 x (p x p) identity matrix.}
 
-\item{n0}{prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001. n0 has to be higher than 0.}
+\item{n0}{prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.}
 
-\item{d0}{prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with a value of 0.001.}
+\item{d0}{prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with n0 = d0 = 0.001.}
 }
 \value{
 store list with results.
