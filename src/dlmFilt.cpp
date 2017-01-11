@@ -68,7 +68,7 @@ arma::rowvec dlmFiltCpp(NumericVector Yt_, NumericMatrix Ft_, double delta, doub
     // Prior at {t}: (theta_{t}|D_{t-1}) ~ T_{n_{t-1}}[m_{t-1}, R_{t}]
     // D_{t-1} = y_{1},...,y_{t-1}
     
-    // R*_{t} ~ C*_{t-1}/delta
+    // R*_{t} = C*_{t-1}/delta
     RSt.slice(t) = Ct.slice(t-1) / (S(t-1)*delta);
     Rt.slice(t) = RSt.slice(t) * S(t-1);
     // One-step forecast: (Y_{t}|D_{t-1}) ~ T_{n_{t-1}}[f_{t}, Q_{t}]
