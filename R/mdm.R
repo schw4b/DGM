@@ -66,9 +66,9 @@ dlm.lpl <- function(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001){
     
     # Posterior at {t-1}: (theta_{t-1}|D_{t-1}) ~ T_{n_{t-1}}[m_{t-1}, C_{t-1} = C*_{t-1} x d_{t-1}/n_{t-1}]
     # Prior at {t}: (theta_{t}|D_{t-1}) ~ T_{n_{t-1}}[m_{t-1}, R_{t}]
-    # D_{t-1} = y_{1},...y_{t-1}
+    # D_{t-1} = y_{1},...,y_{t-1}
     
-    # RSt ~ C*_{t-1}/delta
+    # R*_{t} ~ C*_{t-1}/delta
     RSt[,,t] = CSt[,,(t-1)] / delta
     Rt[,,t] = RSt[,,t] * S[(t-1)] 
     # One-step forecast: (Y_{t}|D_{t-1}) ~ T_{n_{t-1}}[f_{t}, Q_{t}]
@@ -79,6 +79,7 @@ dlm.lpl <- function(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001){
     ets[t] = et / sqrt(Qt[t])
     
     # Posterior at t: (theta_{t}|D_{t}) ~ T_{n_{t}}[m_{t}, C_{t}]
+    # D_{t} = y_{1},...,y_{t}
     At = (RSt[,,t] %*% F1[,t])/QSt
     mt[,t] = mt[,(t-1)] + (At*et)
     
