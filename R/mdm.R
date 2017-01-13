@@ -66,7 +66,7 @@ dlm.lpl <- function(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001){
     
     # Posterior at {t-1}: (theta_{t-1}|D_{t-1}) ~ T_{n_{t-1}}[m_{t-1}, C_{t-1} = C*_{t-1} x d_{t-1}/n_{t-1}]
     # Prior at {t}: (theta_{t}|D_{t-1}) ~ T_{n_{t-1}}[m_{t-1}, R_{t}]
-    # D_{t-1} = y_{1},...,y_{t-1}
+    # D_{t-1} = D_{0},Y_{1},...,Y_{t-1} D_{0} is the initial information set
     
     # R*_{t} = C*_{t-1}/delta
     RSt[,,t] = CSt[,,(t-1)] / delta
@@ -79,7 +79,7 @@ dlm.lpl <- function(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001){
     ets[t] = et / sqrt(Qt[t])
     
     # Posterior at t: (theta_{t}|D_{t}) ~ T_{n_{t}}[m_{t}, C_{t}]
-    # D_{t} = y_{1},...,y_{t}
+    # D_{t} = D_{0},Y_{1},...,Y_{t}
     At = (RSt[,,t] %*% F1[,t])/QSt
     mt[,t] = mt[,(t-1)] + (At*et)
     
