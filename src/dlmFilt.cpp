@@ -66,7 +66,7 @@ arma::rowvec dlmFiltCpp(NumericVector Yt_, NumericMatrix Ft_, double delta, doub
     
     // Posterior at {t-1}: (theta_{t-1}|D_{t-1}) ~ T_{n_{t-1}}[m_{t-1}, C_{t-1} = C*_{t-1} x d_{t-1}/n_{t-1}]
     // Prior at {t}: (theta_{t}|D_{t-1}) ~ T_{n_{t-1}}[m_{t-1}, R_{t}]
-    // D_{t-1} = y_{1},...,y_{t-1}
+    // D_{t-1} = D_{0},Y_{1},...,Y_{t-1} D_{0} is the initial information set
     
     // R*_{t} = C*_{t-1}/delta
     RSt.slice(t) = Ct.slice(t-1) / (S(t-1)*delta);
@@ -80,7 +80,7 @@ arma::rowvec dlmFiltCpp(NumericVector Yt_, NumericMatrix Ft_, double delta, doub
     ets(t) = et / sqrt(Qt(t));
     
     // # Posterior at t: (theta_{t}|D_{t}) ~ T_{n_{t}}[m_{t}, C_{t}]
-    // D_{t} = y_{1},...,y_{t}
+    // D_{t} = D_{0},Y_{1},...,Y_{t}
     At = (RSt.slice(t) * F1.col(t))/QSt(0);
     mt.col(t) = mt.col(t-1) + (At*et);
     
