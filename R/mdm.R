@@ -190,7 +190,7 @@ exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRU
     for (j in 1:nd) {
       if (cpp) {
         # new C++ implementation
-        lpl=c(dlmFiltCpp(Yt, t(Ft), delta[j], m0, CS0, n0, d0))
+        lpl=c(dlmLplCpp(Yt, t(Ft), delta[j], m0, CS0, n0, d0))
         lpldet[z,j]=sum(lpl[nbf:Nt])
       } else {
         # original native R
