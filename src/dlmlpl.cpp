@@ -34,8 +34,8 @@ arma::rowvec dlmLplCpp(NumericVector Yt_, NumericMatrix Ft_, double delta, doubl
   mt.col(0) = m0.t();
   
   cube Ct = zeros<cube>(p,p,Nt);
-  Ct.slice(0) = CS0;
   cube CSt = zeros<cube>(p,p,Nt);
+  CSt.slice(0) = CS0;
   
   cube Rt  = zeros<cube>(p,p,Nt);
   cube RSt = zeros<cube>(p,p,Nt);
@@ -69,7 +69,7 @@ arma::rowvec dlmLplCpp(NumericVector Yt_, NumericMatrix Ft_, double delta, doubl
     // D_{t-1} = D_{0},Y_{1},...,Y_{t-1} D_{0} is the initial information set
     
     // R*_{t} = C*_{t-1}/delta
-    RSt.slice(t) = Ct.slice(t-1) / (S(t-1)*delta);
+    RSt.slice(t) = CSt.slice(t-1) / delta;
     Rt.slice(t) = RSt.slice(t) * S(t-1);
     // One-step forecast: (Y_{t}|D_{t-1}) ~ T_{n_{t-1}}[f_{t}, Q_{t}]
     prod = F1.col(t).t() * mt.col(t-1);
