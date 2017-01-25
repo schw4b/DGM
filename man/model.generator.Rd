@@ -12,7 +12,7 @@ model.generator(Nn, node)
 \item{node}{the node of interest (i.e., the node to find parents for).}
 }
 \value{
-output.model = a matrix with dimensions (nn-1) x number of models, where number of models = 2^(Nn-1).
+output.model = a matrix with dimensions (Nn-1) x number of models, where number of models = 2^(Nn-1).
 }
 \description{
 A function to generate all the possible models.

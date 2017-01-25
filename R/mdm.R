@@ -64,20 +64,22 @@ dlm.lpl <- function(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001){
   
   for (t in 2:Nt){
     
-    # Posterior at {t-1}: (theta_{t-1}|y_{t-1}) ~ T_{n_{t-1}}[m_{t-1}, C_{t-1} = C*_{t-1} x d_{t-1}/n_{t-1}]
-    # Prior at {t}: (theta_{t}|y_{t-1}) ~ T_{n_{t-1}}[m_{t-1}, R_{t}]
+    # Posterior at {t-1}: (theta_{t-1}|D_{t-1}) ~ T_{n_{t-1}}[m_{t-1}, C_{t-1} = C*_{t-1} x d_{t-1}/n_{t-1}]
+    # Prior at {t}: (theta_{t}|D_{t-1}) ~ T_{n_{t-1}}[m_{t-1}, R_{t}]
+    # D_{t-1} = D_{0},Y_{1},...,Y_{t-1} D_{0} is the initial information set
     
-    # RSt ~ C*_{t-1}/delta
+    # R*_{t} = C*_{t-1}/delta
     RSt[,,t] = CSt[,,(t-1)] / delta
     Rt[,,t] = RSt[,,t] * S[(t-1)] 
-    # One-step forecast: (Y_{t}|y_{t-1}) ~ T_{n_{t-1}}[f_{t}, Q_{t}]
+    # One-step forecast: (Y_{t}|D_{t-1}) ~ T_{n_{t-1}}[f_{t}, Q_{t}]
     ft[t] = t(F1[,t]) %*% mt[,(t-1)]
     QSt = as.vector(1 + t(F1[,t]) %*% RSt[,,t] %*% F1[,t])
     Qt[t] = QSt * S[(t-1)]
     et = Y[t] - ft[t]
     ets[t] = et / sqrt(Qt[t])
     
-    # Posterior at t: (theta_{t}|y_{t}) ~ T_{n_{t}}[m_{t}, C_{t}]
+    # Posterior at t: (theta_{t}|D_{t}) ~ T_{n_{t}}[m_{t}, C_{t}]
+    # D_{t} = D_{0},Y_{1},...,Y_{t}
     At = (RSt[,,t] %*% F1[,t])/QSt
     mt[,t] = mt[,(t-1)] + (At*et)
     
@@ -105,7 +107,7 @@ dlm.lpl <- function(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001){
 #' @param node the node of interest (i.e., the node to find parents for).
 #'
 #' @return
-#' output.model = a matrix with dimensions (nn-1) x number of models, where number of models = 2^(Nn-1).
+#' output.model = a matrix with dimensions (Nn-1) x number of models, where number of models = 2^(Nn-1).
 #' 
 #' @export
 model.generator<-function(Nn,node){
@@ -188,7 +190,7 @@ exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRU
     for (j in 1:nd) {
       if (cpp) {
         # new C++ implementation
-        lpl=c(dlmFiltCpp(Yt, t(Ft), delta[j], m0, CS0, n0, d0))
+        lpl=c(dlmLplCpp(Yt, t(Ft), delta[j], m0, CS0, n0, d0))
         lpldet[z,j]=sum(lpl[nbf:Nt])
       } else {
         # original native R

@@ -3,7 +3,7 @@ context("Running MDM functions")
 # ts 200x5 sub1 sim22
 # utestdata benchmark values to test against
 
-test_that("Running filtering distribution: 1 parent", {
+test_that("Calculate LPLs: 1 parent", {
   
   n=1;   # node to test
   p=2;   # parent node(s)
@@ -22,7 +22,7 @@ test_that("Running filtering distribution: 1 parent", {
   Ft[,2:ncol(Ft)]=myts[,p]
   
   # # initial preparation of true values to test against later on
-  # a=dlm.filt(Yt,t(Ft),0.93)
+  # a=dlm.lpl(Yt,t(Ft),0.93)
   # utestdata=list()
   # utestdata$Np1.lpl=a$lpl
   # utestdata$Np1.lplsum=sum(a$lpl[15:200])
@@ -33,13 +33,13 @@ test_that("Running filtering distribution: 1 parent", {
   expect_that(sum(a$lpl[15:200]), equals(utestdata$Np1.lplsum))
   expect_that(a$lpl, equals(utestdata$Np1.lpl))
   
-  lpl=c(dlmFiltCpp(Yt,t(Ft),0.93,0,3,0.001,0.001))
+  lpl=c(dlmLplCpp(Yt,t(Ft),0.93,0,3,0.001,0.001))
   expect_equal(sum(lpl[15:200]), utestdata$Np1.lplsum)
   expect_equal(lpl, utestdata$Np1.lpl)
   
 })
 
-test_that("Running filtering distribution: 2 parents", {
+test_that("Calculate LPLs: 2 parents", {
   
   # sample(1:5,5, replace=F) # which node should i test?
   n=3;   # node to test
@@ -61,13 +61,13 @@ test_that("Running filtering distribution: 2 parents", {
   expect_that(sum(a$lpl[15:200]), equals(utestdata$Np2.lplsum))
   expect_that(a$lpl, equals(utestdata$Np2.lpl))
   
-  lpl=c(dlmFiltCpp(Yt,t(Ft),0.93,0,3,0.001,0.001))
+  lpl=c(dlmLplCpp(Yt,t(Ft),0.93,0,3,0.001,0.001))
   expect_equal(sum(lpl[15:200]), utestdata$Np2.lplsum)
   expect_equal(lpl, utestdata$Np2.lpl)
   
 })
 
-test_that("Running filtering distribution: 3 parents", {
+test_that("Calculate LPLs: 3 parents", {
   
   # sample(1:5,5, replace=F) # which node should i test?
   n=4;   # node to test
@@ -89,13 +89,13 @@ test_that("Running filtering distribution: 3 parents", {
   expect_that(sum(a$lpl[15:200]), equals(utestdata$Np3.lplsum))
   expect_that(a$lpl, equals(utestdata$Np3.lpl))
   
-  lpl=c(dlmFiltCpp(Yt,t(Ft),0.93,0,3,0.001,0.001))
+  lpl=c(dlmLplCpp(Yt,t(Ft),0.93,0,3,0.001,0.001))
   expect_equal(sum(lpl[15:200]), utestdata$Np3.lplsum)
   expect_equal(lpl, utestdata$Np3.lpl)
   
 })
 
-test_that("Running filtering distribution: 4 parents", {
+test_that("Calculate LPLs: 4 parents", {
   
   n=1;   # node to test
   p=2:5; # parent node
@@ -116,7 +116,7 @@ test_that("Running filtering distribution: 4 parents", {
   expect_that(sum(a$lpl[15:200]), equals(utestdata$Np4.lplsum))
   expect_that(a$lpl, equals(utestdata$Np4.lpl))
   
-  lpl=c(dlmFiltCpp(Yt,t(Ft),0.93,0,3,0.001,0.001))
+  lpl=c(dlmLplCpp(Yt,t(Ft),0.93,0,3,0.001,0.001))
   expect_equal(sum(lpl[15:200]), utestdata$Np4.lplsum)
   expect_equal(lpl, utestdata$Np4.lpl)
   

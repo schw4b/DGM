@@ -94,7 +94,7 @@ And from R run:
     install.packages("devtools") # run only once
     # type 22 and then 1 to select http mirror (https not working)
     library(devtools)
-    install_github("schw4b/mdm@v1.1.3")
+    install_github("schw4b/mdm@v1.4")
     library(mdmwarwick)
 
 ## References
