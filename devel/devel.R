@@ -69,6 +69,24 @@ mymod = exhaustive.search(myts,2)
 Rprof(NULL)
 summaryRprof("profile.out")
 
+# read.subject is slow
+setwd(PATH_RES)
+Rprof("profile.out")
+tmp = read.subject(paste(SUBJECTS[SAMPLE[s]],sprintf("Run_%03d",r),sep="_"), N_Comp)
+Rprof(NULL)
+summaryRprof("profile.out")
+
+start = Sys.time ()
+a = read.table(file) # slow
+Sys.time () - start
+
+library(data.table)
+start = Sys.time ()
+#tmp = read.subject(paste(SUBJECTS[SAMPLE[s]],sprintf("Run_%03d",r),sep="_"), N_Comp)
+b = fread(file) # slow
+Sys.time () - start
+
+
 # @plot adjacency matrix
 x = matrix(c(0,0,3,1,0,0,0,2,0), 3, 3)
 image.plot(x)

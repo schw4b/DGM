@@ -306,7 +306,8 @@ read.subject <- function(id, nodes) {
   for (n in 1:nodes) {
     #file=sprintf("%s_node_%03d.txt", id, n)
     file=list.files(pattern=glob2rx(sprintf("%s*_node_%03d.txt", id, n)))
-    models[,,n] = as.matrix(read.table(file))
+    #models[,,n] = as.matrix(read.table(file)) # quite slow
+    models[,,n] = as.matrix(fread(file)) # faster, from package "read.table"
   }
   store=list()
   store$models=models
