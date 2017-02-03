@@ -235,7 +235,7 @@ center <- function(X) {
 #'
 #' @param X array with dimensions timeseries x nodes.
 #' @param id subject ID. If set, results are saved to a txt file.
-#' @param nbf   Log Predictive Likelihood will be sum from (and including) this time point. 
+#' @param nbf  Log Predictive Likelihood will sum from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
 #' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta_{0} | D_{0}, phi) ~ N(m0,C*0 x phi^-1), D_{0} denotes the set of initial information.
@@ -272,7 +272,7 @@ subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0,
 #' @param X array with dimensions timeseries x nodes.
 #' @param n node number.
 #' @param id subject ID. If set, results are saved to a txt file.
-#' @param nbf   Log Predictive Likelihood will sum from (and including) this time point. 
+#' @param nbf  Log Predictive Likelihood will sum from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.#'
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
 #' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. (theta_{0} | D_{0}, phi) ~ N(m0,C*0 x phi^-1), D_{0} denotes the set of initial information.
