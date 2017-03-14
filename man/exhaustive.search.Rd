@@ -8,23 +8,23 @@ exhaustive.search(Data, node, nbf = 15, delta = seq(0.5, 1, 0.01),
   cpp = TRUE, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001)
 }
 \arguments{
-\item{Data}{Dataset with dimension number of time points Nt x Number of nodes Nn.}
+\item{Data}{Dataset with dimension number of time points T x Number of nodes Nn.}
 
 \item{node}{node of interest.}
 
-\item{nbf}{Log Predictive Likelihood will be calculated from (and including) this time point.}
+\item{nbf}{Log Predictive Likelihood will sum from (and including) this time point.}
 
 \item{delta}{a vector of potential values for the discount factor.}
 
 \item{cpp}{boolean true (default): fast C++ implementation, false: native R code.}
 
-\item{m0}{the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta0 | y0, phi) ~ N(m0,C*0 x phi^-1).}
+\item{m0}{the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta_{0} | D_{0}, phi) ~ N(m_{0},C*_{0} x phi^-1), D_{0} denotes the set of initial information.}
 
-\item{CS0}{controls the scaling of the prior variance matrix C*0 at time t=0. The default is 3, giving a non-informative prior for C*0, 3 x (p x p) identity matrix.}
+\item{CS0}{controls the scaling of the prior variance matrix C*_{0} at time t=0. The default is 3, giving a non-informative prior for C*_{0}, 3 x (p x p) identity matrix.}
 
-\item{n0}{prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.}
+\item{n0}{prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.}
 
-\item{d0}{prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with n0 = d0 = 0.001.}
+\item{d0}{prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001.}
 }
 \value{
 model.store a matrix with the model, LPL and chosen discount factor for all possible models.
@@ -33,4 +33,3 @@ runtime an estimate of the run time of the function, using proc.time().
 \description{
 A function for an exhaustive search, calculates the optimum value of the discount factor.
 }
-

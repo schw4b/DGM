@@ -7,4 +7,3 @@
 \description{
 Simulation 22 5 node net from Smith et al. 2011 (only first subject).
 }
-

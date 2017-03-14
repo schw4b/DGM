@@ -17,4 +17,3 @@ mod specific parent model.
 \description{
 Get specific parent model from all models.
 }
-

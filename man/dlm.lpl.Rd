@@ -13,28 +13,27 @@ dlm.lpl(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001)
 
 \item{delta}{discount factor (scalar).}
 
-\item{m0}{the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta0 | y0, phi) ~ N(m0,C*0 x phi^-1).}
+\item{m0}{the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta_{0} | D_{0}, phi) ~ N(m_{0},C*_{0} x phi^-1), D_{0} denotes the set of initial information.}
 
-\item{CS0}{controls the scaling of the prior variance matrix C*0 at time t=0. The default is 3, giving a non-informative prior for C*0, 3 x (p x p) identity matrix.}
+\item{CS0}{controls the scaling of the prior variance matrix C*_{0} at time t=0. The default is 3, giving a non-informative prior for C*_{0}, 3 x (p x p) identity matrix.}
 
-\item{n0}{prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.}
+\item{n0}{prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.}
 
-\item{d0}{prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with n0 = d0 = 0.001.}
+\item{d0}{prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001.}
 }
 \value{
 mt the vector or matrix of the posterior mean (location parameter), dim = p x T.
-Ct the posterior scale matrix, dim = p x p x T, C_{t} = C*_{t} x S_{t}, where S_{t} is a point estimate for the observational variance phi^-1. 
-CSt the posterior scale matrix, dim = p x p x T, C_{t} = C*_{t} x S_{t}, where S_{t} is a point estimate for the observational variance phi^-1.
-Rt the prior scale matrix, dim = p x p x T. R_{t} = R*_{t} x S_{t-1}, where S_{t-1} is a point estimate for the observational variance phi^-1 at the previous time point.
-RSt the prior scale matrix, dim = p x p x T. R_{t} = R*_{t} x S_{t-1}, where S_{t-1} is a point estimate for the observational variance phi^-1 at the previous time point.
+Ct the posterior scale matrix, dim = p x p x T, C_{t} = C*_{t} x S_{t}, where S_{t} is a point estimate for the observation variance phi^-1. 
+CSt the posterior scale matrix, dim = p x p x T, C_{t} = C*_{t} x S_{t}, where S_{t} is a point estimate for the observation variance phi^-1.
+Rt the prior scale matrix, dim = p x p x T. R_{t} = R*_{t} x S_{t-1}, where S_{t-1} is a point estimate for the observation variance phi^-1 at the previous time point.
+RSt the prior scale matrix, dim = p x p x T. R_{t} = R*_{t} x S_{t-1}, where S_{t-1} is a point estimate for the observation variance phi^-1 at the previous time point.
 nt and dt the vectors of the hyperparameters for the precision phi with length T.
-S the vector of the point estimate for the observational variance phi^-1 with length T.
+S the vector of the point estimate for the observation variance phi^-1 with length T.
 ft the vector of the one-step forecast location parameter with length T.
 Qt the vector of the one-step forecast scale parameter with length T.
-ets the vector of the standardised residuals with length T
+ets the vector of the standardised forecast residuals with length T, defined as Y_{t} - f_{t} / sqrt (Q_{t}).
 lpl the vector of the Log Predictive Likelihood with length T.
 }
 \description{
 Calculate the log predictive likelihood for a specified set of parents and a fixed delta.
 }
-

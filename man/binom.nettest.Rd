@@ -17,4 +17,3 @@ store list with results.
 \description{
 Performes a binomial test with FDR correction for network edges in an adjacency matrix.
 }
-

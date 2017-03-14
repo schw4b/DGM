@@ -19,4 +19,3 @@ stat lower and upper significance thresholds.
 Permutation test for Patel's kappa. Creates a distribution of values
 kappa under the null hypothesis.
 }
-

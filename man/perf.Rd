@@ -17,4 +17,3 @@ perf vector.
 \description{
 Performance of estimates, such as sensitivity, specificity, and more.
 }
-

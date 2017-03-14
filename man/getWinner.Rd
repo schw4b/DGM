@@ -19,4 +19,3 @@ winner array with highest scored model(s).
 Get winner network by maximazing log predictive likelihood (LPL)
 from a set of models.
 }
-

@@ -4,9 +4,11 @@
 \alias{read.subject}
 \title{Reads single subject's network from txt files.}
 \usage{
-read.subject(id, nodes)
+read.subject(path, id, nodes)
 }
 \arguments{
+\item{path}{path.}
+
 \item{id}{identifier to select all subjects' nodes, e.g. pattern containing subject ID and session number.}
 
 \item{nodes}{number of nodes.}
@@ -17,4 +19,3 @@ store list with results.
 \description{
 Reads single subject's network from txt files.
 }
-

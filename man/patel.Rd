@@ -25,4 +25,3 @@ PT list with strengths kappa, direction tau, and net structure.
 \description{
 Patel.
 }
-

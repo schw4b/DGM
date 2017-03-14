@@ -19,4 +19,3 @@ M 3D matrix, time series x nodes x subjects.
 \description{
 Reshapes a 2D concatenated time series into 3D according to no. of subjects and volumes.
 }
-

@@ -294,20 +294,19 @@ node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0,
 }
 
 #' Reads single subject's network from txt files.
-#'
+#' @param path path.
 #' @param id identifier to select all subjects' nodes, e.g. pattern containing subject ID and session number.
 #' @param nodes number of nodes.
 #'
 #' @return store list with results.
 #' @export
-read.subject <- function(id, nodes) {
-  
+read.subject <- function(path, id, nodes) {
   models = array(0,dim=c(nodes+2,2^(nodes-1),nodes))
   for (n in 1:nodes) {
     #file=sprintf("%s_node_%03d.txt", id, n)
-    file=list.files(pattern=glob2rx(sprintf("%s*_node_%03d.txt", id, n)))
     #models[,,n] = as.matrix(read.table(file)) # quite slow
-    models[,,n] = as.matrix(fread(file)) # faster, from package "read.table"
+    file=list.files(path, pattern=glob2rx(sprintf("%s*_node_%03d.txt", id, n)))
+    models[,,n] = as.matrix(fread(file.path(path,file))) # faster, from package "data.table"
   }
   store=list()
   store$models=models
@@ -362,43 +361,40 @@ getAdjacency <- function(winner, nodes) {
   return(list(am=am, lpl=lpl, df=df))
 }
 
-#' Plots network as graph.
-#'
-#' @param adj 2D adjacency matrix.
-#'
-#' @export
-plotNet <- function(adj) {
-  plot.igraph(graph.adjacency(adj, mode="directed", weighted=T, diag=F))
-}
-
 #' Plots network as adjacency matrix.
 #'
 #' @param adj 2D adjacency matrix.
-#' @param col color palette.
-#' @param lab labels as character array.
-#' @param lim vector with two min and max values for color scaling.
-#' @param diag true or false, if true showing values on the diagnoal line.
-#' @param xorient, orientation of labels on x axis, 1 is default, 2 is 90deg.
+#' @param title title.
+#' @param label label for colormap.
+#' @param hasColMap FALSE turns off color map, default is NULL (on).
+#' @param lim vector with min and max value for color scaling.
 #'
 #' @export
-plotMat <- function(adj, col=brewer.pal(n = 8, name = 'PuBu'), lab=1:ncol(adj), lim = c(0,1), diag=FALSE, xorient=1) {
+gplotMat <- function(adj, title=NULL, label=NULL, hasColMap=NULL, lim=c(0, 1)) {
+  x = melt(adj)
+  names(x)[1] = "Parent"
+  names(x)[2] = "Child"
   
-  # colors
-  #col=heat.colors(12)
-  #col=brewer.pal(n = 8, name = 'YlOrRd')
-  #col=brewer.pal(n = 8, name = 'PuBu')
-  
-  if (!diag) {
-    adj[row(adj) == col(adj)]= NA
-  }
-  n=nrow(adj)
-  adj_ = t(apply(adj, 2, rev))
-  par(mai=c(1,1,1/2,6/5)) # margin size in inch for bottom, left, top, right
-  image(adj_, col=col, axes=F, zlim=lim)
-  mtext(text=rev(lab), side=2, line=0.3, at=seq(0,1,1/(n-1)), las=1, cex=0.8)
-  mtext(text=lab, side=1, line=0.3, at=seq(0,1,1/(n-1)), las=xorient, cex=0.8)
-  image.plot(adj_, legend.only=T, col=col, zlim=lim)
-  grid(n, n, lwd = 1)
+  ggplot(x, aes_string(x = "Child", y = "Parent", fill = "value")) +
+    geom_tile(color = "gray60") +
+
+    scale_fill_gradient2(
+      low = "white",
+      high = "red",
+      mid = "orange",
+      midpoint = sum(lim)/2,
+      limit = lim,
+      space = "Lab",
+      name = label) + 
+
+    theme(#axis.ticks.x = element_blank(),
+          axis.ticks = element_blank(),
+          axis.line = element_blank(),
+          text = element_text(size=12),
+          axis.text =  element_text(size=12),
+          plot.title = element_text(size=12)
+          ) +
+    scale_y_reverse() + ggtitle(title) + guides(fill=hasColMap)
 }
 
 #' Performes a binomial test with FDR correction for network edges in an adjacency matrix.
@@ -815,4 +811,17 @@ perm.test <- function(X, alpha=0.05) {
   stat$tau   = quantile(ta[!is.na(ta)], probs=c(low, up)) # two sided
   
   return(stat)
+}
+
+rmna <- function(M) {
+  
+  M[is.na(M)] = 0
+  return(M)
+  
+}
+
+rmdiag <- function(M) {
+  
+  M[as.logical(diag(nrow(M)))]=0
+  return(M)
 }
