@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // dlmLplCpp
 arma::rowvec dlmLplCpp(NumericVector Yt_, NumericMatrix Ft_, double delta, double m0_, double CS0_, double n0, double d0);
-RcppExport SEXP mdmwarwick_dlmLplCpp(SEXP Yt_SEXP, SEXP Ft_SEXP, SEXP deltaSEXP, SEXP m0_SEXP, SEXP CS0_SEXP, SEXP n0SEXP, SEXP d0SEXP) {
+RcppExport SEXP multdyn_dlmLplCpp(SEXP Yt_SEXP, SEXP Ft_SEXP, SEXP deltaSEXP, SEXP m0_SEXP, SEXP CS0_SEXP, SEXP n0SEXP, SEXP d0SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;

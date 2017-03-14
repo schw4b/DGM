@@ -1,26 +1,29 @@
 # Multiregression Dynamic Models (MDM)
-[![Build Status](https://travis-ci.org/schw4b/mdm.png?branch=develop)](https://travis-ci.org/schw4b/mdm)
+[![Build Status](https://travis-ci.org/schw4b/multdyn.png?branch=develop)](https://travis-ci.org/schw4b/multdyn)
 
 # Developer Guide
 
 ## Working with Github
 
 ### Check out master
-    git clone https://github.com/schw4b/mdm.git
+    git clone https://github.com/schw4b/multdyn.git
 
 ### Check out a release
     git checkout tags/v1.0
 
-### Change to master
-    git checkout origin/master
-
-### Switch branches / push to develop branch
-    git checkout master
+### Switch to develop branch
     git checkout develop
+    
+### Review, pull, commit and push
+    git status
+    git diff
+    git pull
+    git add foo
+    git commit -m "Update"
     git push origin develop
 
 ### Configure ssh key authentication
-    git remote set-url origin git@github.com:schw4b/mdm.git
+    git remote set-url origin git@github.com:schw4b/multdyn.git
 
 ### Merge develop to master
     # update DESCRIPTION file with new version if applicable
@@ -28,20 +31,33 @@
     git pull               # to update the state to the latest remote master state
     git merge develop      # to bring changes to local master from your develop branch
     git push origin master # push current HEAD to remote master branch
+    
+## Package building for CRAN
+    make doc
+    make build
+    make file=multdyn_1.5.tar.gz check
 
 ## Unit Testing
 Test functions are written for the *testthat* package and can be found in the folder `tests`.
 
-    # load MDM
-    setwd('~/workspace')
     library(devtools)
-    load_all('mdm')
-    # Run unit tests
     library(testthat)
-    test_dir('mdm/tests', reporter = 'Summary')
+    load_all('~/workspace/multdyn')
+    # Run unit tests
+    test_dir('~/workspace/multdyn/tests', reporter = 'Summary')
 
-    testthat results ================================================================
-    OK: 6 SKIPPED: 0 FAILED: 0
+	testthat results ==============================================================================
+	OK: 22 SKIPPED: 0 FAILED: 0
+
+	DONE =========================================================================================
+	
+## Run benchmarks
+
+    library(devtools)
+    library(microbenchmark)
+    load_all('~/workspace/multdyn')
+    data("utestdata")
+    microbenchmark(exhaustive.search(myts,3,cpp=F),exhaustive.search(myts,3))
 
 ## Benchmarks
     Unit: microseconds
@@ -58,11 +74,4 @@ Test functions are written for the *testthat* package and can be found in the fo
 
 60-fold speed improvement compared to the native R implementation (cpp=F).
 
-## Run benchmarks
 
-    setwd('~/workspace')
-    library(devtools)
-    load_all('mdm')
-    library(microbenchmark)
-    data("utestdata")
-    microbenchmark(exhaustive.search(myts,3,cpp=F),exhaustive.search(myts,3))

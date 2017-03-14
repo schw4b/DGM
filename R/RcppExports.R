@@ -2,6 +2,6 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 dlmLplCpp <- function(Yt_, Ft_, delta, m0_, CS0_, n0, d0) {
-    .Call('mdmwarwick_dlmLplCpp', PACKAGE = 'mdmwarwick', Yt_, Ft_, delta, m0_, CS0_, n0, d0)
+    .Call('multdyn_dlmLplCpp', PACKAGE = 'multdyn', Yt_, Ft_, delta, m0_, CS0_, n0, d0)
 }
 
