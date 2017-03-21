@@ -15,4 +15,3 @@ group a list.
 \description{
 A group is a list containing restructured data from subejcts for easier group analysis.
 }
-

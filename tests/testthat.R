@@ -1,2 +1,2 @@
 library(testthat)
-test_check("mdmwarwick")
+test_check("multdyn")

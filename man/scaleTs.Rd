@@ -15,4 +15,3 @@ S centered and scaled matrix.
 \description{
 Scaling data. Zero centers and scales the nodes (SD=1).
 }
-

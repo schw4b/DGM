@@ -15,4 +15,3 @@ M correlation matrix.
 \description{
 Correlation of time series.
 }
-

@@ -19,4 +19,3 @@ thr list with thresholded network adjacency.
 \description{
 Get thresholded adjacency network.
 }
-

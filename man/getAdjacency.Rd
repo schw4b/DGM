@@ -17,4 +17,3 @@ adj, 2D adjacency matrix.
 \description{
 Get adjacency and associated likelihoods (LPL) and disount factros (df) of winning models.
 }
-

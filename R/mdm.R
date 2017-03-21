@@ -3,22 +3,22 @@
 #' @param Yt the vector of observed time series, length T
 #' @param Ft the matrix of covariates, dim = number of thetas (p) x number of time points (T), usually a row of 1s to represent an intercept and the time series of the parent nodes.
 #' @param delta discount factor (scalar).
-#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta0 | y0, phi) ~ N(m0,C*0 x phi^-1).
-#' @param CS0 controls the scaling of the prior variance matrix C*0 at time t=0. The default is 3, giving a non-informative prior for C*0, 3 x (p x p) identity matrix.
-#' @param n0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.
-#' @param d0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with n0 = d0 = 0.001. 
+#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta_{0} | D_{0}, phi) ~ N(m_{0},C*_{0} x phi^-1), D_{0} denotes the set of initial information.
+#' @param CS0 controls the scaling of the prior variance matrix C*_{0} at time t=0. The default is 3, giving a non-informative prior for C*_{0}, 3 x (p x p) identity matrix.
+#' @param n0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.
+#' @param d0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. 
 #'
 #' @return
 #' mt the vector or matrix of the posterior mean (location parameter), dim = p x T.
-#' Ct the posterior scale matrix, dim = p x p x T, C_{t} = C*_{t} x S_{t}, where S_{t} is a point estimate for the observational variance phi^-1. 
-#' CSt the posterior scale matrix, dim = p x p x T, C_{t} = C*_{t} x S_{t}, where S_{t} is a point estimate for the observational variance phi^-1.
-#' Rt the prior scale matrix, dim = p x p x T. R_{t} = R*_{t} x S_{t-1}, where S_{t-1} is a point estimate for the observational variance phi^-1 at the previous time point.
-#' RSt the prior scale matrix, dim = p x p x T. R_{t} = R*_{t} x S_{t-1}, where S_{t-1} is a point estimate for the observational variance phi^-1 at the previous time point.
+#' Ct the posterior scale matrix, dim = p x p x T, C_{t} = C*_{t} x S_{t}, where S_{t} is a point estimate for the observation variance phi^-1. 
+#' CSt the posterior scale matrix, dim = p x p x T, C_{t} = C*_{t} x S_{t}, where S_{t} is a point estimate for the observation variance phi^-1.
+#' Rt the prior scale matrix, dim = p x p x T. R_{t} = R*_{t} x S_{t-1}, where S_{t-1} is a point estimate for the observation variance phi^-1 at the previous time point.
+#' RSt the prior scale matrix, dim = p x p x T. R_{t} = R*_{t} x S_{t-1}, where S_{t-1} is a point estimate for the observation variance phi^-1 at the previous time point.
 #' nt and dt the vectors of the hyperparameters for the precision phi with length T.
-#' S the vector of the point estimate for the observational variance phi^-1 with length T.
+#' S the vector of the point estimate for the observation variance phi^-1 with length T.
 #' ft the vector of the one-step forecast location parameter with length T.
 #' Qt the vector of the one-step forecast scale parameter with length T.
-#' ets the vector of the standardised residuals with length T
+#' ets the vector of the standardised forecast residuals with length T, defined as Y_{t} - f_{t} / sqrt (Q_{t}).
 #' lpl the vector of the Log Predictive Likelihood with length T.
 #' 
 #' @export
@@ -143,15 +143,15 @@ model.generator<-function(Nn,node){
 
 #' A function for an exhaustive search, calculates the optimum value of the discount factor.
 #'
-#' @param Data  Dataset with dimension number of time points Nt x Number of nodes Nn.
+#' @param Data  Dataset with dimension number of time points T x Number of nodes Nn.
 #' @param node  node of interest.
-#' @param nbf   Log Predictive Likelihood will be calculated from (and including) this time point. 
+#' @param nbf   Log Predictive Likelihood will sum from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
-#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta0 | y0, phi) ~ N(m0,C*0 x phi^-1).
-#' @param CS0 controls the scaling of the prior variance matrix C*0 at time t=0. The default is 3, giving a non-informative prior for C*0, 3 x (p x p) identity matrix.
-#' @param n0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.
-#' @param d0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with n0 = d0 = 0.001.
+#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta_{0} | D_{0}, phi) ~ N(m_{0},C*_{0} x phi^-1), D_{0} denotes the set of initial information.
+#' @param CS0 controls the scaling of the prior variance matrix C*_{0} at time t=0. The default is 3, giving a non-informative prior for C*_{0}, 3 x (p x p) identity matrix.
+#' @param n0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.
+#' @param d0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. 
 #'
 #' @return
 #' model.store a matrix with the model, LPL and chosen discount factor for all possible models.
@@ -235,13 +235,13 @@ center <- function(X) {
 #'
 #' @param X array with dimensions timeseries x nodes.
 #' @param id subject ID. If set, results are saved to a txt file.
-#' @param nbf   Log Predictive Likelihood will be calculated from (and including) this time point. 
+#' @param nbf  Log Predictive Likelihood will sum from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
-#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta0 | y0, phi) ~ N(m0,C*0 x phi^-1).
-#' @param CS0 controls the scaling of the prior variance matrix C*0 at time t=0. The default is 3, giving a non-informative prior for C*0, 3 x (p x p) identity matrix.
-#' @param n0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.
-#' @param d0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with n0 = d0 = 0.001.
+#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta_{0} | D_{0}, phi) ~ N(m_{0},C*_{0} x phi^-1), D_{0} denotes the set of initial information.
+#' @param CS0 controls the scaling of the prior variance matrix C*_{0} at time t=0. The default is 3, giving a non-informative prior for C*_{0}, 3 x (p x p) identity matrix.
+#' @param n0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.
+#' @param d0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. 
 #'
 #' @return store list with results.
 #' @export
@@ -272,13 +272,13 @@ subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0,
 #' @param X array with dimensions timeseries x nodes.
 #' @param n node number.
 #' @param id subject ID. If set, results are saved to a txt file.
-#' @param nbf   Log Predictive Likelihood will be calculated from (and including) this time point. 
+#' @param nbf  Log Predictive Likelihood will sum from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.#'
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
-#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta0 | y0, phi) ~ N(m0,C*0 x phi^-1).
-#' @param CS0 controls the scaling of the prior variance matrix C*0 at time t=0. The default is 3, giving a non-informative prior for C*0, 3 x (p x p) identity matrix.
-#' @param n0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.
-#' @param d0 prior hypermarameter of precision phi ~ G(n0/2; d0/2). The default is a non-informative prior, with n0 = d0 = 0.001.
+#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta_{0} | D_{0}, phi) ~ N(m_{0},C*_{0} x phi^-1), D_{0} denotes the set of initial information.
+#' @param CS0 controls the scaling of the prior variance matrix C*_{0} at time t=0. The default is 3, giving a non-informative prior for C*_{0}, 3 x (p x p) identity matrix.
+#' @param n0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.
+#' @param d0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. 
 #' 
 #' @return store list with results.
 #' @export
@@ -294,19 +294,19 @@ node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0,
 }
 
 #' Reads single subject's network from txt files.
-#'
+#' @param path path.
 #' @param id identifier to select all subjects' nodes, e.g. pattern containing subject ID and session number.
 #' @param nodes number of nodes.
 #'
 #' @return store list with results.
 #' @export
-read.subject <- function(id, nodes) {
-  
+read.subject <- function(path, id, nodes) {
   models = array(0,dim=c(nodes+2,2^(nodes-1),nodes))
   for (n in 1:nodes) {
     #file=sprintf("%s_node_%03d.txt", id, n)
-    file=list.files(pattern=glob2rx(sprintf("%s*_node_%03d.txt", id, n)))
-    models[,,n] = as.matrix(read.table(file))
+    #models[,,n] = as.matrix(read.table(file)) # quite slow
+    file=list.files(path, pattern=glob2rx(sprintf("%s*_node_%03d.txt", id, n)))
+    models[,,n] = as.matrix(fread(file.path(path,file))) # faster, from package "data.table"
   }
   store=list()
   store$models=models
@@ -361,53 +361,51 @@ getAdjacency <- function(winner, nodes) {
   return(list(am=am, lpl=lpl, df=df))
 }
 
-#' Plots network as graph.
-#'
-#' @param adj 2D adjacency matrix.
-#'
-#' @export
-plotNet <- function(adj) {
-  plot.igraph(graph.adjacency(adj, mode="directed", weighted=T, diag=F))
-}
-
 #' Plots network as adjacency matrix.
 #'
 #' @param adj 2D adjacency matrix.
-#' @param col color palette.
-#' @param lab labels as character array.
-#' @param lim vector with two min and max values for color scaling.
-#' @param diag true or false, if true showing values on the diagnoal line.
-#' @param xorient, orientation of labels on x axis, 1 is default, 2 is 90deg.
+#' @param title title.
+#' @param label label for colormap.
+#' @param hasColMap FALSE turns off color map, default is NULL (on).
+#' @param lim vector with min and max value for color scaling.
 #'
 #' @export
-plotMat <- function(adj, col=brewer.pal(n = 8, name = 'PuBu'), lab=1:ncol(adj), lim = c(0,1), diag=FALSE, xorient=1) {
+gplotMat <- function(adj, title=NULL, label=NULL, hasColMap=NULL, lim=c(0, 1)) {
+  x = melt(adj)
+  names(x)[1] = "Parent"
+  names(x)[2] = "Child"
   
-  # colors
-  #col=heat.colors(12)
-  #col=brewer.pal(n = 8, name = 'YlOrRd')
-  #col=brewer.pal(n = 8, name = 'PuBu')
-  
-  if (!diag) {
-    adj[row(adj) == col(adj)]= NA
-  }
-  n=nrow(adj)
-  adj_ = t(apply(adj, 2, rev))
-  par(mai=c(1,1,1/2,6/5)) # margin size in inch for bottom, left, top, right
-  image(adj_, col=col, axes=F, zlim=lim)
-  mtext(text=rev(lab), side=2, line=0.3, at=seq(0,1,1/(n-1)), las=1, cex=0.8)
-  mtext(text=lab, side=1, line=0.3, at=seq(0,1,1/(n-1)), las=xorient, cex=0.8)
-  image.plot(adj_, legend.only=T, col=col, zlim=lim)
-  grid(n, n, lwd = 1)
+  ggplot(x, aes_string(x = "Child", y = "Parent", fill = "value")) +
+    geom_tile(color = "gray60") +
+
+    scale_fill_gradient2(
+      low = "white",
+      high = "red",
+      mid = "orange",
+      midpoint = sum(lim)/2,
+      limit = lim,
+      space = "Lab",
+      name = label) + 
+
+    theme(#axis.ticks.x = element_blank(),
+          axis.ticks = element_blank(),
+          axis.line = element_blank(),
+          text = element_text(size=12),
+          axis.text =  element_text(size=12),
+          plot.title = element_text(size=12)
+          ) +
+    scale_y_reverse() + ggtitle(title) + guides(fill=hasColMap)
 }
 
 #' Performes a binomial test with FDR correction for network edges in an adjacency matrix.
 #'
 #' @param adj adjacency matrix, nodes x nodes x subj, or nodes x nodes x runs x subj.
 #' @param alter type of binomial test, "two.sided" (default), "less", or "greater"
+#' @param fdr false discovery rate (FDR) control, default is 0.05.
 #'
 #' @return store list with results.
 #' @export
-binom.nettest <- function(adj, alter="two.sided") {
+binom.nettest <- function(adj, alter="two.sided", fdr=0.05) {
   
   mydim=dim(adj)
   M = sum(adj) # total edges over all N subjects, all R(R-1) edges
@@ -439,7 +437,7 @@ binom.nettest <- function(adj, alter="two.sided") {
   # FDR
   p_fdr=matrix(p.adjust(p, method = "fdr"),N_Comp,N_Comp)
   adj_fdr=adj_
-  adj_fdr[p_fdr>=0.05]=NA
+  adj_fdr[p_fdr>=fdr]=NA
   
   store=list()
   store$p0=p0
@@ -814,4 +812,17 @@ perm.test <- function(X, alpha=0.05) {
   stat$tau   = quantile(ta[!is.na(ta)], probs=c(low, up)) # two sided
   
   return(stat)
+}
+
+rmna <- function(M) {
+  
+  M[is.na(M)] = 0
+  return(M)
+  
+}
+
+rmdiag <- function(M) {
+  
+  M[as.logical(diag(nrow(M)))]=0
+  return(M)
 }
