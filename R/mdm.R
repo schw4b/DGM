@@ -242,6 +242,7 @@ center <- function(X) {
 #' @param CS0 controls the scaling of the prior variance matrix C*_{0} at time t=0. The default is 3, giving a non-informative prior for C*_{0}, 3 x (p x p) identity matrix.
 #' @param n0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.
 #' @param d0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. 
+#' @param bf bayes factor for network thresholding.
 #'
 #' @return store list with results.
 #' @export
