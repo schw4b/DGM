@@ -8,9 +8,6 @@
 ### Check out master
     git clone https://github.com/schw4b/multdyn.git
 
-### Check out a release
-    git checkout tags/v1.0
-
 ### Switch to develop branch
     git checkout develop
     

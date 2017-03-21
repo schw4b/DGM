@@ -404,7 +404,7 @@ gplotMat <- function(adj, title=NULL, label=NULL, hasColMap=NULL, lim=c(0, 1)) {
 #'
 #' @return store list with results.
 #' @export
-binom.nettest <- function(adj, alter="two.sided") {
+binom.nettest <- function(adj, alter="two.sided", fdr=0.05) {
   
   mydim=dim(adj)
   M = sum(adj) # total edges over all N subjects, all R(R-1) edges
@@ -436,7 +436,7 @@ binom.nettest <- function(adj, alter="two.sided") {
   # FDR
   p_fdr=matrix(p.adjust(p, method = "fdr"),N_Comp,N_Comp)
   adj_fdr=adj_
-  adj_fdr[p_fdr>=0.05]=NA
+  adj_fdr[p_fdr>=fdr]=NA
   
   store=list()
   store$p0=p0

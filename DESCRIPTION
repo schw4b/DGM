@@ -1,6 +1,6 @@
 Package: multdyn
 Version: 1.5
-Date: 2017-03-14
+Date: 2017-03-21
 Title: Multiregression Dynamic Models
 Author: Simon Schwab <schw4b@gmail.com>, Ruth Harbord <r.harbord@warwick.ac.uk>,
     Lilia Costa <liliacosta@ufba.br>, Thomas Nichols <t.e.nichols@warwick.ac.uk>
@@ -13,7 +13,7 @@ Suggests:
 Description: The Multiregression Dynamic Models (MDM) are a multivariate
     graphical model for a multidimensional time series that allows the estimation of
     time-varying effective connectivity.
-Depends: R (>= 3.3.0)
+Depends: R (>= 3.2.0)
 License: GPL-3
 URL: https://github.com/schw4b/multdyn
 BugReports: https://github.com/schw4b/multdyn/issues

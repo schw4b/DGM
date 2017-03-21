@@ -1,7 +1,7 @@
-# Multiregression Dynamic Models (MDM)
-[![Build Status](https://travis-ci.org/schw4b/mdm.png?branch=master)](https://travis-ci.org/schw4b/mdm)
+# multdyn: A package for Multiregression Dynamic Models (MDM)
+[![Build Status](https://travis-ci.org/schw4b/multdyn.png?branch=master)](https://travis-ci.org/schw4b/multdyn)
 
-Multiregression Dynamic Models (MDM) belong to the family of Dynamic Bayesian Networks and allows one to study effective connectivity in functional MRI. MDM searches through all possible parent nodes for a specific node and provides an interpretable fit in terms of regression model for each network node (Costa et al., 2015).
+Multiregression Dynamic Models (MDM) belong to the family of Dynamic Bayesian Networks. This package is designed to study  effective connectivity in functional MRI. MDM searches through all possible parent nodes for a specific node and provides an interpretable fit in terms of regression model for each network node (Costa et al., 2015).
 
 Current research aims to fully characterize MDM using big data from the Human Connectome Project (HCP) in order to test validity and different aspects of reliability (test-retest reliability, out-of-sample reliability) in order to make this new method available for neuroimaging.
 
