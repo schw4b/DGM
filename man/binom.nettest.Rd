@@ -4,12 +4,14 @@
 \alias{binom.nettest}
 \title{Performes a binomial test with FDR correction for network edges in an adjacency matrix.}
 \usage{
-binom.nettest(adj, alter = "two.sided")
+binom.nettest(adj, alter = "two.sided", fdr = 0.05)
 }
 \arguments{
 \item{adj}{adjacency matrix, nodes x nodes x subj, or nodes x nodes x runs x subj.}
 
 \item{alter}{type of binomial test, "two.sided" (default), "less", or "greater"}
+
+\item{fdr}{false discovery rate (FDR) control, default is 0.05.}
 }
 \value{
 store list with results.

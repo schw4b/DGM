@@ -401,6 +401,7 @@ gplotMat <- function(adj, title=NULL, label=NULL, hasColMap=NULL, lim=c(0, 1)) {
 #'
 #' @param adj adjacency matrix, nodes x nodes x subj, or nodes x nodes x runs x subj.
 #' @param alter type of binomial test, "two.sided" (default), "less", or "greater"
+#' @param fdr false discovery rate (FDR) control, default is 0.05.
 #'
 #' @return store list with results.
 #' @export
