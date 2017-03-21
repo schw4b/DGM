@@ -5,7 +5,7 @@
 \title{Estimate subject's full network: runs exhaustive search on very node.}
 \usage{
 subject(X, id = NULL, nbf = 15, delta = seq(0.5, 1, 0.01), cpp = TRUE,
-  m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001)
+  m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001, bf = 20)
 }
 \arguments{
 \item{X}{array with dimensions timeseries x nodes.}
@@ -25,6 +25,8 @@ subject(X, id = NULL, nbf = 15, delta = seq(0.5, 1, 0.01), cpp = TRUE,
 \item{n0}{prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.}
 
 \item{d0}{prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001.}
+
+\item{bf}{bayes factor for network thresholding.}
 }
 \value{
 store list with results.

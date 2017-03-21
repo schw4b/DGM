@@ -59,13 +59,13 @@ The table colums are the 16 different models. First row indicates model number, 
 Model number 3 with node 2 as a parent is most likely.
 
 ### Analysis on the subject level
-We do a full search on the subject level (exhautive search on each node). The list returned contains all the models (models), the winning models (winner), the adjacency matrix of the network (adj), and a thresholded network (thr). The thresholed network is a reduced version of the network, removing symmetric edges if the Base factor between them is large. If the Bayes between two edges is similar, the symmetry is retained.
+We do a full search on the subject level (exhautive search on each node). The list returned contains all the models (models), the winning models (winner), the adjacency matrix of the network (adj), and a thresholded network (thr). The thresholed network is a reduced version of the network, favorizing the simpler model by comparing the Bayes factors. If the Bayes factor between the models (symetric edge vs. asymetric edge) is similar, the simpler asymetric model is favorized.
 
     s=subject(myts)
     names(s)
     [1] "models" "winner" "adj"    "thr"
 
-The adj structure contains the adjacency matrix of the network (am), the LPLs (lpl), and the discount factors (df). The thr structure contains a matrix of edges that are bidirectional/symmetric (bi), the two matrices of LPLs when removing one or the other of the symetric edges (lpl), and the thresholded adjacency matrix (am).
+The adj structure contains the adjacency matrix of the network (am, Fig. 1a), the LPLs (lpl, Fig. 1d), and the discount factors (df, Fig. 1e). The thr structure contains a matrix of edges that are bidirectional/symmetric (bi, Fig. 1c), the two matrices of LPLs with the first containing LPLs for bidirectional edges (Fig. 1f), the second contains adjusted LPLs (Fig. 1g) for asymetric models (after removing one or the other of the symetric edges, and the thresholded adjacency matrix (am, Fig 1b).
 
     names(s$adj)
     [1] "am"  "lpl" "df"
@@ -73,17 +73,27 @@ The adj structure contains the adjacency matrix of the network (am), the LPLs (l
     [1] "bi"   "lpls" "am"
 
 ### Plot network as adjacency matrix
-The full network and a thresholded network can be plotted as fllows
+The full network and a thresholded network can be plotted as follows
 
-    install.packages("cowplot") # for multiplots
-    library(cowplot)
+    p1 = gplotMat(s$adj$am, hasColMap = F, title = "network")
+    p2 = gplotMat(s$thr$am, hasColMap = F, title = "thresholded net")
+    p3 = gplotMat(s$thr$bi, hasColMap = F, title = "symmetric edges")
 
-    p1=gplotMat(s$adj$am, hasColMap = F, title = "Unthresholded symmetry")
-    p2=gplotMat(s$thr$am, hasColMap = F, title = "Thresholded")
+    p4 = gplotMat(s$adj$lpl, title = "Log-pred. likelihood (LPL)",
+                  lim =  c(min(s$adj$lpl, na.rm = T), max(s$adj$lpl, na.rm = T)))
+    p5 = gplotMat(s$adj$df, title = "discount factor (df)", lim = c(0.5, 1))
+    p6 = gplotMat(s$thr$lpls[, , 1], title = expression(bold(LPL(i,j) +
+    LPL(j,i))), lim = c(min(s$thr$lpls[, , 1], na.rm = T), max(s$thr$lpls[, , 1], na.rm = T)))
 
-    plot_grid(p1, p2, ncol=2)    
+    difference = s$thr$lpls[, , 2] - t(s$thr$lpls[, , 2])
+    p7 = gplotMat(difference, title = expression(bold(LPL[adj](i,j) - LPL[adj](j,i))), lim = c(min(difference, na.rm = T), max(difference, na.rm = T)))
 
-![Network example](https://cloud.githubusercontent.com/assets/11832548/24146161/638068f4-0e2c-11e7-96b6-2724bc976ede.png)
+    top = plot_grid(p1, p2, p3, ncol = 3, labels = c("a", "b", "c"))
+    bot = plot_grid(p4, p5, p6, p7, ncol = 2, labels = c("d", "e", "f", "g"))
+    plot_grid(top, bot, ncol = 1, rel_heights = c(0.5, 1))
+
+![Network example](https://cloud.githubusercontent.com/assets/11832548/24162907/e7cfecb8-0e60-11e7-8e01-22e6d5404f05.png)
+Figure 1
 
 ## HPC guide (high performance computing)
 

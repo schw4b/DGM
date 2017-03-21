@@ -242,10 +242,11 @@ center <- function(X) {
 #' @param CS0 controls the scaling of the prior variance matrix C*_{0} at time t=0. The default is 3, giving a non-informative prior for C*_{0}, 3 x (p x p) identity matrix.
 #' @param n0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.
 #' @param d0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. 
+#' @param bf bayes factor for network thresholding.
 #'
 #' @return store list with results.
 #' @export
-subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001) {
+subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001, bf = 20) {
   N=ncol(X)  # nodes
   M=2^(N-1)  # rows/models
   models = array(rep(0,(N+2)*M*N),dim=c(N+2,M,N))
@@ -262,7 +263,7 @@ subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0,
   store$models=models
   store$winner=getWinner(models,N)
   store$adj=getAdjacency(store$winner,N)
-  store$thr=getThreshAdj(store$adj, store$models, store$winner)
+  store$thr=getThreshAdj(store$adj, store$models, store$winner, bf = bf)
   
   return(store)
 }
@@ -297,10 +298,11 @@ node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0,
 #' @param path path.
 #' @param id identifier to select all subjects' nodes, e.g. pattern containing subject ID and session number.
 #' @param nodes number of nodes.
+#' @param bf bayes factor for network thresholding.
 #'
 #' @return store list with results.
 #' @export
-read.subject <- function(path, id, nodes) {
+read.subject <- function(path, id, nodes, bf = 20) {
   models = array(0,dim=c(nodes+2,2^(nodes-1),nodes))
   for (n in 1:nodes) {
     #file=sprintf("%s_node_%03d.txt", id, n)
@@ -312,7 +314,7 @@ read.subject <- function(path, id, nodes) {
   store$models=models
   store$winner=getWinner(models,nodes)
   store$adj=getAdjacency(store$winner,nodes)
-  store$thr=getThreshAdj(store$adj, store$models, store$winner)
+  store$thr=getThreshAdj(store$adj, store$models, store$winner, bf = bf)
   
   return(store)
 }
@@ -560,10 +562,11 @@ patel.group <- function(subj) {
 #' @param adj list with network adjacency from getAdjacency().
 #' @param models matrix 3D with full model estimates.
 #' @param winner matrix 2D with winning models.
+#' @param bf bayes factor for network thresholding.
 #' 
 #' @return thr list with thresholded network adjacency.
 #' @export
-getThreshAdj <- function(adj, models, winner) {
+getThreshAdj <- function(adj, models, winner, bf = 20) {
   
   Nn = ncol(adj$am)
   # determine bidirectional edges
@@ -591,12 +594,12 @@ getThreshAdj <- function(adj, models, winner) {
         # bidirectional LPL
         lpls[i,j,1] = lpls[j,i,1] = adj$lpl[i,j] + adj$lpl[j,i]
         
-        # uni i->j
+        # uni i->j, LPL without parent j
         p = winner[,i][2:Nn]
         p = p[p != j & p!= 0] # remove node j
         lpls[i,j,2] = adj$lpl[i,j] + getModel(models[,,i], p)[Nn+1]
         
-        # uni j->i
+        # uni j->i, LPL without parent i
         p = winner[,j][2:Nn]
         p = p[p != i & p!= 0] # remove node i
         lpls[j,i,2] = adj$lpl[j,i] + getModel(models[,,j], p)[Nn+1]
@@ -606,11 +609,12 @@ getThreshAdj <- function(adj, models, winner) {
   
   # am matrix
   am=adj$am
-  BF=20 # bayes factor threshold
   for (i in 1:Nn) {
     for (j in 1:Nn) {
       if (B[i,j] == 1) {
-        if (lpls[i,j,1] - BF <= max(lpls[i,j,2], lpls[j,i,2]) ) {
+        if (lpls[i,j,1] - bf <= max(lpls[i,j,2], lpls[j,i,2]) ) {
+          # if unidirectional lpl is larger than bidirectional with a
+          # bayes factor penatly, take the simpler unidirectional model.
           if (lpls[i,j,2] > lpls[j,i,2]) {
             am[i,j] = 1; am[j,i] = 0
           } else {

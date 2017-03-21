@@ -4,7 +4,7 @@
 \alias{getThreshAdj}
 \title{Get thresholded adjacency network.}
 \usage{
-getThreshAdj(adj, models, winner)
+getThreshAdj(adj, models, winner, bf = 20)
 }
 \arguments{
 \item{adj}{list with network adjacency from getAdjacency().}
@@ -12,6 +12,8 @@ getThreshAdj(adj, models, winner)
 \item{models}{matrix 3D with full model estimates.}
 
 \item{winner}{matrix 2D with winning models.}
+
+\item{bf}{bayes factor for network thresholding.}
 }
 \value{
 thr list with thresholded network adjacency.
