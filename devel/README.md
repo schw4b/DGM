@@ -115,3 +115,8 @@ void R_init_multdyn(DllInfo *dll)
     R_useDynamicSymbols(dll, FALSE);
 }
 ```
+
+Finally, this needs to go into `NAMESPACE`, see Makefile.
+```
+useDynLib(packagename, .registration = TRUE).
+```
