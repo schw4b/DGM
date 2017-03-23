@@ -10,7 +10,7 @@
 
 ### Switch to develop branch
     git checkout develop
-    
+
 ### Review, pull, commit and push
     git status
     git diff
@@ -28,7 +28,7 @@
     git pull               # to update the state to the latest remote master state
     git merge develop      # to bring changes to local master from your develop branch
     git push origin master # push current HEAD to remote master branch
-    
+
 ## Package building for CRAN
     make doc
     make build
@@ -47,7 +47,7 @@ Test functions are written for the *testthat* package and can be found in the fo
 	OK: 22 SKIPPED: 0 FAILED: 0
 
 	DONE =========================================================================================
-	
+
 ## Run benchmarks
 
     library(devtools)
@@ -71,4 +71,47 @@ Test functions are written for the *testthat* package and can be found in the fo
 
 60-fold speed improvement compared to the native R implementation (cpp=F).
 
+## Magic stuff to resolve CRAN complaints
 
+See https://github.com/RcppCore/Rcpp/issues/636
+
+Download R-devel.tar.gz from https://cran.r-project.org/sources.html
+```
+mkdir ~/tmp
+cd ~/tmp
+wget https://stat.ethz.ch/R/daily/R-devel.tar.gz
+tar -xvf R-devel.tar.gz
+```
+Then, in R, do the following:
+```
+source("~/tmp/R-devel/src/library/tools/R/sotools.R")
+source("~/tmp/R-devel/src/library/tools/R/utils.R")
+setwd("~/workspace/multdyn")
+
+package_native_routine_registration_skeleton(".")
+```
+The function will output some code, copy and paste this to `src/register.c`
+```
+#include <R.h>
+#include <Rinternals.h>
+#include <stdlib.h> // for NULL
+#include <R_ext/Rdynload.h>
+
+/* FIXME:
+   Check these declarations against the C/Fortran source code.
+*/
+
+/* .Call calls */
+extern SEXP multdyn_dlmLplCpp(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+
+static const R_CallMethodDef CallEntries[] = {
+    {"multdyn_dlmLplCpp", (DL_FUNC) &multdyn_dlmLplCpp, 7},
+    {NULL, NULL, 0}
+};
+
+void R_init_multdyn(DllInfo *dll)
+{
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+}
+```
