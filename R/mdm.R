@@ -1,5 +1,12 @@
-#' Create list with all priors.
-priors.spec() <- function(m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001) {
+#' Specify the priors, without inputs, defaults will be used.
+#' 
+#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta_{0} | D_{0}, phi) ~ N(m_{0},C*_{0} x phi^-1), D_{0} denotes the set of initial information.
+#' @param CS0 controls the scaling of the prior variance matrix C*_{0} at time t=0. The default is 3, giving a non-informative prior for C*_{0}, 3 x (p x p) identity matrix.
+#' @param n0 prior hyperparameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.
+#' @param d0 prior hyperparameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001.
+#' 
+#' @return \code{priors} a list with the prior hyperparameters. Relevant to \code{\link{dlm.lpl}, \link{exhaustive.search}, \link{node}, \link{subject}}.
+priors.spec <- function(m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001) {
   
   priors = list(m0 = m0, CS0 = CS0, n0 = n0, d0 = d0)
   return(priors)
@@ -12,11 +19,8 @@ priors.spec() <- function(m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001) {
 #' @param Yt the vector of observed time series, length T
 #' @param Ft the matrix of covariates, dim = number of thetas (p) x number of time points (T), usually a row of 1s to represent an intercept and the time series of the parent nodes.
 #' @param delta discount factor (scalar).
-#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta_{0} | D_{0}, phi) ~ N(m_{0},C*_{0} x phi^-1), D_{0} denotes the set of initial information.
-#' @param CS0 controls the scaling of the prior variance matrix C*_{0} at time t=0. The default is 3, giving a non-informative prior for C*_{0}, 3 x (p x p) identity matrix.
-#' @param n0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.
-#' @param d0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. 
-#'
+#' @param priors list with prior hyperparameters.
+#' 
 #' @return
 #' \item{Example Test}{Blah \eqn{\textbf{C}_{t} = \textbf{C}^{*}_{t} \times S_{t}}}
 #' \item{mt}{the vector or matrix of the posterior mean (location parameter), dim = p x T.}
@@ -33,7 +37,12 @@ priors.spec() <- function(m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001) {
 #' 
 #' @export
 #' @references West, M. & Harrison, J., 1997. Bayesian Forecasting and Dynamic Models. Springer New York.
-dlm.lpl <- function(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001){
+dlm.lpl <- function(Yt, Ft, delta, priors = priors.spec() ) {
+  
+  m0 = priors$m0
+  CS0 = priors$CS0
+  n0 = priors$n0
+  d0 = priors$d0
   
   CS0 = CS0*diag(nrow(Ft))
   m0 = rep(m0,nrow(Ft))
@@ -73,36 +82,36 @@ dlm.lpl <- function(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001){
   
   # Updating
   
-  for (t in 2:Nt){
+  for (i in 2:Nt){
     
     # Posterior at {t-1}: (theta_{t-1}|D_{t-1}) ~ T_{n_{t-1}}[m_{t-1}, C_{t-1} = C*_{t-1} x d_{t-1}/n_{t-1}]
     # Prior at {t}: (theta_{t}|D_{t-1}) ~ T_{n_{t-1}}[m_{t-1}, R_{t}]
     # D_{t-1} = D_{0},Y_{1},...,Y_{t-1} D_{0} is the initial information set
     
     # R*_{t} = C*_{t-1}/delta
-    RSt[,,t] = CSt[,,(t-1)] / delta
-    Rt[,,t] = RSt[,,t] * S[(t-1)] 
+    RSt[,,i] = CSt[,,(i-1)] / delta
+    Rt[,,i] = RSt[,,i] * S[(i-1)] 
     # One-step forecast: (Y_{t}|D_{t-1}) ~ T_{n_{t-1}}[f_{t}, Q_{t}]
-    ft[t] = t(F1[,t]) %*% mt[,(t-1)]
-    QSt = as.vector(1 + t(F1[,t]) %*% RSt[,,t] %*% F1[,t])
-    Qt[t] = QSt * S[(t-1)]
-    et = Y[t] - ft[t]
-    ets[t] = et / sqrt(Qt[t])
+    ft[i] = t(F1[,i]) %*% mt[,(i-1)]
+    QSt = as.vector(1 + t(F1[,i]) %*% RSt[,,i] %*% F1[,i])
+    Qt[i] = QSt * S[(i-1)]
+    et = Y[i] - ft[i]
+    ets[i] = et / sqrt(Qt[i])
     
     # Posterior at t: (theta_{t}|D_{t}) ~ T_{n_{t}}[m_{t}, C_{t}]
     # D_{t} = D_{0},Y_{1},...,Y_{t}
-    At = (RSt[,,t] %*% F1[,t])/QSt
-    mt[,t] = mt[,(t-1)] + (At*et)
+    At = (RSt[,,i] %*% F1[,i])/QSt
+    mt[,i] = mt[,(i-1)] + (At*et)
     
-    nt[t] = nt[(t-1)] + 1
-    dt[t] = dt[(t-1)] + (et^2)/QSt
-    S[t]=dt[t]/nt[t] 
+    nt[i] = nt[(i-1)] + 1
+    dt[i] = dt[(i-1)] + (et^2)/QSt
+    S[i]=dt[i]/nt[i] 
     
-    CSt[,,t] = RSt[,,t] - (At %*% t(At))*QSt
-    Ct[,,t] = S[t]*CSt[,,t]
+    CSt[,,i] = RSt[,,i] - (At %*% t(At))*QSt
+    Ct[,,i] = S[i]*CSt[,,i]
     
     # Log Predictive Likelihood 
-    lpl[t] = lgamma((nt[(t-1)]+1)/2)-lgamma(nt[(t-1)]/2)-0.5*log(pi*nt[(t-1)]*Qt[t])-((nt[(t-1)]+1)/2)*log(1+(1/nt[(t-1)])*et^2/Qt[t])
+    lpl[i] = lgamma((nt[(i-1)]+1)/2)-lgamma(nt[(i-1)]/2)-0.5*log(pi*nt[(i-1)]*Qt[i])-((nt[(i-1)]+1)/2)*log(1+(1/nt[(i-1)])*et^2/Qt[i])
   }
   
   mt = mt[,2:Nt]; Ct = Ct[,,2:Nt]; CSt = CSt[,,2:Nt]; Rt = Rt[,,2:Nt]; RSt = RSt[,,2:Nt]
@@ -159,16 +168,18 @@ model.generator<-function(Nn,node){
 #' @param nbf   Log Predictive Likelihood will sum from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
-#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta_{0} | D_{0}, phi) ~ N(m_{0},C*_{0} x phi^-1), D_{0} denotes the set of initial information.
-#' @param CS0 controls the scaling of the prior variance matrix C*_{0} at time t=0. The default is 3, giving a non-informative prior for C*_{0}, 3 x (p x p) identity matrix.
-#' @param n0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.
-#' @param d0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. 
+#' @param priors list with prior hyperparameters.
 #'
 #' @return
 #' model.store a matrix with the model, LPL and chosen discount factor for all possible models.
 #' runtime an estimate of the run time of the function, using proc.time().
 #' @export
-exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001) {
+exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=priors.spec() ) {
+  
+  m0 = priors$m0
+  CS0 = priors$CS0
+  n0 = priors$n0
+  d0 = priors$d0
   
   ptm=proc.time()  
   
@@ -205,7 +216,7 @@ exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRU
         lpldet[z,j]=sum(lpl[nbf:Nt])
       } else {
         # original native R
-        a=dlm.lpl(Yt, t(Ft), delta=delta[j], m0=m0, CS0=CS0, n0=n0, d0=d0)
+        a=dlm.lpl(Yt, t(Ft), delta=delta[j], priors=priors)
         lpldet[z,j]=sum(a$lpl[nbf:Nt])
       }
     }
@@ -249,21 +260,18 @@ center <- function(X) {
 #' @param nbf  Log Predictive Likelihood will sum from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
-#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta_{0} | D_{0}, phi) ~ N(m_{0},C*_{0} x phi^-1), D_{0} denotes the set of initial information.
-#' @param CS0 controls the scaling of the prior variance matrix C*_{0} at time t=0. The default is 3, giving a non-informative prior for C*_{0}, 3 x (p x p) identity matrix.
-#' @param n0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.
-#' @param d0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. 
 #' @param bf bayes factor for network thresholding.
+#' @param priors list with prior hyperparameters.
 #'
 #' @return store list with results.
 #' @export
-subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001, bf = 20) {
+subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, bf = 20, priors = priors.spec() ) {
   N=ncol(X)  # nodes
   M=2^(N-1)  # rows/models
   models = array(rep(0,(N+2)*M*N),dim=c(N+2,M,N))
   
   for (n in 1:N) {
-    tmp=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, m0=m0, CS0=CS0, n0=n0, d0=d0)
+    tmp=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, priors=priors)
     models[,,n]=tmp$model.store
     if (!is.null(id)) {
       write(t(models[,,n]), file=sprintf("%s_node_%03d.txt", id, n), ncolumns = M)
@@ -287,18 +295,15 @@ subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0,
 #' @param nbf  Log Predictive Likelihood will sum from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.#'
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
-#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta_{0} | D_{0}, phi) ~ N(m_{0},C*_{0} x phi^-1), D_{0} denotes the set of initial information.
-#' @param CS0 controls the scaling of the prior variance matrix C*_{0} at time t=0. The default is 3, giving a non-informative prior for C*_{0}, 3 x (p x p) identity matrix.
-#' @param n0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.
-#' @param d0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. 
+#' @param priors list with prior hyperparameters.
 #' 
 #' @return store list with results.
 #' @export
-node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001) {
+node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=priors.spec() ) {
   N=ncol(X)  # nodes
   M=2^(N-1)  # rows/models
   
-  store=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, m0=m0, CS0=CS0, n0=n0, d0=d0)
+  store=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, priors=priors)
   if (!is.null(id)) {
     write(t(store$model.store), file=sprintf("%s_node_%03d.txt", id, n), ncolumns = M)
   }

@@ -4,7 +4,7 @@
 \alias{dlm.lpl}
 \title{Calculate the log predictive likelihood for a specified set of parents and a fixed delta.}
 \usage{
-dlm.lpl(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001)
+dlm.lpl(Yt, Ft, delta, priors = priors.spec())
 }
 \arguments{
 \item{Yt}{the vector of observed time series, length T}
@@ -13,16 +13,10 @@ dlm.lpl(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001)
 
 \item{delta}{discount factor (scalar).}
 
-\item{m0}{the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta_{0} | D_{0}, phi) ~ N(m_{0},C*_{0} x phi^-1), D_{0} denotes the set of initial information.}
-
-\item{CS0}{controls the scaling of the prior variance matrix C*_{0} at time t=0. The default is 3, giving a non-informative prior for C*_{0}, 3 x (p x p) identity matrix.}
-
-\item{n0}{prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.}
-
-\item{d0}{prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001.}
+\item{priors}{list with prior hyperparameters.}
 }
 \value{
-\item{Example Test}{Blah \deqn{\textbf{C}_{t} = \textbf{C}^{*}_{t} \times S_{t}}}
+\item{Example Test}{Blah \eqn{\textbf{C}_{t} = \textbf{C}^{*}_{t} \times S_{t}}}
 \item{mt}{the vector or matrix of the posterior mean (location parameter), dim = p x T.}
 Ct the posterior scale matrix, dim = p x p x T, C_{t} = C*_{t} x S_{t}, where S_{t} is a point estimate for the observation variance phi^-1. 
 CSt the posterior scale matrix, dim = p x p x T, C_{t} = C*_{t} x S_{t}, where S_{t} is a point estimate for the observation variance phi^-1.
@@ -39,5 +33,5 @@ lpl the vector of the Log Predictive Likelihood with length T.
 Calculate the log predictive likelihood for a specified set of parents and a fixed delta.
 }
 \references{
-West, Mike, and Jeff Harrison. 1997. Bayesian Forecasting and Dynamic Models. Springer New York.
+West, M. & Harrison, J., 1997. Bayesian Forecasting and Dynamic Models. Springer New York.
 }
