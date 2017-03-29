@@ -7,27 +7,33 @@
 dlm.lpl(Yt, Ft, delta, priors = priors.spec())
 }
 \arguments{
-\item{Yt}{the vector of observed time series, length T}
+\item{Yt}{the vector of observed time series, length \code{T}.}
 
-\item{Ft}{the matrix of covariates, dim = number of thetas (p) x number of time points (T), usually a row of 1s to represent an intercept and the time series of the parent nodes.}
+\item{Ft}{the matrix of covariates, dim = number of thetas (\code{p}) x number of time
+points (\code{T}), usually a row of 1s to represent an intercept and the time series of
+the parent nodes.}
 
 \item{delta}{discount factor (scalar).}
 
 \item{priors}{list with prior hyperparameters.}
 }
 \value{
-\item{Example Test}{Blah \eqn{\textbf{C}_{t} = \textbf{C}^{*}_{t} \times S_{t}}}
-\item{mt}{the vector or matrix of the posterior mean (location parameter), dim = p x T.}
-Ct the posterior scale matrix, dim = p x p x T, C_{t} = C*_{t} x S_{t}, where S_{t} is a point estimate for the observation variance phi^-1. 
-CSt the posterior scale matrix, dim = p x p x T, C_{t} = C*_{t} x S_{t}, where S_{t} is a point estimate for the observation variance phi^-1.
-Rt the prior scale matrix, dim = p x p x T. R_{t} = R*_{t} x S_{t-1}, where S_{t-1} is a point estimate for the observation variance phi^-1 at the previous time point.
-RSt the prior scale matrix, dim = p x p x T. R_{t} = R*_{t} x S_{t-1}, where S_{t-1} is a point estimate for the observation variance phi^-1 at the previous time point.
-nt and dt the vectors of the hyperparameters for the precision phi with length T.
-S the vector of the point estimate for the observation variance phi^-1 with length T.
-ft the vector of the one-step forecast location parameter with length T.
-Qt the vector of the one-step forecast scale parameter with length T.
-ets the vector of the standardised forecast residuals with length T, defined as Y_{t} - f_{t} / sqrt (Q_{t}).
-lpl the vector of the Log Predictive Likelihood with length T.
+\item{mt}{the vector or matrix of the posterior mean (location parameter), dim = \code{p x T}.}
+\item{Ct}{and \code{CSt} the posterior scale matrix \code{C_{t}} is \code{C_{t} = C*_{t} x S_{t}},
+ with dim = \code{p x p x T}, where \code{S_{t}} is a point estimate for the observation variance
+ \code{phi^{-1}}}
+\item{Rt}{and \code{RSt} the prior scale matrix \code{R_{t}} is \code{R_{t} = R*_{t} x S_{t-1}},
+ with dim = \code{p x p x T}, where \code{S_{t-1}} is a point estimate for the observation
+ variance \code{phi^{-1}} at the previous time point.}
+\item{nt}{and \code{dt} the vectors of the updated hyperparameters for the precision \code{phi}
+ with length \code{T}.}
+\item{S}{the vector of the point estimate for the observation variance \code{phi^{-1}} with
+ length \code{T}.}
+\item{ft}{the vector of the one-step forecast location parameter with length \code{T}.}
+\item{Qt}{the vector of the one-step forecast scale parameter with length \code{T}.}
+\item{ets}{the vector of the standardised forecast residuals with length \code{T},
+ \eqn{\newline} defined as \code{(Y_{t} - f_{t}) / sqrt (Q_{t})}.}
+\item{lpl}{the vector of the Log Predictive Likelihood with length \code{T}.}
 }
 \description{
 Calculate the log predictive likelihood for a specified set of parents and a fixed delta.
