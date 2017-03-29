@@ -22,7 +22,8 @@ dlm.lpl(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001)
 \item{d0}{prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001.}
 }
 \value{
-mt the vector or matrix of the posterior mean (location parameter), dim = p x T.
+\item{Example Test}{Blah \deqn{\textbf{C}_{t} = \textbf{C}^{*}_{t} \times S_{t}}}
+\item{mt}{the vector or matrix of the posterior mean (location parameter), dim = p x T.}
 Ct the posterior scale matrix, dim = p x p x T, C_{t} = C*_{t} x S_{t}, where S_{t} is a point estimate for the observation variance phi^-1. 
 CSt the posterior scale matrix, dim = p x p x T, C_{t} = C*_{t} x S_{t}, where S_{t} is a point estimate for the observation variance phi^-1.
 Rt the prior scale matrix, dim = p x p x T. R_{t} = R*_{t} x S_{t-1}, where S_{t-1} is a point estimate for the observation variance phi^-1 at the previous time point.
@@ -36,4 +37,7 @@ lpl the vector of the Log Predictive Likelihood with length T.
 }
 \description{
 Calculate the log predictive likelihood for a specified set of parents and a fixed delta.
+}
+\references{
+West, Mike, and Jeff Harrison. 1997. Bayesian Forecasting and Dynamic Models. Springer New York.
 }
