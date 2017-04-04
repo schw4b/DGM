@@ -648,7 +648,7 @@ getThreshAdj <- function(adj, models, winner, bf = 20) {
           # bayes factor penatly, take the simpler unidirectional model.
           if (lpls[i,j,2] > lpls[j,i,2]) {
             am[i,j] = 1; am[j,i] = 0
-          } else {
+          } else if (lpls[i,j,2] < lpls[j,i,2])  {
             am[i,j] = 0; am[j,i] = 1
           }
         }
