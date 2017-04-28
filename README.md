@@ -10,7 +10,7 @@ Current research aims to fully characterize MDM using simulations and big data f
 2. Smith, S. M., Miller, K. L., Salimi-Khorshidi, G., Webster, M., Beckmann, C. F., Nichols, T. E., et al. (2011). Network modelling methods for FMRI. *NeuroImage*, 54(2), 875–91. [doi:10.1016/j.neuroimage.2010.08.063](http://dx.doi.org/10.1016/j.neuroimage.2010.08.063).
 
 ## Reference this package
-Schwab, S., Harbord, R., Costa, L., Nichols, T.E. (2017). multdyn: A package for Multiregression Dynamic Models (MDM). Available at: https://github.com/schw4b/multdyn
+Schwab, S., Harbord, R., Costa, L., Nichols, T.E. (2017). multdyn: A package for Multiregression Dynamic Models (MDM). Available at: https://github.com/schw4b/multdyn.
 
 ## User Guide
 

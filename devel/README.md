@@ -75,7 +75,7 @@ Test functions are written for the *testthat* package and can be found in the fo
 
 See https://github.com/RcppCore/Rcpp/issues/636
 
-Download R-devel.tar.gz from https://cran.r-project.org/sources.html
+Download R-devel.tar.gz from https://cran.r-project.org/sources.html
 ```
 mkdir ~/tmp
 cd ~/tmp

@@ -398,39 +398,55 @@ getAdjacency <- function(winner, nodes) {
 #'
 #' @param adj 2D adjacency matrix.
 #' @param title title.
-#' @param label label for colormap.
+#' @param colMapLabel label for colormap.
 #' @param hasColMap FALSE turns off color map, default is NULL (on).
 #' @param lim vector with min and max value for color scaling.
+#' @param gradient gradient colors.
+#' @param nodeLabels node labels.
+#' @param axisTextSize text size of the y and x tick labels.
+#' @param xAngle orientation of the x tick labels.
 #'
 #' @export
-gplotMat <- function(adj, title=NULL, label=NULL, hasColMap=NULL, lim=c(0, 1)) {
+gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0, 1),
+                     gradient=c("white", "orange", "red"), nodeLabels=waiver(), axisTextSize=12, xAngle=0) {
   x = melt(adj)
   names(x)[1] = "Parent"
   names(x)[2] = "Child"
+  
+  # handle scales in case custom labeling is set
+  if (is.list(nodeLabels)) {
+    x_scale = scale_x_continuous()
+    y_scale = scale_y_reverse()
+  } else {
+    x_scale = scale_x_continuous(breaks = 1:ncol(adj), labels = nodeLabels)
+    y_scale = scale_y_reverse(breaks = 1:ncol(adj), labels = nodeLabels)
+  }
   
   ggplot(x, aes_string(x = "Child", y = "Parent", fill = "value")) +
     geom_tile(color = "gray60") +
 
     scale_fill_gradient2(
-      low = "white",
-      high = "red",
-      mid = "orange",
+      low  = gradient[1],
+      mid  = gradient[2],
+      high = gradient[3],
       midpoint = sum(lim)/2,
       limit = lim,
       space = "Lab",
-      name = label) + 
+      name = colMapLabel) + 
 
     theme(#axis.ticks.x = element_blank(),
           axis.ticks = element_blank(),
           axis.line = element_blank(),
           text = element_text(size=12),
-          axis.text =  element_text(size=12),
-          plot.title = element_text(size=12)
+          plot.title = element_text(size=12),
+          axis.text.x = element_text(size=axisTextSize,angle=xAngle),
+          axis.text.y = element_text(size=axisTextSize)
           ) +
-    scale_y_reverse() + ggtitle(title) + guides(fill=hasColMap)
+
+    x_scale + y_scale + ggtitle(title) + guides(fill=hasColMap)
 }
 
-#' Performes a binomial test with FDR correction for network edges in an adjacency matrix.
+#' Performes a binomial test with FDR correction for network edge occurrence.
 #'
 #' @param adj adjacency matrix, nodes x nodes x subj, or nodes x nodes x runs x subj.
 #' @param alter type of binomial test, "two.sided" (default), "less", or "greater"
@@ -548,11 +564,13 @@ mdm.group <- function(subj) {
   N=length(subj)
   
   am = lpl = df = tam = tbi = array(NA, dim=c(Nn,Nn,N))
+  df_ = array(NA, dim=c(N,Nn))
   tlpls = array(NA, dim=c(Nn,Nn,2,N))
   for (s in 1:N) {
     am[,,s]  = subj[[s]]$adj$am
     lpl[,,s] = subj[[s]]$adj$lpl
     df[,,s]  = subj[[s]]$adj$df
+    df_[s,]  = subj[[s]]$winner[nrow(subj[[s]]$winner),]
     
     # thresholded measures
     tam[,,s]  = subj[[s]]$thr$am
@@ -560,7 +578,7 @@ mdm.group <- function(subj) {
     tlpls[,,,s]= subj[[s]]$thr$lpls
   }
   
-  group=list(am=am,lpl=lpl,df=df,tam=tam,tbi=tbi,tlpls=tlpls)
+  group=list(am=am,lpl=lpl,df=df,tam=tam,tbi=tbi,tlpls=tlpls,df_=df_)
   return(group)
 }
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/mdm.R
 \name{binom.nettest}
 \alias{binom.nettest}
-\title{Performes a binomial test with FDR correction for network edges in an adjacency matrix.}
+\title{Performes a binomial test with FDR correction for network edge occurrence.}
 \usage{
 binom.nettest(adj, alter = "two.sided", fdr = 0.05)
 }
@@ -17,5 +17,5 @@ binom.nettest(adj, alter = "two.sided", fdr = 0.05)
 store list with results.
 }
 \description{
-Performes a binomial test with FDR correction for network edges in an adjacency matrix.
+Performes a binomial test with FDR correction for network edge occurrence.
 }
