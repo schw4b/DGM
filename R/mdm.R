@@ -236,8 +236,13 @@ exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRU
       }
     }
     
-    lplmax[z]=max(lpldet[z,],na.rm=TRUE)
-    DF.hat[z]=delta[lpldet[z,]==max(lpldet[z,],na.rm=TRUE)] # add which here for index
+    # TODO
+    if (sum(is.na(lpldet[z,])) == length(lpldet[z,])) {
+      lplmax[z] = -.Machine$double.xmax
+    } else {
+      lplmax[z]=max(lpldet[z,],na.rm=TRUE)
+      DF.hat[z] = delta[which.max(lpldet[z,])]
+    }
   }
   
   # Output model.store
@@ -246,7 +251,7 @@ exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRU
   
   runtime=(proc.time()-ptm)
   
-  output<-list(model.store=model.store,runtime=runtime)    
+  output<-list(model.store=model.store,runtime=runtime) # TODO new no-intercept score
   return(output)
 }
 
