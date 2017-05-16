@@ -484,8 +484,10 @@ binom.nettest <- function(adj, alter="two.sided", fdr=0.05) {
   p = array(NA, dim=c(N_Comp,N_Comp))
   for (i in 1:N_Comp) {
     for (j in 1:N_Comp) {
-      tmp=binom.test(adj_[i,j],N,p=p0, alternative=alter)
-      p[i,j]=tmp$p.value
+      if (i !=j) {
+        tmp=binom.test(adj_[i,j],N,p=p0, alternative=alter)
+        p[i,j]=tmp$p.value
+      }
     }
   }
   
