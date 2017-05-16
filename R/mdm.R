@@ -317,16 +317,18 @@ subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, bf = 20
 #' @param delta a vector of potential values for the discount factor.#'
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
 #' @param priors list with prior hyperparameters.
+#' @param path a path where results are written.
 #' 
 #' @return store list with results.
 #' @export
-node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=priors.spec() ) {
+node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=priors.spec(),
+                 path=getwd() ) {
   N=ncol(X)  # nodes
   M=2^(N-1)  # rows/models
   
   store=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, priors=priors)
   if (!is.null(id)) {
-    write(t(store$model.store), file=sprintf("%s_node_%03d.txt", id, n), ncolumns = M)
+    write(t(store$model.store), file=file.path(path, sprintf("%s_node_%03d.txt", id, n)), ncolumns = M)
   }
   return(store)
 }

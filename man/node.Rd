@@ -5,7 +5,7 @@
 \title{Runs exhaustive search on a single node and saves results in txt file.}
 \usage{
 node(X, n, id = NULL, nbf = 15, delta = seq(0.5, 1, 0.01), cpp = TRUE,
-  priors = priors.spec())
+  priors = priors.spec(), path = getwd())
 }
 \arguments{
 \item{X}{array with dimensions timeseries x nodes.}
@@ -21,6 +21,8 @@ node(X, n, id = NULL, nbf = 15, delta = seq(0.5, 1, 0.01), cpp = TRUE,
 \item{cpp}{boolean true (default): fast C++ implementation, false: native R code.}
 
 \item{priors}{list with prior hyperparameters.}
+
+\item{path}{a path where results are written.}
 }
 \value{
 store list with results.
