@@ -283,10 +283,12 @@ center <- function(X) {
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
 #' @param bf bayes factor for network thresholding.
 #' @param priors list with prior hyperparameters.
+#' @param path a path where results are written.
 #'
 #' @return store list with results.
 #' @export
-subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, bf = 20, priors = priors.spec() ) {
+subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, bf = 20,
+                    priors = priors.spec(), path = getwd() ) {
   N=ncol(X)  # nodes
   M=2^(N-1)  # rows/models
   models = array(rep(0,(N+2)*M*N),dim=c(N+2,M,N))
@@ -295,7 +297,7 @@ subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, bf = 20
     tmp=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, priors=priors)
     models[,,n]=tmp$model.store
     if (!is.null(id)) {
-      write(t(models[,,n]), file=sprintf("%s_node_%03d.txt", id, n), ncolumns = M)
+      write(t(models[,,n]), file=file.path(path, sprintf("%s_node_%03d.txt", id, n)), ncolumns = M)
     }
   }
   
@@ -448,7 +450,9 @@ gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0,
           text = element_text(size=12),
           plot.title = element_text(size=12),
           axis.text.x = element_text(size=axisTextSize,angle=xAngle),
-          axis.text.y = element_text(size=axisTextSize)
+          axis.text.y = element_text(size=axisTextSize),
+          #panel.grid.major = element_line(colour="black", size = (1.5)),
+          #panel.grid.minor = element_line(size = (0.2), colour="grey")
           ) +
 
     x_scale + y_scale + ggtitle(title) + guides(fill=hasColMap)
@@ -576,11 +580,15 @@ mdm.group <- function(subj) {
   am = lpl = df = tam = tbi = array(NA, dim=c(Nn,Nn,N))
   df_ = array(NA, dim=c(N,Nn))
   tlpls = array(NA, dim=c(Nn,Nn,2,N))
+  winner = array(NA, dim=c(Nn+2,Nn,N))
+  models = array(NA, dim=c(Nn+2,2^(Nn-1),Nn,N))
   for (s in 1:N) {
     am[,,s]  = subj[[s]]$adj$am
     lpl[,,s] = subj[[s]]$adj$lpl
     df[,,s]  = subj[[s]]$adj$df
     df_[s,]  = subj[[s]]$winner[nrow(subj[[s]]$winner),]
+    winner[,,s]  = subj[[s]]$winner
+    models[,,,s]  = subj[[s]]$models
     
     # thresholded measures
     tam[,,s]  = subj[[s]]$thr$am
@@ -588,7 +596,8 @@ mdm.group <- function(subj) {
     tlpls[,,,s]= subj[[s]]$thr$lpls
   }
   
-  group=list(am=am,lpl=lpl,df=df,tam=tam,tbi=tbi,tlpls=tlpls,df_=df_)
+  group=list(am=am,lpl=lpl,df=df,tam=tam,tbi=tbi,tlpls=tlpls,
+             df_=df_,winner=winner,models=models)
   return(group)
 }
 
@@ -877,6 +886,12 @@ perm.test <- function(X, alpha=0.05) {
   return(stat)
 }
 
+#' Removes NAs from matrix.
+#' 
+#' @param M Matrix
+#'
+#' @return matrix with NAs removed.
+#' @export
 rmna <- function(M) {
   
   M[is.na(M)] = 0
@@ -884,6 +899,12 @@ rmna <- function(M) {
   
 }
 
+#' Removes diagnoal from matrix with NAs.
+#' 
+#' @param M Matrix
+#'
+#' @return matrix with diagnoal of NAs.
+#' @export
 rmdiag <- function(M) {
   
   M[as.logical(diag(nrow(M)))]=0

@@ -5,7 +5,7 @@
 \title{Estimate subject's full network: runs exhaustive search on very node.}
 \usage{
 subject(X, id = NULL, nbf = 15, delta = seq(0.5, 1, 0.01), cpp = TRUE,
-  bf = 20, priors = priors.spec())
+  bf = 20, priors = priors.spec(), path = getwd())
 }
 \arguments{
 \item{X}{array with dimensions timeseries x nodes.}
@@ -21,6 +21,8 @@ subject(X, id = NULL, nbf = 15, delta = seq(0.5, 1, 0.01), cpp = TRUE,
 \item{bf}{bayes factor for network thresholding.}
 
 \item{priors}{list with prior hyperparameters.}
+
+\item{path}{a path where results are written.}
 }
 \value{
 store list with results.
