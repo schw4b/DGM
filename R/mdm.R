@@ -911,3 +911,207 @@ rmdiag <- function(M) {
   M[as.logical(diag(nrow(M)))]=0
   return(M)
 }
+
+
+stepwise.forward <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01),max.break=TRUE,priors=priors.spec()){
+  
+  # Define the prior hyperparameters
+  m0 = priors$m0
+  CS0 = priors$CS0
+  n0 = priors$n0
+  d0 = priors$d0
+  
+  Nn = ncol(Data) # the number of nodes
+  Nm = 2^(Nn-1)   # the number of models (per node)
+  
+  # Begin at model 1, the no parent (intercept only) model
+  model.store = array(0,dim=c((Nn+2),1))
+  
+  # Find the Log Predicitive Likelihood and discount factor for the zero parent model
+  Yt = Data[,node]    # the time series of the node we wish to find parents for
+  Nt = length(Yt)     # the number of time points
+  nd = length(delta)  # the number of deltas
+  
+  # Create Ft. For the zero parent model, this is simply a column of ones, representing an intercept.
+  Ft=rep(1,Nt)      
+  lpl.delta=rep(NA,nd) 
+  
+  for (j in 1:nd){
+    lpl = dlmLplCpp(Yt,t(Ft),delta=delta[j],m0_=m0,CS0_=CS0,n0=n0,d0=d0)
+    lpl.delta[j]=sum(lpl[nbf:Nt])}
+  
+  lpl.max = max(lpl.delta,na.rm=TRUE)
+  w = which(lpl.delta==lpl.max)
+  DF.hat = delta[w]
+  
+  # Store the model number, model, LPL and discount factor
+  model.store[(Nn+1),] = lpl.max
+  model.store[(Nn+2),] = DF.hat
+  
+  # The parents in the model
+  pars = numeric(0)
+  
+  for (N in 1:(Nn-1)){
+    
+  # Find all the models with the correct length and containing the previously selected parents
+  pars_add = c(1:Nn)[-c(node,pars)]
+    
+  ms.new = array(0,dim=c((Nn+2),(Nn-N)))
+  if (length(pars>0)){ms.new[2:(length(pars)+1),] = pars}
+  ms.new[(length(pars)+2),] = pars_add
+    
+  # Find the LPL and discount factor of this subset of models models
+  nms=ncol(ms.new) # How many models are being considered?
+    
+  # Create empty arrays for the LPL scores and the deltas
+  lpl.delta=array(NA,c(nms,length(delta)))
+  lpl.max=rep(NA,nms)
+  DF.hat=rep(NA,nms)
+    
+  # Now create Ft.
+  for (i in 1:nms){
+    pars = ms.new[(2:Nn),i] 
+    pars = pars[pars!=0]
+    Ft=array(1,dim=c(Nt,length(pars)+1))
+    if (ncol(Ft)>1){Ft[,2:ncol(Ft)] = Data[,pars]}
+      
+  # Calculate the Log Predictive Likelihood for each value of delta, for the specified models
+    for (j in 1:nd){
+      lpl = dlmLplCpp(Yt,t(Ft),delta=delta[j],m0_=m0,CS0_=CS0,n0=n0,d0=d0)
+      lpl.delta[i,j]=sum(lpl[nbf:Nt])}
+      
+    lpl.max[i] = max(lpl.delta[i,],na.rm=TRUE)
+    w = which(lpl.delta[i,]==lpl.max[i])
+    DF.hat[i] = delta[w]}
+    
+  ms.new[(Nn+1),] = lpl.max
+  ms.new[(Nn+2),] = DF.hat
+    
+  # Find the highest LPL so far
+  max.score = max(model.store[(Nn+1),]) 
+  logBF = lpl.max - max.score
+  W = which(logBF > 0)
+    
+  # Update model.store
+  model.store = cbind(model.store,ms.new)
+    
+  if (length(W)==0 & max.break==TRUE){break} 
+  else{W.max = which.max(logBF)
+    
+  # Update the model parents
+  pars = ms.new[(2:Nn),W.max]
+  pars = pars[pars!=0]}}
+  
+model.store[1,] = c(1:ncol(model.store)) # attach a model number
+  
+return(model.store)}
+
+
+stepwise.backward <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01),max.break=TRUE,priors=priors.spec()){
+  
+  # Define the prior hyperparameters
+  m0 = priors$m0
+  CS0 = priors$CS0
+  n0 = priors$n0
+  d0 = priors$d0
+  
+  Nn = ncol(Data) # the number of nodes
+  Nm = 2^(Nn-1)   # the number of models (per node)
+  
+  # Begin at the all parent model
+  model.store = array(0,dim=c((Nn+2),1)) 
+  model.store[(2:Nn),1] = c(1:Nn)[-node]
+  
+  # Find the Log Predicitive Likelihood and discount factor for the all parent model
+  Yt = Data[,node]    # the time series of the node we wish to find parents for
+  Nt = length(Yt)     # the number of time points
+  nd = length(delta)  # the number of deltas
+  
+  # The parents in the model
+  pars = model.store[2:Nn,1]
+  pars = pars[pars!=0]
+  
+  Ft = array(1,dim=c(Nt,Nn)) 
+  Ft[,2:Nn] = Data[,pars]
+  
+  lpl.delta=rep(NA,nd) 
+  
+  for (j in 1:nd){
+    lpl = dlmLplCpp(Yt,t(Ft),delta=delta[j],m0_=m0,CS0_=CS0,n0=n0,d0=d0)
+    lpl.delta[j]=sum(lpl[nbf:Nt])}
+  
+  lpl.max = max(lpl.delta,na.rm=TRUE)
+  w = which(lpl.delta==lpl.max)
+  DF.hat = delta[w]
+  
+  model.store[(Nn+1),] = lpl.max
+  model.store[(Nn+2),] = DF.hat
+  
+  for (N in 1:(Nn-1)){
+    
+  # Find all the models with the correct length and missing the previously removed parents
+  pars_add = combn(pars,(Nn-(N+1)))
+    
+  ms.new = array(0,dim=c((Nn+2),(Nn-N))) 
+  if (length(pars_add>0)){ms.new[2:(nrow(pars_add)+1),] = pars_add}
+    
+  # Find the LPL and discount factor of these models
+  nms=ncol(ms.new) # How many models are being considered?
+    
+  # Create empty arrays for the lpl scores and the deltas
+  lpl.delta=array(NA,c(nms,length(delta)))
+  lpl.max=rep(NA,nms)
+  DF.hat=rep(NA,nms)
+    
+  # Now create Ft. 
+  for (i in 1:nms){
+    pars=ms.new[(2:Nn),i]
+    pars=pars[pars!=0]
+      
+    Ft=array(1,dim=c(Nt,length(pars)+1))
+    if (ncol(Ft)>1){Ft[,2:ncol(Ft)]=Data[,pars]}
+      
+  # Calculate the log predictive likelihood for each value of delta, for the specified models
+    for (j in 1:nd){
+    lpl = dlmLplCpp(Yt,t(Ft),delta=delta[j],m0_=m0,CS0_=CS0,n0=n0,d0=d0)
+    lpl.delta[i,j]=sum(lpl[nbf:Nt])}
+      
+  lpl.max[i] = max(lpl.delta[i,],na.rm=TRUE)
+  w = which(lpl.delta[i,]==lpl.max[i])
+  DF.hat[i] = delta[w]}
+    
+  ms.new[(Nn+1),] = lpl.max
+  ms.new[(Nn+2),] = DF.hat
+    
+  max.score = max(model.store[(Nn+1),]) # Find the highest LPL calculated so far
+  logBF = lpl.max - max.score
+  W = which(logBF > 0)  
+    
+  # Update model.store
+  model.store = cbind(model.store,ms.new)
+    
+  if (length(W)==0 & max.break==TRUE){break}
+  else{W.max = which.max(logBF)
+    
+ # Update the model parents 
+  pars = ms.new[(2:Nn),W.max]
+  pars = pars[pars!=0]}}
+  
+model.store[1,] = c(1:ncol(model.store)) # attach a model number
+  
+return(model.store)}
+
+
+stepwise.combine <- function(forward_matrix,backward_matrix){
+  
+  Nn = ncol(forward_matrix)
+  step_combine_matrix = array(NA,dim=c((Nn+2),Nn))
+  
+  for (k in 1:Nn){
+    
+    if (forward_matrix[(Nn+1),k] >= backward_matrix[(Nn+1),k]){step_combine_matrix[,k] = forward_matrix[,k]}
+    if (forward_matrix[(Nn+1),k] < backward_matrix[(Nn+1),k]){step_combine_matrix[,k] = backward_matrix[,k]}
+    
+}
+  
+return(step_combine_matrix)}
