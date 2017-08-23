@@ -9,6 +9,16 @@
 using namespace Rcpp;
 using namespace arma;
 
+//' C++ implementation of the dlm.lpl
+//' 
+//' @param Yt_ the vector of observed time series
+//' @param Ft_ the matrix of covariates
+//' @param delta discount factor
+//' @param m0_ the value of the prior mean
+//' @param CS0_ controls the scaling of the prior variance
+//' @param n0 prior hypermarameter
+//' @param d0 prior hypermarameter
+//' @export
 // [[Rcpp::export]]
 arma::rowvec dlmLplCpp(NumericVector Yt_, NumericMatrix Ft_, double delta, double m0_, double CS0_, double n0, double d0) {
   
