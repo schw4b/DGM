@@ -415,10 +415,11 @@ getAdjacency <- function(winner, nodes) {
 #' @param nodeLabels node labels.
 #' @param axisTextSize text size of the y and x tick labels.
 #' @param xAngle orientation of the x tick labels.
+#' @param titleTextSize text size of the title.
 #'
 #' @export
 gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0, 1),
-                     gradient=c("white", "orange", "red"), nodeLabels=waiver(), axisTextSize=12, xAngle=0) {
+                     gradient=c("white", "orange", "red"), nodeLabels=waiver(), axisTextSize=12, xAngle=0, titleTextSize=12) {
   x = melt(adj)
   names(x)[1] = "Parent"
   names(x)[2] = "Child"
@@ -448,7 +449,7 @@ gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0,
           axis.ticks = element_blank(),
           axis.line = element_blank(),
           text = element_text(size=12),
-          plot.title = element_text(size=12),
+          plot.title = element_text(size=titleTextSize),
           axis.text.x = element_text(size=axisTextSize,angle=xAngle),
           axis.text.y = element_text(size=axisTextSize),
           #panel.grid.major = element_line(colour="black", size = (1.5)),
