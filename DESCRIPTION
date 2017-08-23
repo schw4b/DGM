@@ -7,7 +7,7 @@ Author: Simon Schwab <schw4b@gmail.com>, Ruth Harbord <r.harbord@warwick.ac.uk>,
 Maintainer: Simon Schwab <schw4b@gmail.com>
 Depends: R (>= 3.2.0)
 Imports:
-    Rcpp (>= 0.12.4), data.table (>= 1.10.0), reshape2 (>= 1.4.2), ggplot2 (>= 2.2.1)
+    Rcpp (>= 0.11.0), data.table (>= 1.10.0), reshape2 (>= 1.4.2), ggplot2 (>= 2.2.1)
 LinkingTo: Rcpp, RcppArmadillo
 Suggests:
     testthat
