@@ -10,8 +10,8 @@ doc:
 	echo "importFrom(stats, quantile)" >> ./multdyn/NAMESPACE
 	echo "importFrom(data.table, fread)" >> ./multdyn/NAMESPACE
 	echo "importFrom(reshape2, melt)" >> ./multdyn/NAMESPACE
-	echo "importFrom(ggplot2, ggplot, aes_string, geom_tile, scale_fill_gradient2, theme, element_blank, element_text, scale_y_reverse, ggtitle, guides)" >> ./multdyn/NAMESPACE
-	cd multdyn; sed -i '1iuseDynLib(multdyn)' NAMESPACE; cd ..
+	echo "importFrom(ggplot2, ggplot, aes_string, geom_tile, scale_fill_gradient2, theme, element_blank, element_text, scale_y_reverse, scale_x_continuous, ggtitle, guides, waiver)" >> ./multdyn/NAMESPACE
+	cd multdyn; sed -i '1iuseDynLib(multdyn, .registration = TRUE)' NAMESPACE; cd ..
 
 build:
 	R CMD build multdyn

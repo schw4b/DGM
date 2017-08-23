@@ -139,7 +139,7 @@ dlm.lpl <- function(Yt, Ft, delta, priors = priors.spec() ) {
 #' A function to generate all the possible models. 
 #'
 #' @param Nn number of nodes; the number of columns of the dataset can be used.
-#' @param node the node of interest (i.e., the node to find parents for).
+#' @param node The node to find parents for.
 #'
 #' @return
 #' output.model = a matrix with dimensions (Nn-1) x number of models, where number of models = 2^(Nn-1).
@@ -179,7 +179,7 @@ model.generator<-function(Nn,node){
 #' A function for an exhaustive search, calculates the optimum value of the discount factor.
 #'
 #' @param Data  Dataset with dimension number of time points T x Number of nodes Nn.
-#' @param node  node of interest.
+#' @param node  The node to find parents for.
 #' @param nbf   Log Predictive Likelihood will sum from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
@@ -912,8 +912,22 @@ rmdiag <- function(M) {
   return(M)
 }
 
-
-stepwise.forward <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01),max.break=TRUE,priors=priors.spec()){
+#' Stepise forward non-exhaustive greedy search, calculates the optimum value of the discount factor.
+#'
+#' @param Data  Dataset with dimension number of time points \code{T} x number of nodes \code{Nn}.
+#' @param node  The node to find parents for.
+#' @param nbf   The Log Predictive Likelihood will sum from (and including) this time point. 
+#' @param delta A vector of values for the discount factor.
+#' @param max.break If \code{TRUE}, the code will break if adding / removing parents does not
+#' improve the LPL. If \code{FALSE}, the code will continue to the zero parent / all parent model.
+#' Default is \code{TRUE}.
+#' @param priors List with prior hyperparameters.
+#'
+#' @return
+#' model.store The parents, LPL and chosen discount factor for the subset of models scored using this method.
+#' @export
+stepwise.forward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), 
+                             max.break=TRUE, priors=priors.spec()){
   
   # Define the prior hyperparameters
   m0 = priors$m0
@@ -1006,8 +1020,22 @@ model.store[1,] = c(1:ncol(model.store)) # attach a model number
   
 return(model.store)}
 
-
-stepwise.backward <- function(Data,node,nbf=15,delta=seq(0.5,1,0.01),max.break=TRUE,priors=priors.spec()){
+#' Stepise backward non-exhaustive greedy search, calculates the optimum value of the discount factor.
+#'
+#' @param Data  Dataset with dimension number of time points \code{T} x number of nodes \code{Nn}.
+#' @param node  The node to find parents for.
+#' @param nbf   The Log Predictive Likelihood will sum from (and including) this time point. 
+#' @param delta A vector of values for the discount factor.
+#' @param max.break If \code{TRUE}, the code will break if adding / removing parents does not
+#' improve the LPL. If \code{FALSE}, the code will continue to the zero parent / all parent model.
+#' Default is \code{TRUE}.
+#' @param priors List with prior hyperparameters.
+#'
+#' @return
+#' model.store The parents, LPL and chosen discount factor for the subset of models scored using this method.
+#' @export
+stepwise.backward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), 
+                              max.break=TRUE, priors=priors.spec()){
   
   # Define the prior hyperparameters
   m0 = priors$m0
@@ -1101,7 +1129,19 @@ model.store[1,] = c(1:ncol(model.store)) # attach a model number
   
 return(model.store)}
 
-
+#' Stepise combine: combines the stepwise forward and the stepwise backward model.
+#'
+#' @param forward_matrix The winning sets of parents using a Forward Selection model search. A
+#' matrix with dimension \code{Nn+2} x \code{Nn}, rows \code{1:Nn} are the parents (ones and zeros),
+#' rows \code{(Nn+1):(Nn+2)} are the LPL and discount factor. forward matrix.
+#' @param backward_matrix backward_matrix}{The winning sets of parents using a Backward Elimination
+#' model search. A matrix with dimension \code{Nn+2} x \code{Nn}, rows \code{1:Nn} are the parents
+#' (ones and zeros), rows \code{(Nn+1):(Nn+2)} are the LPL and discount factor.
+#'
+#' @return
+#' stepwise_combine_matrix The adjacency network, LPLs and discount factors when the Forward
+#' Selection and Backward Elimination model searches are combined.
+#' @export
 stepwise.combine <- function(forward_matrix,backward_matrix){
   
   Nn = ncol(forward_matrix)

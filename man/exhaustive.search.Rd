@@ -10,7 +10,7 @@ exhaustive.search(Data, node, nbf = 15, delta = seq(0.5, 1, 0.01),
 \arguments{
 \item{Data}{Dataset with dimension number of time points T x Number of nodes Nn.}
 
-\item{node}{node of interest.}
+\item{node}{The node to find parents for.}
 
 \item{nbf}{Log Predictive Likelihood will sum from (and including) this time point.}
 

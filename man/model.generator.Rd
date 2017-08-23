@@ -9,7 +9,7 @@ model.generator(Nn, node)
 \arguments{
 \item{Nn}{number of nodes; the number of columns of the dataset can be used.}
 
-\item{node}{the node of interest (i.e., the node to find parents for).}
+\item{node}{The node to find parents for.}
 }
 \value{
 output.model = a matrix with dimensions (Nn-1) x number of models, where number of models = 2^(Nn-1).
