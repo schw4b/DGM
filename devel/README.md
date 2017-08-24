@@ -58,10 +58,14 @@ Get `multdyn` and change to develop branch
 Build the package
 
     make clean
-    cd multdyn;rm NAMESPACE; R -e 'devtools::document()'; cd ..
-    make namespace
+    cd multdyn; R -e 'devtools::document()'; cd ..
     make build
     make file=multdyn_1.5.2.tar.gz check
+
+Sometimes it may be required to make a new `NAMESPACE` (careful!)
+
+    mv multdyn/NAMESPACE .
+    make namespace
 
 Install and test in R
 
