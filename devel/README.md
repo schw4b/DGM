@@ -1,4 +1,3 @@
-# Multiregression Dynamic Models (MDM)
 [![Build Status](https://travis-ci.org/schw4b/multdyn.png?branch=develop)](https://travis-ci.org/schw4b/multdyn)
 
 # Developer Guide
