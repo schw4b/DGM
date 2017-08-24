@@ -1,28 +1,63 @@
+#' Specify the priors. Without inputs, defaults will be used.
+#' 
+#' @param m0 the value of the prior mean at time \code{t=0}, scalar (assumed to be the same
+#'  for all nodes). The default is zero.
+#' @param CS0 controls the scaling of the prior variance matrix \code{C*_{0}} at time 
+#'  \code{t=0}. The default is 3, giving a non-informative prior for \code{C*_{0}, 3 x (p x p)}
+#'  identity matrix. \code{p} is the number of thetas.
+#' @param n0 prior hyperparameter of precision \code{phi ~ G(n_{0}/2; d_{0}/2)}. The default
+#'  is a non-informative prior, with \code{n0 = d0 = 0.001}. \code{n0} has to be higher than 0.
+#' @param d0 prior hyperparameter of precision \code{phi ~ G(n_{0}/2; d_{0}/2)}. The default
+#'  is a non-informative prior, with \code{n0 = d0 = 0.001}.
+#' 
+#' @details At time \code{t=0}, \code{(theta_{0} | D_{0}, phi) ~ N(m_{0},C*_{0} x phi^{-1})},
+#'  where \code{D_{0}} denotes the set of initial information.
+#' 
+#' @return \code{priors} a list with the prior hyperparameters. Relevant to \code{\link{dlm.lpl},
+#'  \link{exhaustive.search}, \link{node}, \link{subject}}.
+#'  
+#' @references West, M. & Harrison, J., 1997. Bayesian Forecasting and Dynamic Models. Springer New York.
+priors.spec <- function(m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001) {
+  
+  priors = list(m0 = m0, CS0 = CS0, n0 = n0, d0 = d0)
+  return(priors)
+  
+}
+
 #' Calculate the log predictive likelihood for a specified set of parents and a fixed delta.
 #'
-#' @param Yt the vector of observed time series, length T
-#' @param Ft the matrix of covariates, dim = number of thetas (p) x number of time points (T), usually a row of 1s to represent an intercept and the time series of the parent nodes.
+#' @param Yt the vector of observed time series, length \code{T}.
+#' @param Ft the matrix of covariates, dim = number of thetas (\code{p}) x number of time
+#'  points (\code{T}), usually a row of 1s to represent an intercept and the time series of
+#'  the parent nodes.
 #' @param delta discount factor (scalar).
-#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta_{0} | D_{0}, phi) ~ N(m_{0},C*_{0} x phi^-1), D_{0} denotes the set of initial information.
-#' @param CS0 controls the scaling of the prior variance matrix C*_{0} at time t=0. The default is 3, giving a non-informative prior for C*_{0}, 3 x (p x p) identity matrix.
-#' @param n0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.
-#' @param d0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. 
-#'
-#' @return
-#' mt the vector or matrix of the posterior mean (location parameter), dim = p x T.
-#' Ct the posterior scale matrix, dim = p x p x T, C_{t} = C*_{t} x S_{t}, where S_{t} is a point estimate for the observation variance phi^-1. 
-#' CSt the posterior scale matrix, dim = p x p x T, C_{t} = C*_{t} x S_{t}, where S_{t} is a point estimate for the observation variance phi^-1.
-#' Rt the prior scale matrix, dim = p x p x T. R_{t} = R*_{t} x S_{t-1}, where S_{t-1} is a point estimate for the observation variance phi^-1 at the previous time point.
-#' RSt the prior scale matrix, dim = p x p x T. R_{t} = R*_{t} x S_{t-1}, where S_{t-1} is a point estimate for the observation variance phi^-1 at the previous time point.
-#' nt and dt the vectors of the hyperparameters for the precision phi with length T.
-#' S the vector of the point estimate for the observation variance phi^-1 with length T.
-#' ft the vector of the one-step forecast location parameter with length T.
-#' Qt the vector of the one-step forecast scale parameter with length T.
-#' ets the vector of the standardised forecast residuals with length T, defined as Y_{t} - f_{t} / sqrt (Q_{t}).
-#' lpl the vector of the Log Predictive Likelihood with length T.
+#' @param priors list with prior hyperparameters.
 #' 
-#' @export
-dlm.lpl <- function(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001){
+#' @return
+#' \item{mt}{the vector or matrix of the posterior mean (location parameter), dim = \code{p x T}.}
+#' \item{Ct}{and \code{CSt} the posterior scale matrix \code{C_{t}} is \code{C_{t} = C*_{t} x S_{t}},
+#'  with dim = \code{p x p x T}, where \code{S_{t}} is a point estimate for the observation variance
+#'  \code{phi^{-1}}}
+#' \item{Rt}{and \code{RSt} the prior scale matrix \code{R_{t}} is \code{R_{t} = R*_{t} x S_{t-1}},
+#'  with dim = \code{p x p x T}, where \code{S_{t-1}} is a point estimate for the observation
+#'  variance \code{phi^{-1}} at the previous time point.}
+#' \item{nt}{and \code{dt} the vectors of the updated hyperparameters for the precision \code{phi}
+#'  with length \code{T}.}
+#' \item{S}{the vector of the point estimate for the observation variance \code{phi^{-1}} with
+#'  length \code{T}.}
+#' \item{ft}{the vector of the one-step forecast location parameter with length \code{T}.}
+#' \item{Qt}{the vector of the one-step forecast scale parameter with length \code{T}.}
+#' \item{ets}{the vector of the standardised forecast residuals with length \code{T},
+#'  \eqn{\newline} defined as \code{(Y_{t} - f_{t}) / sqrt (Q_{t})}.}
+#' \item{lpl}{the vector of the Log Predictive Likelihood with length \code{T}.}
+#' 
+#' @references West, M. & Harrison, J., 1997. Bayesian Forecasting and Dynamic Models. Springer New York.
+dlm.lpl <- function(Yt, Ft, delta, priors = priors.spec() ) {
+  
+  m0 = priors$m0
+  CS0 = priors$CS0
+  n0 = priors$n0
+  d0 = priors$d0
   
   CS0 = CS0*diag(nrow(Ft))
   m0 = rep(m0,nrow(Ft))
@@ -62,36 +97,36 @@ dlm.lpl <- function(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001){
   
   # Updating
   
-  for (t in 2:Nt){
+  for (i in 2:Nt){
     
     # Posterior at {t-1}: (theta_{t-1}|D_{t-1}) ~ T_{n_{t-1}}[m_{t-1}, C_{t-1} = C*_{t-1} x d_{t-1}/n_{t-1}]
     # Prior at {t}: (theta_{t}|D_{t-1}) ~ T_{n_{t-1}}[m_{t-1}, R_{t}]
     # D_{t-1} = D_{0},Y_{1},...,Y_{t-1} D_{0} is the initial information set
     
     # R*_{t} = C*_{t-1}/delta
-    RSt[,,t] = CSt[,,(t-1)] / delta
-    Rt[,,t] = RSt[,,t] * S[(t-1)] 
+    RSt[,,i] = CSt[,,(i-1)] / delta
+    Rt[,,i] = RSt[,,i] * S[(i-1)] 
     # One-step forecast: (Y_{t}|D_{t-1}) ~ T_{n_{t-1}}[f_{t}, Q_{t}]
-    ft[t] = t(F1[,t]) %*% mt[,(t-1)]
-    QSt = as.vector(1 + t(F1[,t]) %*% RSt[,,t] %*% F1[,t])
-    Qt[t] = QSt * S[(t-1)]
-    et = Y[t] - ft[t]
-    ets[t] = et / sqrt(Qt[t])
+    ft[i] = t(F1[,i]) %*% mt[,(i-1)]
+    QSt = as.vector(1 + t(F1[,i]) %*% RSt[,,i] %*% F1[,i])
+    Qt[i] = QSt * S[(i-1)]
+    et = Y[i] - ft[i]
+    ets[i] = et / sqrt(Qt[i])
     
     # Posterior at t: (theta_{t}|D_{t}) ~ T_{n_{t}}[m_{t}, C_{t}]
     # D_{t} = D_{0},Y_{1},...,Y_{t}
-    At = (RSt[,,t] %*% F1[,t])/QSt
-    mt[,t] = mt[,(t-1)] + (At*et)
+    At = (RSt[,,i] %*% F1[,i])/QSt
+    mt[,i] = mt[,(i-1)] + (At*et)
     
-    nt[t] = nt[(t-1)] + 1
-    dt[t] = dt[(t-1)] + (et^2)/QSt
-    S[t]=dt[t]/nt[t] 
+    nt[i] = nt[(i-1)] + 1
+    dt[i] = dt[(i-1)] + (et^2)/QSt
+    S[i]=dt[i]/nt[i] 
     
-    CSt[,,t] = RSt[,,t] - (At %*% t(At))*QSt
-    Ct[,,t] = S[t]*CSt[,,t]
+    CSt[,,i] = RSt[,,i] - (At %*% t(At))*QSt
+    Ct[,,i] = S[i]*CSt[,,i]
     
     # Log Predictive Likelihood 
-    lpl[t] = lgamma((nt[(t-1)]+1)/2)-lgamma(nt[(t-1)]/2)-0.5*log(pi*nt[(t-1)]*Qt[t])-((nt[(t-1)]+1)/2)*log(1+(1/nt[(t-1)])*et^2/Qt[t])
+    lpl[i] = lgamma((nt[(i-1)]+1)/2)-lgamma(nt[(i-1)]/2)-0.5*log(pi*nt[(i-1)]*Qt[i])-((nt[(i-1)]+1)/2)*log(1+(1/nt[(i-1)])*et^2/Qt[i])
   }
   
   mt = mt[,2:Nt]; Ct = Ct[,,2:Nt]; CSt = CSt[,,2:Nt]; Rt = Rt[,,2:Nt]; RSt = RSt[,,2:Nt]
@@ -104,7 +139,7 @@ dlm.lpl <- function(Yt, Ft, delta, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001){
 #' A function to generate all the possible models. 
 #'
 #' @param Nn number of nodes; the number of columns of the dataset can be used.
-#' @param node the node of interest (i.e., the node to find parents for).
+#' @param node The node to find parents for.
 #'
 #' @return
 #' output.model = a matrix with dimensions (Nn-1) x number of models, where number of models = 2^(Nn-1).
@@ -144,20 +179,22 @@ model.generator<-function(Nn,node){
 #' A function for an exhaustive search, calculates the optimum value of the discount factor.
 #'
 #' @param Data  Dataset with dimension number of time points T x Number of nodes Nn.
-#' @param node  node of interest.
+#' @param node  The node to find parents for.
 #' @param nbf   Log Predictive Likelihood will sum from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
-#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta_{0} | D_{0}, phi) ~ N(m_{0},C*_{0} x phi^-1), D_{0} denotes the set of initial information.
-#' @param CS0 controls the scaling of the prior variance matrix C*_{0} at time t=0. The default is 3, giving a non-informative prior for C*_{0}, 3 x (p x p) identity matrix.
-#' @param n0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.
-#' @param d0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. 
+#' @param priors list with prior hyperparameters.
 #'
 #' @return
 #' model.store a matrix with the model, LPL and chosen discount factor for all possible models.
 #' runtime an estimate of the run time of the function, using proc.time().
 #' @export
-exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001) {
+exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=priors.spec() ) {
+  
+  m0 = priors$m0
+  CS0 = priors$CS0
+  n0 = priors$n0
+  d0 = priors$d0
   
   ptm=proc.time()  
   
@@ -194,14 +231,20 @@ exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRU
         lpldet[z,j]=sum(lpl[nbf:Nt])
       } else {
         # original native R
-        a=dlm.lpl(Yt, t(Ft), delta=delta[j], m0=m0, CS0=CS0, n0=n0, d0=d0)
+        a=dlm.lpl(Yt, t(Ft), delta=delta[j], priors=priors)
         lpldet[z,j]=sum(a$lpl[nbf:Nt])
       }
     }
     
-    lplmax[z]=max(lpldet[z,],na.rm=TRUE)
-    DF.hat[z]=delta[lpldet[z,]==max(lpldet[z,],na.rm=TRUE)] # add which here for index
+    if (sum(is.na(lpldet[z,])) == length(lpldet[z,])) {
+      lplmax[z] = -.Machine$double.xmax
+    } else {
+      lplmax[z]=max(lpldet[z,],na.rm=TRUE)
+      DF.hat[z] = delta[which.max(lpldet[z,])]
+    }
   }
+  
+  lpl_noint = 99 # TODO
   
   # Output model.store
   model.store=rbind(models,lplmax,DF.hat)
@@ -209,7 +252,7 @@ exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRU
   
   runtime=(proc.time()-ptm)
   
-  output<-list(model.store=model.store,runtime=runtime)    
+  output<-list(model.store=model.store,runtime=runtime, lpl_noint=lpl_noint)
   return(output)
 }
 
@@ -238,24 +281,23 @@ center <- function(X) {
 #' @param nbf  Log Predictive Likelihood will sum from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
-#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta_{0} | D_{0}, phi) ~ N(m_{0},C*_{0} x phi^-1), D_{0} denotes the set of initial information.
-#' @param CS0 controls the scaling of the prior variance matrix C*_{0} at time t=0. The default is 3, giving a non-informative prior for C*_{0}, 3 x (p x p) identity matrix.
-#' @param n0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.
-#' @param d0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. 
 #' @param bf bayes factor for network thresholding.
+#' @param priors list with prior hyperparameters.
+#' @param path a path where results are written.
 #'
 #' @return store list with results.
 #' @export
-subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001, bf = 20) {
+subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, bf = 20,
+                    priors = priors.spec(), path = getwd() ) {
   N=ncol(X)  # nodes
   M=2^(N-1)  # rows/models
   models = array(rep(0,(N+2)*M*N),dim=c(N+2,M,N))
   
   for (n in 1:N) {
-    tmp=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, m0=m0, CS0=CS0, n0=n0, d0=d0)
+    tmp=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, priors=priors)
     models[,,n]=tmp$model.store
     if (!is.null(id)) {
-      write(t(models[,,n]), file=sprintf("%s_node_%03d.txt", id, n), ncolumns = M)
+      write(t(models[,,n]), file=file.path(path, sprintf("%s_node_%03d.txt", id, n)), ncolumns = M)
     }
   }
   
@@ -276,20 +318,19 @@ subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0,
 #' @param nbf  Log Predictive Likelihood will sum from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.#'
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
-#' @param m0 the value of the prior mean at time t=0, scalar, and assuming the mean is the same for all nodes. The default is zero. (theta_{0} | D_{0}, phi) ~ N(m_{0},C*_{0} x phi^-1), D_{0} denotes the set of initial information.
-#' @param CS0 controls the scaling of the prior variance matrix C*_{0} at time t=0. The default is 3, giving a non-informative prior for C*_{0}, 3 x (p x p) identity matrix.
-#' @param n0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. n0 has to be higher than 0.
-#' @param d0 prior hypermarameter of precision phi ~ G(n_{0}/2; d_{0}/2). The default is a non-informative prior, with n0 = d0 = 0.001. 
+#' @param priors list with prior hyperparameters.
+#' @param path a path where results are written.
 #' 
 #' @return store list with results.
 #' @export
-node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001) {
+node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=priors.spec(),
+                 path=getwd() ) {
   N=ncol(X)  # nodes
   M=2^(N-1)  # rows/models
   
-  store=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, m0=m0, CS0=CS0, n0=n0, d0=d0)
+  store=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, priors=priors)
   if (!is.null(id)) {
-    write(t(store$model.store), file=sprintf("%s_node_%03d.txt", id, n), ncolumns = M)
+    write(t(store$model.store), file=file.path(path, sprintf("%s_node_%03d.txt", id, n)), ncolumns = M)
   }
   return(store)
 }
@@ -367,39 +408,58 @@ getAdjacency <- function(winner, nodes) {
 #'
 #' @param adj 2D adjacency matrix.
 #' @param title title.
-#' @param label label for colormap.
+#' @param colMapLabel label for colormap.
 #' @param hasColMap FALSE turns off color map, default is NULL (on).
 #' @param lim vector with min and max value for color scaling.
+#' @param gradient gradient colors.
+#' @param nodeLabels node labels.
+#' @param axisTextSize text size of the y and x tick labels.
+#' @param xAngle orientation of the x tick labels.
+#' @param titleTextSize text size of the title.
 #'
 #' @export
-gplotMat <- function(adj, title=NULL, label=NULL, hasColMap=NULL, lim=c(0, 1)) {
+gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0, 1),
+                     gradient=c("white", "orange", "red"), nodeLabels=waiver(), axisTextSize=12, xAngle=0, titleTextSize=12) {
   x = melt(adj)
   names(x)[1] = "Parent"
   names(x)[2] = "Child"
+  
+  # handle scales in case custom labeling is set
+  if (is.list(nodeLabels)) {
+    x_scale = scale_x_continuous()
+    y_scale = scale_y_reverse()
+  } else {
+    x_scale = scale_x_continuous(breaks = 1:ncol(adj), labels = nodeLabels)
+    y_scale = scale_y_reverse(breaks = 1:ncol(adj), labels = nodeLabels)
+  }
   
   ggplot(x, aes_string(x = "Child", y = "Parent", fill = "value")) +
     geom_tile(color = "gray60") +
 
     scale_fill_gradient2(
-      low = "white",
-      high = "red",
-      mid = "orange",
+      low  = gradient[1],
+      mid  = gradient[2],
+      high = gradient[3],
       midpoint = sum(lim)/2,
       limit = lim,
       space = "Lab",
-      name = label) + 
+      name = colMapLabel) + 
 
     theme(#axis.ticks.x = element_blank(),
           axis.ticks = element_blank(),
           axis.line = element_blank(),
           text = element_text(size=12),
-          axis.text =  element_text(size=12),
-          plot.title = element_text(size=12)
+          plot.title = element_text(size=titleTextSize),
+          axis.text.x = element_text(size=axisTextSize,angle=xAngle),
+          axis.text.y = element_text(size=axisTextSize),
+          #panel.grid.major = element_line(colour="black", size = (1.5)),
+          #panel.grid.minor = element_line(size = (0.2), colour="grey")
           ) +
-    scale_y_reverse() + ggtitle(title) + guides(fill=hasColMap)
+
+    x_scale + y_scale + ggtitle(title) + guides(fill=hasColMap)
 }
 
-#' Performes a binomial test with FDR correction for network edges in an adjacency matrix.
+#' Performes a binomial test with FDR correction for network edge occurrence.
 #'
 #' @param adj adjacency matrix, nodes x nodes x subj, or nodes x nodes x runs x subj.
 #' @param alter type of binomial test, "two.sided" (default), "less", or "greater"
@@ -431,8 +491,10 @@ binom.nettest <- function(adj, alter="two.sided", fdr=0.05) {
   p = array(NA, dim=c(N_Comp,N_Comp))
   for (i in 1:N_Comp) {
     for (j in 1:N_Comp) {
-      tmp=binom.test(adj_[i,j],N,p=p0, alternative=alter)
-      p[i,j]=tmp$p.value
+      if (i !=j) {
+        tmp=binom.test(adj_[i,j],N,p=p0, alternative=alter)
+        p[i,j]=tmp$p.value
+      }
     }
   }
   
@@ -517,11 +579,17 @@ mdm.group <- function(subj) {
   N=length(subj)
   
   am = lpl = df = tam = tbi = array(NA, dim=c(Nn,Nn,N))
+  df_ = array(NA, dim=c(N,Nn))
   tlpls = array(NA, dim=c(Nn,Nn,2,N))
+  winner = array(NA, dim=c(Nn+2,Nn,N))
+  models = array(NA, dim=c(Nn+2,2^(Nn-1),Nn,N))
   for (s in 1:N) {
     am[,,s]  = subj[[s]]$adj$am
     lpl[,,s] = subj[[s]]$adj$lpl
     df[,,s]  = subj[[s]]$adj$df
+    df_[s,]  = subj[[s]]$winner[nrow(subj[[s]]$winner),]
+    winner[,,s]  = subj[[s]]$winner
+    models[,,,s]  = subj[[s]]$models
     
     # thresholded measures
     tam[,,s]  = subj[[s]]$thr$am
@@ -529,7 +597,8 @@ mdm.group <- function(subj) {
     tlpls[,,,s]= subj[[s]]$thr$lpls
   }
   
-  group=list(am=am,lpl=lpl,df=df,tam=tam,tbi=tbi,tlpls=tlpls)
+  group=list(am=am,lpl=lpl,df=df,tam=tam,tbi=tbi,tlpls=tlpls,
+             df_=df_,winner=winner,models=models)
   return(group)
 }
 
@@ -617,7 +686,7 @@ getThreshAdj <- function(adj, models, winner, bf = 20) {
           # bayes factor penatly, take the simpler unidirectional model.
           if (lpls[i,j,2] > lpls[j,i,2]) {
             am[i,j] = 1; am[j,i] = 0
-          } else {
+          } else if (lpls[i,j,2] < lpls[j,i,2])  {
             am[i,j] = 0; am[j,i] = 1
           }
         }
@@ -818,6 +887,12 @@ perm.test <- function(X, alpha=0.05) {
   return(stat)
 }
 
+#' Removes NAs from matrix.
+#' 
+#' @param M Matrix
+#'
+#' @return matrix with NAs removed.
+#' @export
 rmna <- function(M) {
   
   M[is.na(M)] = 0
@@ -825,8 +900,258 @@ rmna <- function(M) {
   
 }
 
+#' Removes diagnoal from matrix with NAs.
+#' 
+#' @param M Matrix
+#'
+#' @return matrix with diagnoal of NAs.
+#' @export
 rmdiag <- function(M) {
   
   M[as.logical(diag(nrow(M)))]=0
   return(M)
 }
+
+#' Stepise forward non-exhaustive greedy search, calculates the optimum value of the discount factor.
+#'
+#' @param Data  Dataset with dimension number of time points \code{T} x number of nodes \code{Nn}.
+#' @param node  The node to find parents for.
+#' @param nbf   The Log Predictive Likelihood will sum from (and including) this time point. 
+#' @param delta A vector of values for the discount factor.
+#' @param max.break If \code{TRUE}, the code will break if adding / removing parents does not
+#' improve the LPL. If \code{FALSE}, the code will continue to the zero parent / all parent model.
+#' Default is \code{TRUE}.
+#' @param priors List with prior hyperparameters.
+#'
+#' @return
+#' model.store The parents, LPL and chosen discount factor for the subset of models scored using this method.
+#' @export
+stepwise.forward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), 
+                             max.break=TRUE, priors=priors.spec()){
+  
+  # Define the prior hyperparameters
+  m0 = priors$m0
+  CS0 = priors$CS0
+  n0 = priors$n0
+  d0 = priors$d0
+  
+  Nn = ncol(Data) # the number of nodes
+  Nm = 2^(Nn-1)   # the number of models (per node)
+  
+  # Begin at model 1, the no parent (intercept only) model
+  model.store = array(0,dim=c((Nn+2),1))
+  
+  # Find the Log Predicitive Likelihood and discount factor for the zero parent model
+  Yt = Data[,node]    # the time series of the node we wish to find parents for
+  Nt = length(Yt)     # the number of time points
+  nd = length(delta)  # the number of deltas
+  
+  # Create Ft. For the zero parent model, this is simply a column of ones, representing an intercept.
+  Ft=rep(1,Nt)      
+  lpl.delta=rep(NA,nd) 
+  
+  for (j in 1:nd){
+    lpl = dlmLplCpp(Yt,t(Ft),delta=delta[j],m0_=m0,CS0_=CS0,n0=n0,d0=d0)
+    lpl.delta[j]=sum(lpl[nbf:Nt])}
+  
+  lpl.max = max(lpl.delta,na.rm=TRUE)
+  w = which(lpl.delta==lpl.max)
+  DF.hat = delta[w]
+  
+  # Store the model number, model, LPL and discount factor
+  model.store[(Nn+1),] = lpl.max
+  model.store[(Nn+2),] = DF.hat
+  
+  # The parents in the model
+  pars = numeric(0)
+  
+  for (N in 1:(Nn-1)){
+    
+  # Find all the models with the correct length and containing the previously selected parents
+  pars_add = c(1:Nn)[-c(node,pars)]
+    
+  ms.new = array(0,dim=c((Nn+2),(Nn-N)))
+  if (length(pars>0)){ms.new[2:(length(pars)+1),] = pars}
+  ms.new[(length(pars)+2),] = pars_add
+    
+  # Find the LPL and discount factor of this subset of models models
+  nms=ncol(ms.new) # How many models are being considered?
+    
+  # Create empty arrays for the LPL scores and the deltas
+  lpl.delta=array(NA,c(nms,length(delta)))
+  lpl.max=rep(NA,nms)
+  DF.hat=rep(NA,nms)
+    
+  # Now create Ft.
+  for (i in 1:nms){
+    pars = ms.new[(2:Nn),i] 
+    pars = pars[pars!=0]
+    Ft=array(1,dim=c(Nt,length(pars)+1))
+    if (ncol(Ft)>1){Ft[,2:ncol(Ft)] = Data[,pars]}
+      
+  # Calculate the Log Predictive Likelihood for each value of delta, for the specified models
+    for (j in 1:nd){
+      lpl = dlmLplCpp(Yt,t(Ft),delta=delta[j],m0_=m0,CS0_=CS0,n0=n0,d0=d0)
+      lpl.delta[i,j]=sum(lpl[nbf:Nt])}
+      
+    lpl.max[i] = max(lpl.delta[i,],na.rm=TRUE)
+    w = which(lpl.delta[i,]==lpl.max[i])
+    DF.hat[i] = delta[w]}
+    
+  ms.new[(Nn+1),] = lpl.max
+  ms.new[(Nn+2),] = DF.hat
+    
+  # Find the highest LPL so far
+  max.score = max(model.store[(Nn+1),]) 
+  logBF = lpl.max - max.score
+  W = which(logBF > 0)
+    
+  # Update model.store
+  model.store = cbind(model.store,ms.new)
+    
+  if (length(W)==0 & max.break==TRUE){break} 
+  else{W.max = which.max(logBF)
+    
+  # Update the model parents
+  pars = ms.new[(2:Nn),W.max]
+  pars = pars[pars!=0]}}
+  
+model.store[1,] = c(1:ncol(model.store)) # attach a model number
+  
+return(model.store)}
+
+#' Stepise backward non-exhaustive greedy search, calculates the optimum value of the discount factor.
+#'
+#' @param Data  Dataset with dimension number of time points \code{T} x number of nodes \code{Nn}.
+#' @param node  The node to find parents for.
+#' @param nbf   The Log Predictive Likelihood will sum from (and including) this time point. 
+#' @param delta A vector of values for the discount factor.
+#' @param max.break If \code{TRUE}, the code will break if adding / removing parents does not
+#' improve the LPL. If \code{FALSE}, the code will continue to the zero parent / all parent model.
+#' Default is \code{TRUE}.
+#' @param priors List with prior hyperparameters.
+#'
+#' @return
+#' model.store The parents, LPL and chosen discount factor for the subset of models scored using this method.
+#' @export
+stepwise.backward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), 
+                              max.break=TRUE, priors=priors.spec()){
+  
+  # Define the prior hyperparameters
+  m0 = priors$m0
+  CS0 = priors$CS0
+  n0 = priors$n0
+  d0 = priors$d0
+  
+  Nn = ncol(Data) # the number of nodes
+  Nm = 2^(Nn-1)   # the number of models (per node)
+  
+  # Begin at the all parent model
+  model.store = array(0,dim=c((Nn+2),1)) 
+  model.store[(2:Nn),1] = c(1:Nn)[-node]
+  
+  # Find the Log Predicitive Likelihood and discount factor for the all parent model
+  Yt = Data[,node]    # the time series of the node we wish to find parents for
+  Nt = length(Yt)     # the number of time points
+  nd = length(delta)  # the number of deltas
+  
+  # The parents in the model
+  pars = model.store[2:Nn,1]
+  pars = pars[pars!=0]
+  
+  Ft = array(1,dim=c(Nt,Nn)) 
+  Ft[,2:Nn] = Data[,pars]
+  
+  lpl.delta=rep(NA,nd) 
+  
+  for (j in 1:nd){
+    lpl = dlmLplCpp(Yt,t(Ft),delta=delta[j],m0_=m0,CS0_=CS0,n0=n0,d0=d0)
+    lpl.delta[j]=sum(lpl[nbf:Nt])}
+  
+  lpl.max = max(lpl.delta,na.rm=TRUE)
+  w = which(lpl.delta==lpl.max)
+  DF.hat = delta[w]
+  
+  model.store[(Nn+1),] = lpl.max
+  model.store[(Nn+2),] = DF.hat
+  
+  for (N in 1:(Nn-1)){
+    
+  # Find all the models with the correct length and missing the previously removed parents
+  pars_add = combn(pars,(Nn-(N+1)))
+    
+  ms.new = array(0,dim=c((Nn+2),(Nn-N))) 
+  if (length(pars_add>0)){ms.new[2:(nrow(pars_add)+1),] = pars_add}
+    
+  # Find the LPL and discount factor of these models
+  nms=ncol(ms.new) # How many models are being considered?
+    
+  # Create empty arrays for the lpl scores and the deltas
+  lpl.delta=array(NA,c(nms,length(delta)))
+  lpl.max=rep(NA,nms)
+  DF.hat=rep(NA,nms)
+    
+  # Now create Ft. 
+  for (i in 1:nms){
+    pars=ms.new[(2:Nn),i]
+    pars=pars[pars!=0]
+      
+    Ft=array(1,dim=c(Nt,length(pars)+1))
+    if (ncol(Ft)>1){Ft[,2:ncol(Ft)]=Data[,pars]}
+      
+  # Calculate the log predictive likelihood for each value of delta, for the specified models
+    for (j in 1:nd){
+    lpl = dlmLplCpp(Yt,t(Ft),delta=delta[j],m0_=m0,CS0_=CS0,n0=n0,d0=d0)
+    lpl.delta[i,j]=sum(lpl[nbf:Nt])}
+      
+  lpl.max[i] = max(lpl.delta[i,],na.rm=TRUE)
+  w = which(lpl.delta[i,]==lpl.max[i])
+  DF.hat[i] = delta[w]}
+    
+  ms.new[(Nn+1),] = lpl.max
+  ms.new[(Nn+2),] = DF.hat
+    
+  max.score = max(model.store[(Nn+1),]) # Find the highest LPL calculated so far
+  logBF = lpl.max - max.score
+  W = which(logBF > 0)  
+    
+  # Update model.store
+  model.store = cbind(model.store,ms.new)
+    
+  if (length(W)==0 & max.break==TRUE){break}
+  else{W.max = which.max(logBF)
+    
+ # Update the model parents 
+  pars = ms.new[(2:Nn),W.max]
+  pars = pars[pars!=0]}}
+  
+model.store[1,] = c(1:ncol(model.store)) # attach a model number
+  
+return(model.store)}
+
+#' Stepise combine: combines the stepwise forward and the stepwise backward model.
+#'
+#' @param forward_matrix The winning sets of parents using a Forward Selection model search. A
+#' matrix with dimension \code{Nn+2} x \code{Nn}, rows \code{1:Nn} are the parents (ones and zeros),
+#' rows \code{(Nn+1):(Nn+2)} are the LPL and discount factor. forward matrix.
+#' @param backward_matrix backward_matrix}{The winning sets of parents using a Backward Elimination
+#' model search. A matrix with dimension \code{Nn+2} x \code{Nn}, rows \code{1:Nn} are the parents
+#' (ones and zeros), rows \code{(Nn+1):(Nn+2)} are the LPL and discount factor.
+#'
+#' @return
+#' stepwise_combine_matrix The adjacency network, LPLs and discount factors when the Forward
+#' Selection and Backward Elimination model searches are combined.
+#' @export
+stepwise.combine <- function(forward_matrix,backward_matrix){
+  
+  Nn = ncol(forward_matrix)
+  step_combine_matrix = array(NA,dim=c((Nn+2),Nn))
+  
+  for (k in 1:Nn){
+    
+    if (forward_matrix[(Nn+1),k] >= backward_matrix[(Nn+1),k]){step_combine_matrix[,k] = forward_matrix[,k]}
+    if (forward_matrix[(Nn+1),k] < backward_matrix[(Nn+1),k]){step_combine_matrix[,k] = backward_matrix[,k]}
+    
+}
+  
+return(step_combine_matrix)}

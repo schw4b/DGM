@@ -4,19 +4,31 @@
 \alias{gplotMat}
 \title{Plots network as adjacency matrix.}
 \usage{
-gplotMat(adj, title = NULL, label = NULL, hasColMap = NULL, lim = c(0,
-  1))
+gplotMat(adj, title = NULL, colMapLabel = NULL, hasColMap = NULL,
+  lim = c(0, 1), gradient = c("white", "orange", "red"),
+  nodeLabels = waiver(), axisTextSize = 12, xAngle = 0,
+  titleTextSize = 12)
 }
 \arguments{
 \item{adj}{2D adjacency matrix.}
 
 \item{title}{title.}
 
-\item{label}{label for colormap.}
+\item{colMapLabel}{label for colormap.}
 
 \item{hasColMap}{FALSE turns off color map, default is NULL (on).}
 
 \item{lim}{vector with min and max value for color scaling.}
+
+\item{gradient}{gradient colors.}
+
+\item{nodeLabels}{node labels.}
+
+\item{axisTextSize}{text size of the y and x tick labels.}
+
+\item{xAngle}{orientation of the x tick labels.}
+
+\item{titleTextSize}{text size of the title.}
 }
 \description{
 Plots network as adjacency matrix.

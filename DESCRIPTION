@@ -1,19 +1,17 @@
 Package: multdyn
-Version: 1.5.1
-Date: 2017-03-21
+Version: 1.6
+Date: 2017-08-24
 Title: Multiregression Dynamic Models
 Author: Simon Schwab <schw4b@gmail.com>, Ruth Harbord <r.harbord@warwick.ac.uk>,
     Lilia Costa <liliacosta@ufba.br>, Thomas Nichols <t.e.nichols@warwick.ac.uk>
 Maintainer: Simon Schwab <schw4b@gmail.com>
+Depends: R (>= 3.2.0)
 Imports:
-    Rcpp (>= 0.12.4), data.table (>= 1.10.0), reshape2 (>= 1.4.2), ggplot2 (>= 2.2.1)
+    Rcpp (>= 0.11.0), data.table (>= 1.10.0), reshape2 (>= 1.4.2), ggplot2 (>= 2.2.1)
 LinkingTo: Rcpp, RcppArmadillo
 Suggests:
     testthat
-Description: The Multiregression Dynamic Models (MDM) are a multivariate
-    graphical model for a multidimensional time series that allows the estimation of
-    time-varying effective connectivity.
-Depends: R (>= 3.2.0)
+Description: Multiregression Dynamic Models for directed dynamic functional brain network analysis.
 License: GPL-3
 URL: https://github.com/schw4b/multdyn
 BugReports: https://github.com/schw4b/multdyn/issues
