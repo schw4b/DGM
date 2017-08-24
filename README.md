@@ -1,8 +1,7 @@
-# multdyn: A package for Multiregression Dynamic Models (MDM)
+# multdyn: Multiregression Dynamic Models for directed dynamic functional brain network analysis.
 [![Build Status](https://travis-ci.org/schw4b/multdyn.png?branch=master)](https://travis-ci.org/schw4b/multdyn)
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/multdyn)](http://cran.r-project.org/package=multdyn)
+[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/multdyn)](https://cran.r-project.org/package=multdyn)
 [![CRAN\_Download\_Badge](http://cranlogs.r-pkg.org/badges/grand-total/multdyn)](http://www.r-pkg.org/pkg/multdyn)
-[![MIT licensed](https://img.shields.io/badge/license-GPL%20%3E%3D%203-yellowgreen.svg)](https://github.com/schw4b/multdyn/blob/master/DESCRIPTION)
 
 The aim of this package is to study directed functional connectivity in fMRI. Multiregression Dynamic Models (MDM) belong to the family of Dynamic Bayesian Networks. MDM searches through all possible parent nodes for a specific node and provides an interpretable fit in terms of regression model for each network node (Costa et al., 2015).
 
