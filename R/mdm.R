@@ -1155,3 +1155,56 @@ stepwise.combine <- function(forward_matrix,backward_matrix){
 }
   
 return(step_combine_matrix)}
+
+#' Function for DLM with Smoothing for unknown observational and state variances
+#' 
+#' @param mt the vector or matrix of the posterior mean (location parameter), dim = \code{p x T}.
+#' @param Ct and \code{CSt} the posterior scale matrix \code{C_{t}} is \code{C_{t} = C*_{t} x S_{t}},
+#' with dim = \code{p x p x T}, where \code{S_{t}} is a point estimate for the observation variance
+#' \code{phi^{-1}}
+#' @param Rt and \code{RSt} the prior scale matrix \code{R_{t}} is \code{R_{t} = R*_{t} x S_{t-1}},
+#' with dim = \code{p x p x T}, where \code{S_{t-1}} is a point estimate for the observation
+#' variance \code{phi^{-1}} at the previous time point.
+#' @param nt and the vectors of the updated hyperparameters for the precision \code{phi}
+#' with length \code{T}.
+#' @param dt the vectors of the updated hyperparameters for the precision \code{phi}
+#' with length \code{T}.
+#' @param Gt the matrix of state equation with dimension: p X p X T. The default is identity matrix block.
+#'
+#' @return
+#' smt the matrix of smoothing posterior mean with dimension p X T
+#  sCt the squared matrix of smoothing posterior variance with dimension p X p X T 
+#' @export
+dlm_smoo <- function(mt, Ct, Rt, nt, dt, Gt = 0) {
+  
+  # defining objects
+  if (is.vector(mt)){
+    mt = array(mt, dim=c(1,length(mt)))
+    Ct = array(Ct, dim=c(1,1,length(mt)))
+    Rt = array(Rt, dim=c(1,1,length(Rt)))     
+  }
+  if (Gt == 0){Gt = array(diag(nrow(mt)), dim=c(nrow(mt),nrow(mt),ncol(mt)))}
+  p = nrow(mt) # the number of thetas
+  Nt = ncol(mt) # the sample size
+  smt = array(0, dim=c(p,Nt))
+  sCt = array(0, dim=c(p,p,Nt)) 
+  
+  # in the last time point
+  smt[,Nt] = mt[,Nt]
+  sCt[,,Nt] = Ct[,,Nt] 
+  
+  # for other time points
+  for (i in (Nt-1):1){
+    RSt = Rt[,,(i+1)]*nt[i]/dt[i]
+    CSt = Ct[,,i]*nt[i]/dt[i]
+    #inv.sR = solvecov(RSt, cmax = 1e+10)$inv
+    inv.sR = solve(RSt)
+    B = CSt %*% t(Gt[,,(i+1)]) %*% inv.sR
+    smt[,i] = mt[, i] + B %*% (smt[,(i+1)] - Gt[,,(i+1)] %*% mt[,i])
+    sCS = CSt + B %*% (sCt[,,(i+1)]*nt[Nt]/dt[Nt] - RSt) %*% t(B)     
+    sCt[,,i] = sCS * dt[Nt] / nt[Nt]
+  }
+  
+  result <- list(smt=smt, sCt=sCt)
+  return(result)
+}
