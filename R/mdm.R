@@ -814,29 +814,29 @@ patel <- function(X, lower=0.1, upper=0.9, bin=0.75, TK=0, TT=0) {
   theta4 = crossprod(1-X2,1-X2)/nt # a=0, b=0
   
   # directionality tau [-1, 1]
-  tau = matrix(0, ncol(X2), ncol(X2))
-  inds = theta2 >= theta3
+  tau = matrix(0, nn, nn)
+  inds = theta2 >= theta3 # remove = 
   tau[inds] = 1 - (theta1[inds] + theta3[inds])/(theta1[inds] + theta2[inds])
   tau[!inds] = (theta1[!inds] + theta2[!inds])/(theta1[!inds] + theta3[!inds]) - 1
-  tau=-tau
+  tau=-tau # inverse 
   tau[as.logical(diag(nn))]=NA
   # tau(a,b) positive, a is ascendant to b (a is parent)
   
   # functional connectivity kappa [-1, 1]
   E=(theta1+theta2)*(theta1+theta3)
-  max_theta1=min(theta1+theta2,theta1+theta3)
-  min_theta1=max(0,2*theta1+theta2+theta3-1)
-  inds = theta1>=E
-  D = matrix(0, ncol(X2), ncol(X2))
-  D[inds]=0.5+(theta1[inds]-E[inds])/(2*(max_theta1-E[inds]))
-  D[!inds]=0.5-(theta1[!inds]-E[!inds])/(2*(E[!inds]-min_theta1))
+  max_theta1=pmin(theta1+theta2,theta1+theta3)
+  min_theta1=pmax(array(0,dim=c(nn,nn)),2*theta1+theta2+theta3-1)
+  inds = theta1>=E # remove =
+  D = matrix(0, nn, nn)
+  D[inds]=0.5+(theta1[inds]-E[inds])/(2*(max_theta1[inds]-E[inds]))
+  D[!inds]=0.5-(theta1[!inds]-E[!inds])/(2*(E[!inds]-min_theta1[!inds]))
   
   kappa=(theta1-E)/(D*(max_theta1-E) + (1-D)*(E-min_theta1))
   kappa[as.logical(diag(nn))]=NA
   
-  # theresholding
+  # thresholding
   tkappa = kappa
-  tkappa[kappa >= TK[1] & kappa <= TK[2]] = 0
+  tkappa[kappa >= TK[1] & kappa <= TK[2]] = 0 # this is a tow-sided test, maybe one sided?
   ttau = tau
   ttau[tau >= TT[1] & tau <= TT[2]] = 0
   
