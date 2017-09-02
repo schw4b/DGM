@@ -410,7 +410,7 @@ getAdjacency <- function(winner, nodes) {
 #' @param title title.
 #' @param colMapLabel label for colormap.
 #' @param hasColMap FALSE turns off color map, default is NULL (on).
-#' @param lim vector with min and max value for color scaling.
+#' @param lim vector with min and max value, data outside this range will be removed.
 #' @param gradient gradient colors.
 #' @param nodeLabels node labels.
 #' @param axisTextSize text size of the y and x tick labels.
@@ -437,6 +437,7 @@ gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0,
     geom_tile(color = "gray60") +
 
     scale_fill_gradient2(
+      na.value = "transparent",
       low  = gradient[1],
       mid  = gradient[2],
       high = gradient[3],
