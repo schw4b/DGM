@@ -815,29 +815,29 @@ patel <- function(X, lower=0.1, upper=0.9, bin=0.75, TK=0, TT=0) {
   theta4 = crossprod(1-X2,1-X2)/nt # a=0, b=0
   
   # directionality tau [-1, 1]
-  tau = matrix(0, ncol(X2), ncol(X2))
-  inds = theta2 >= theta3
+  tau = matrix(0, nn, nn)
+  inds = theta2 >= theta3 # remove = 
   tau[inds] = 1 - (theta1[inds] + theta3[inds])/(theta1[inds] + theta2[inds])
   tau[!inds] = (theta1[!inds] + theta2[!inds])/(theta1[!inds] + theta3[!inds]) - 1
-  tau=-tau
+  tau=-tau # inverse 
   tau[as.logical(diag(nn))]=NA
   # tau(a,b) positive, a is ascendant to b (a is parent)
   
   # functional connectivity kappa [-1, 1]
   E=(theta1+theta2)*(theta1+theta3)
-  max_theta1=min(theta1+theta2,theta1+theta3)
-  min_theta1=max(0,2*theta1+theta2+theta3-1)
-  inds = theta1>=E
-  D = matrix(0, ncol(X2), ncol(X2))
-  D[inds]=0.5+(theta1[inds]-E[inds])/(2*(max_theta1-E[inds]))
-  D[!inds]=0.5-(theta1[!inds]-E[!inds])/(2*(E[!inds]-min_theta1))
+  max_theta1=pmin(theta1+theta2,theta1+theta3)
+  min_theta1=pmax(array(0,dim=c(nn,nn)),2*theta1+theta2+theta3-1)
+  inds = theta1>=E # remove =
+  D = matrix(0, nn, nn)
+  D[inds]=0.5+(theta1[inds]-E[inds])/(2*(max_theta1[inds]-E[inds]))
+  D[!inds]=0.5-(theta1[!inds]-E[!inds])/(2*(E[!inds]-min_theta1[!inds]))
   
   kappa=(theta1-E)/(D*(max_theta1-E) + (1-D)*(E-min_theta1))
   kappa[as.logical(diag(nn))]=NA
   
-  # theresholding
+  # thresholding
   tkappa = kappa
-  tkappa[kappa >= TK[1] & kappa <= TK[2]] = 0
+  tkappa[kappa >= TK[1] & kappa <= TK[2]] = 0 # this is a tow-sided test, maybe one sided?
   ttau = tau
   ttau[tau >= TT[1] & tau <= TT[2]] = 0
   
@@ -1156,3 +1156,56 @@ stepwise.combine <- function(forward_matrix,backward_matrix){
 }
   
 return(step_combine_matrix)}
+
+#' Function for DLM with Smoothing for unknown observational and state variances
+#' 
+#' @param mt the vector or matrix of the posterior mean (location parameter), dim = \code{p x T}.
+#' @param Ct and \code{CSt} the posterior scale matrix \code{C_{t}} is \code{C_{t} = C*_{t} x S_{t}},
+#' with dim = \code{p x p x T}, where \code{S_{t}} is a point estimate for the observation variance
+#' \code{phi^{-1}}
+#' @param Rt and \code{RSt} the prior scale matrix \code{R_{t}} is \code{R_{t} = R*_{t} x S_{t-1}},
+#' with dim = \code{p x p x T}, where \code{S_{t-1}} is a point estimate for the observation
+#' variance \code{phi^{-1}} at the previous time point.
+#' @param nt and the vectors of the updated hyperparameters for the precision \code{phi}
+#' with length \code{T}.
+#' @param dt the vectors of the updated hyperparameters for the precision \code{phi}
+#' with length \code{T}.
+#' @param Gt the matrix of state equation with dimension: p X p X T. The default is identity matrix block.
+#'
+#' @return
+#' smt the matrix of smoothing posterior mean with dimension p X T
+#  sCt the squared matrix of smoothing posterior variance with dimension p X p X T 
+#' @export
+dlm_smoo <- function(mt, Ct, Rt, nt, dt, Gt = 0) {
+  
+  # defining objects
+  if (is.vector(mt)){
+    mt = array(mt, dim=c(1,length(mt)))
+    Ct = array(Ct, dim=c(1,1,length(mt)))
+    Rt = array(Rt, dim=c(1,1,length(Rt)))     
+  }
+  if (Gt == 0){Gt = array(diag(nrow(mt)), dim=c(nrow(mt),nrow(mt),ncol(mt)))}
+  p = nrow(mt) # the number of thetas
+  Nt = ncol(mt) # the sample size
+  smt = array(0, dim=c(p,Nt))
+  sCt = array(0, dim=c(p,p,Nt)) 
+  
+  # in the last time point
+  smt[,Nt] = mt[,Nt]
+  sCt[,,Nt] = Ct[,,Nt] 
+  
+  # for other time points
+  for (i in (Nt-1):1){
+    RSt = Rt[,,(i+1)]*nt[i]/dt[i]
+    CSt = Ct[,,i]*nt[i]/dt[i]
+    #inv.sR = solvecov(RSt, cmax = 1e+10)$inv
+    inv.sR = solve(RSt)
+    B = CSt %*% t(Gt[,,(i+1)]) %*% inv.sR
+    smt[,i] = mt[, i] + B %*% (smt[,(i+1)] - Gt[,,(i+1)] %*% mt[,i])
+    sCS = CSt + B %*% (sCt[,,(i+1)]*nt[Nt]/dt[Nt] - RSt) %*% t(B)     
+    sCt[,,i] = sCS * dt[Nt] / nt[Nt]
+  }
+  
+  result <- list(smt=smt, sCt=sCt)
+  return(result)
+}
