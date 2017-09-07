@@ -420,6 +420,9 @@ getAdjacency <- function(winner, nodes) {
 #' @export
 gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0, 1),
                      gradient=c("white", "orange", "red"), nodeLabels=waiver(), axisTextSize=12, xAngle=0, titleTextSize=12) {
+  colnames(adj)=NULL
+  rownames(adj)=NULL
+  
   x = melt(adj)
   names(x)[1] = "Parent"
   names(x)[2] = "Child"
@@ -869,27 +872,29 @@ patel <- function(X, lower=0.1, upper=0.9, bin=0.75, TK=0, TT=0) {
 #'
 #' @return stat lower and upper significance thresholds.
 #' @export
-rand.test <- function(X, alpha=0.05) {
+rand.test <- function(X, alpha=0.05, K=1000) {
   
   low = alpha/2      # two sided test
   up  = 1 - alpha/2
   
   N  = dim(X)[3] # Nr. of subjects
   Nn = dim(X)[2] # Nr. of nodes
+  Nt = dim(X)[1] # Nr. of nodes
   
-  # shuffle across subjects with fixed nodes
-  ka = array(NA,dim=c(Nn,Nn,N)) # kappa null distribution
-  ta = array(NA,dim=c(Nn,Nn,N)) # kappa null distribution
-  X_= array(NA, dim=dim(X))
-  for (s in 1:N) {
+  ka = array(NA,dim=c(Nn,Nn,K)) # kappa null distribution
+  ta = array(NA,dim=c(Nn,Nn,K)) # tau null distribution
+  X_= array(NA, dim=c(Nt,Nn))
+  for (k in 1:K) {
+    s = sample(N,Nn, replace = F)
+    # shuffle across subjects with fixed nodes (because of node variance)
     for (n in 1:Nn) {
-      X_[,n,s]=X[,n,sample(N,1)] # draw a random subject (with repetition)
+      X_[,n]=X[,n,s[n]]
     }
-    p=patel(X_[,,s])
-    ka[,,s]=p$kappa
-    ta[,,s]=p$tau
+    p=patel(X_)
+    ka[,,k]=p$kappa
+    ta[,,k]=p$tau
   }
-  
+
   # two sided sign. test
   stat = list()
   stat$kappa = quantile(ka[!is.na(ka)], probs=c(low, up)) # two sided
