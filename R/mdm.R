@@ -410,7 +410,7 @@ getAdjacency <- function(winner, nodes) {
 #' @param title title.
 #' @param colMapLabel label for colormap.
 #' @param hasColMap FALSE turns off color map, default is NULL (on).
-#' @param lim vector with min and max value for color scaling.
+#' @param lim vector with min and max value, data outside this range will be removed.
 #' @param gradient gradient colors.
 #' @param nodeLabels node labels.
 #' @param axisTextSize text size of the y and x tick labels.
@@ -437,6 +437,7 @@ gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0,
     geom_tile(color = "gray60") +
 
     scale_fill_gradient2(
+      na.value = "transparent",
       low  = gradient[1],
       mid  = gradient[2],
       high = gradient[3],
@@ -825,10 +826,10 @@ patel <- function(X, lower=0.1, upper=0.9, bin=0.75, TK=0, TT=0) {
   
   # directionality tau [-1, 1]
   tau = matrix(0, nn, nn)
-  inds = theta2 >= theta3 # remove = 
+  inds = theta2 >= theta3
   tau[inds] = 1 - (theta1[inds] + theta3[inds])/(theta1[inds] + theta2[inds])
   tau[!inds] = (theta1[!inds] + theta2[!inds])/(theta1[!inds] + theta3[!inds]) - 1
-  tau=-tau # inverse 
+  #tau=-tau # inverse 
   tau[as.logical(diag(nn))]=NA
   # tau(a,b) positive, a is ascendant to b (a is parent)
   
@@ -836,7 +837,7 @@ patel <- function(X, lower=0.1, upper=0.9, bin=0.75, TK=0, TT=0) {
   E=(theta1+theta2)*(theta1+theta3)
   max_theta1=pmin(theta1+theta2,theta1+theta3)
   min_theta1=pmax(array(0,dim=c(nn,nn)),2*theta1+theta2+theta3-1)
-  inds = theta1>=E # remove =
+  inds = theta1>=E
   D = matrix(0, nn, nn)
   D[inds]=0.5+(theta1[inds]-E[inds])/(2*(max_theta1[inds]-E[inds]))
   D[!inds]=0.5-(theta1[!inds]-E[!inds])/(2*(E[!inds]-min_theta1[!inds]))
@@ -846,14 +847,14 @@ patel <- function(X, lower=0.1, upper=0.9, bin=0.75, TK=0, TT=0) {
   
   # thresholding
   tkappa = kappa
-  tkappa[kappa >= TK[1] & kappa <= TK[2]] = 0 # this is a tow-sided test, maybe one sided?
+  tkappa[kappa >= TK[1] & kappa <= TK[2]] = 0 # this is a tow-sided test, kappa ranges from -1 to 1
   ttau = tau
   ttau[tau >= TT[1] & tau <= TT[2]] = 0
   
   # binary nets: we focus on positive associations
-  net = (tkappa > 0)*(tau > 0)  # only kappa thresholded
+  net = (tkappa > 0)*(tau < 0)  # only kappa thresholded
   net[diag(nn)==1]=0 # remove NA
-  tnet = (tkappa > 0)*(ttau > 0) # both tau and kappa thresholded
+  tnet = (tkappa > 0)*(ttau < 0) # both tau and kappa thresholded
   tnet[diag(nn)==1]=0 # remove NA
   
   PT=list(kappa=kappa, tau=tau, tkappa=tkappa, ttau=ttau, net=net, tnet=tnet)
