@@ -705,14 +705,11 @@ getThreshAdj <- function(adj, models, winner, bf = 20) {
 #' Performance of estimates, such as sensitivity, specificity, and more.
 #'
 #' @param x estimated binary network matrix.
-#' @param xtrue, true binary network matrix.
+#' @param true, true binary network matrix.
 #' 
-#' @return perf vector.
+#' @return p list with results.
 #' @export
-perf <- function(x, xtrue) {
-  
-  # in case xtrue continas NA instead of 0
-  xtrue[is.na(xtrue)]=0
+perf <- function(x, true) {
   
   d = dim(x)
   Nn=d[1]
@@ -723,15 +720,19 @@ perf <- function(x, xtrue) {
     N=1
   }
   
-  perf=array(NA,dim=c(N,8))
+  subj=array(NA,dim=c(N,8))
+  cases=array(NA,dim=c(N,4))
   
   for (i in 1:N) {
-    # see https://en.wikipedia.org/wiki/Sensitivity_and_specificity
-    TP = sum(x[,,i] & xtrue)
-    FP = sum((x[,,i] - xtrue) == 1)
-    FN = sum((xtrue - x[,,i]) == 1)
-    TN = sum(!x[,,i] & !xtrue) - ncol(x[,,i])
+    TP = sum(x[,,i] & true)
+    FP = sum((x[,,i] - true) == 1)
+    FN = sum((true - x[,,i]) == 1)
+    TN = sum(!x[,,i] & !true) - ncol(x[,,i])
+    assert(TP+FP+FN+TN == Nn*(Nn-1))
     
+    cases[i,]=c(TP,FP,FN,TN)
+    
+    # see https://en.wikipedia.org/wiki/Sensitivity_and_specificity
     tpr = TP/(TP+FN) # 1
     spc = TN/(TN+FP) # 2
     ppv = TP/(TP+FP) # 3
@@ -741,10 +742,19 @@ perf <- function(x, xtrue) {
     fdr = FP/(TP+FP) # 7
     acc = (TP+TN)/(TP+FP+FN+TN) # 8
     
-    perf[i,]=c(tpr,spc,ppv,npv,fpr,fnr,fdr,acc)
+    subj[i,]=c(tpr,spc,ppv,npv,fpr,fnr,fdr,acc)
   }
+  colnames(cases) = c("TP", "FP", "FN", "TN")
+  colnames(subj) = c("tpr", "spc", "ppv", "npv", "fpr", "fnr", "fdr", "acc")
   
-  return(perf)
+  p = list()
+  p$subj=subj
+  p$cases=cases
+  
+  p$tpr = sum(cases[,1])/(sum(cases[,1]) + sum(cases[,3]))
+  p$spc = sum(cases[,4])/(sum(cases[,4]) + sum(cases[,2]))
+  p$acc = (sum(cases[,1]) + sum(cases[,4]))/(sum(cases[,1]) + sum(cases[,2]) + sum(cases[,3]) + sum(cases[,4]))
+  return(p)
 }
   
 #' Scaling data. Zero centers and scales the nodes (SD=1).
@@ -850,7 +860,7 @@ patel <- function(X, lower=0.1, upper=0.9, bin=0.75, TK=0, TT=0) {
   return(PT)
 }
 
-#' Permutation test for Patel's kappa. Creates a distribution of values
+#' Randomization test for Patel's kappa. Creates a distribution of values
 #' kappa under the null hypothesis.
 #'
 #' @param X time x node x subjects 3D matrix.
@@ -858,7 +868,7 @@ patel <- function(X, lower=0.1, upper=0.9, bin=0.75, TK=0, TT=0) {
 #'
 #' @return stat lower and upper significance thresholds.
 #' @export
-perm.test <- function(X, alpha=0.05) {
+rand.test <- function(X, alpha=0.05) {
   
   low = alpha/2      # two sided test
   up  = 1 - alpha/2
@@ -910,6 +920,23 @@ rmdiag <- function(M) {
   
   M[as.logical(diag(nrow(M)))]=0
   return(M)
+}
+
+#' Turns asymetric network into an symmetric network. Helper function to
+#' determine the detection of a connection while ignoring directionality.
+#' 
+#' @param M 3D matrix nodes x nodes x subjects
+#'
+#' @return 3D matrix nodes x nodes x subjects
+#' @export
+symmetric <- function(M) {
+  
+  d = dim(M)
+  R = M
+  for (i in 1:d[3]) {
+    R[,,i] = pmax(M[,,i], t(M[,,i]))
+  }
+  return(R)
 }
 
 #' Stepise forward non-exhaustive greedy search, calculates the optimum value of the discount factor.
