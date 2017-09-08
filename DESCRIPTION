@@ -11,7 +11,9 @@ Imports:
 LinkingTo: Rcpp, RcppArmadillo
 Suggests:
     testthat
-Description: Multiregression Dynamic Models for directed dynamic functional brain network analysis.
+Description:
+    Dynamical graphical models for finding directed dynamic network models with
+    multivariate time series data, with emphasis on functional MRI brain network data.
 License: GPL-3
 URL: https://github.com/schw4b/multdyn
 BugReports: https://github.com/schw4b/multdyn/issues

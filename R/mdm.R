@@ -419,7 +419,8 @@ getAdjacency <- function(winner, nodes) {
 #'
 #' @export
 gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0, 1),
-                     gradient=c("white", "orange", "red"), nodeLabels=waiver(), axisTextSize=12, xAngle=0, titleTextSize=12) {
+                     gradient=c("white", "orange", "red"), nodeLabels=waiver(), axisTextSize=12,
+                     xAngle=0, titleTextSize=12) {
   colnames(adj)=NULL
   rownames(adj)=NULL
   
