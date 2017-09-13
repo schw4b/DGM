@@ -1,7 +1,7 @@
 Package: multdyn
 Version: 1.6.1
 Date: 2017-08-24
-Title: Multiregression Dynamic Models
+Title: Dynamical Graphical Models
 Author: Simon Schwab <schw4b@gmail.com>, Ruth Harbord <r.harbord@warwick.ac.uk>,
     Lilia Costa <liliacosta@ufba.br>, Thomas Nichols <t.e.nichols@warwick.ac.uk>
 Maintainer: Simon Schwab <schw4b@gmail.com>

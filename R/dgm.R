@@ -579,7 +579,7 @@ getModel <- function(models, parents) {
 #' 
 #' @return group a list.
 #' @export
-mdm.group <- function(subj) {
+dgm.group <- function(subj) {
   Nn=ncol(subj[[1]]$adj$am)
   N=length(subj)
   
@@ -733,7 +733,6 @@ perf <- function(x, true) {
     FP = sum((x[,,i] - true) == 1)
     FN = sum((true - x[,,i]) == 1)
     TN = sum(!x[,,i] & !true) - ncol(x[,,i])
-    assert(TP+FP+FN+TN == Nn*(Nn-1))
     
     cases[i,]=c(TP,FP,FN,TN)
     
@@ -870,6 +869,7 @@ patel <- function(X, lower=0.1, upper=0.9, bin=0.75, TK=0, TT=0) {
 #'
 #' @param X time x node x subjects 3D matrix.
 #' @param alpha sign. level
+#' @param K number of randomizations, default is 1000.
 #'
 #' @return stat lower and upper significance thresholds.
 #' @export
