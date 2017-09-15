@@ -281,13 +281,13 @@ center <- function(X) {
 #' @param nbf  Log Predictive Likelihood will sum from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
-#' @param bf bayes factor for network thresholding.
+#' @param e bayes factor for network pruning.
 #' @param priors list with prior hyperparameters.
 #' @param path a path where results are written.
 #'
 #' @return store list with results.
 #' @export
-subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, bf = 20,
+subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, e = 20,
                     priors = priors.spec(), path = getwd() ) {
   N=ncol(X)  # nodes
   M=2^(N-1)  # rows/models
@@ -305,7 +305,7 @@ subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, bf = 20
   store$models=models
   store$winner=getWinner(models,N)
   store$adj=getAdjacency(store$winner,N)
-  store$thr=getThreshAdj(store$adj, store$models, store$winner, bf = bf)
+  store$thr=pruning(store$adj, store$models, store$winner, e = e)
   
   return(store)
 }
@@ -339,11 +339,11 @@ node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=
 #' @param path path.
 #' @param id identifier to select all subjects' nodes, e.g. pattern containing subject ID and session number.
 #' @param nodes number of nodes.
-#' @param bf bayes factor for network thresholding.
+#' @param e bayes factor for network pruning.
 #'
 #' @return store list with results.
 #' @export
-read.subject <- function(path, id, nodes, bf = 20) {
+read.subject <- function(path, id, nodes, e = 20) {
   models = array(0,dim=c(nodes+2,2^(nodes-1),nodes))
   for (n in 1:nodes) {
     #file=sprintf("%s_node_%03d.txt", id, n)
@@ -355,7 +355,7 @@ read.subject <- function(path, id, nodes, bf = 20) {
   store$models=models
   store$winner=getWinner(models,nodes)
   store$adj=getAdjacency(store$winner,nodes)
-  store$thr=getThreshAdj(store$adj, store$models, store$winner, bf = bf)
+  store$thr=pruning(store$adj, store$models, store$winner, e = e)
   
   return(store)
 }
@@ -596,7 +596,7 @@ dgm.group <- function(subj) {
     winner[,,s]  = subj[[s]]$winner
     models[,,,s]  = subj[[s]]$models
     
-    # thresholded measures
+    # pruning
     tam[,,s]  = subj[[s]]$thr$am
     tbi[,,s]  = subj[[s]]$thr$bi
     tlpls[,,,s]= subj[[s]]$thr$lpls
@@ -631,16 +631,16 @@ patel.group <- function(subj) {
   return(group)
 }
 
-#' Get thresholded adjacency network.
+#' Get pruned adjacency network.
 #'
 #' @param adj list with network adjacency from getAdjacency().
 #' @param models matrix 3D with full model estimates.
 #' @param winner matrix 2D with winning models.
-#' @param bf bayes factor for network thresholding.
+#' @param e bayes factor for network pruning.
 #' 
-#' @return thr list with thresholded network adjacency.
+#' @return thr list with pruned network adjacency.
 #' @export
-getThreshAdj <- function(adj, models, winner, bf = 20) {
+pruning <- function(adj, models, winner, e = 20) {
   
   Nn = ncol(adj$am)
   # determine bidirectional edges
@@ -686,7 +686,7 @@ getThreshAdj <- function(adj, models, winner, bf = 20) {
   for (i in 1:Nn) {
     for (j in 1:Nn) {
       if (B[i,j] == 1) {
-        if (lpls[i,j,1] - bf <= max(lpls[i,j,2], lpls[j,i,2]) ) {
+        if (lpls[i,j,1] - e <= max(lpls[i,j,2], lpls[j,i,2]) ) {
           # if unidirectional lpl is larger than bidirectional with a
           # bayes factor penatly, take the simpler unidirectional model.
           if (lpls[i,j,2] > lpls[j,i,2]) {
@@ -702,7 +702,7 @@ getThreshAdj <- function(adj, models, winner, bf = 20) {
   thr=list()
   thr$bi=bi # bidirectional edges
   thr$lpls=lpls # lpls
-  thr$am=am # adjacency matrix (thresholded)
+  thr$am=am # adjacency matrix (pruned)
   
   return(thr)
 }

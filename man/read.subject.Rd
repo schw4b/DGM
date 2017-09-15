@@ -4,7 +4,7 @@
 \alias{read.subject}
 \title{Reads single subject's network from txt files.}
 \usage{
-read.subject(path, id, nodes, bf = 20)
+read.subject(path, id, nodes, e = 20)
 }
 \arguments{
 \item{path}{path.}
@@ -13,7 +13,7 @@ read.subject(path, id, nodes, bf = 20)
 
 \item{nodes}{number of nodes.}
 
-\item{bf}{bayes factor for network thresholding.}
+\item{e}{bayes factor for network pruning.}
 }
 \value{
 store list with results.
