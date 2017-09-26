@@ -59,18 +59,14 @@ Build the package
 
     make clean
     cd multdyn; R -e 'devtools::document()'; cd ..
-    make build
-    make file=multdyn_1.5.2.tar.gz check
-
-Sometimes it may be required to make a new `NAMESPACE` (careful!)
-
-    mv multdyn/NAMESPACE .
     make namespace
+    make build
+    make file=multdyn_1.6.1.tar.gz check
 
 Install and test in R
 
     R CMD REMOVE multdyn
-    R CMD INSTALL multdyn_1.5.2.tar.gz
+    R CMD INSTALL multdyn_1.6.1.tar.gz
     R
 
     library(multdyn)
