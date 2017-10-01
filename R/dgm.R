@@ -1242,3 +1242,49 @@ dlm_smoo <- function(mt, Ct, Rt, nt, dt, Gt = 0) {
   result <- list(smt=smt, sCt=sCt)
   return(result)
 }
+
+#' Returns job number for incomplete nodes.
+#' @param path path to results.
+#'
+#' @return jobs job numbers
+#' @export
+getIncompleteNodes <- function(path) {
+  
+  f=list.files(path, pattern=glob2rx('*.txt'))
+  
+  # get N number of IDs/subjects
+  ids  = rep(NA,length(f))
+  runs = rep(NA,length(f))
+  nodes= rep(NA,length(f))
+  for (i in 1:length(f)) {
+    ids[i]  = strsplit(f[i], "_")[[1]][1]
+    runs[i] = strsplit(f[i], "_")[[1]][3]
+    nodes[i]= strsplit(f[i], "_")[[1]][5]
+  }
+  
+  info = strsplit(f[1], "_")[[1]][6]
+  
+  N_  = unique(sort(ids))
+  Nr_ = unique(sort(runs))
+  Nn_ = unique(sort(nodes))
+  
+  N  = length(N_)
+  Nr = length(Nr_)
+  Nn = length(Nn_)
+  
+  idx = rep(NA, N*Nr*Nn)
+  c=1
+  for (i in 1:N)  {
+    for (r in 1:Nr)  {
+      for (n in 1:Nn)  {
+        s = sprintf("%s_Run_%s_Comp_%s_%s_node_%s.txt", N_[i],
+                    Nr_[r], Nn_[n], info, Nn_[n])
+        idx[c] = s %in% f
+        c=c+1
+      }
+    }
+  }
+  jobs=which(!idx)
+  return(jobs)
+}
+
