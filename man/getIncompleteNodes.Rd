@@ -2,16 +2,22 @@
 % Please edit documentation in R/dgm.R
 \name{getIncompleteNodes}
 \alias{getIncompleteNodes}
-\title{Returns job number for incomplete nodes.}
+\title{Checks results and returns job number for incomplete nodes.}
 \usage{
-getIncompleteNodes(path)
+getIncompleteNodes(path, ids, Nr, Nn)
 }
 \arguments{
 \item{path}{path to results.}
+
+\item{ids}{subjects ids.}
+
+\item{Nr}{Number of runs.}
+
+\item{Nn}{Number of nodes.}
 }
 \value{
 jobs job numbers
 }
 \description{
-Returns job number for incomplete nodes.
+Checks results and returns job number for incomplete nodes.
 }
