@@ -5,7 +5,7 @@
 \title{Estimate subject's full network: runs exhaustive search on very node.}
 \usage{
 subject(X, id = NULL, nbf = 15, delta = seq(0.5, 1, 0.01), cpp = TRUE,
-  e = 20, priors = priors.spec(), path = getwd())
+  e = 20, priors = priors.spec(), path = getwd(), stepwise = FALSE)
 }
 \arguments{
 \item{X}{array with dimensions timeseries x nodes.}
@@ -23,6 +23,8 @@ subject(X, id = NULL, nbf = 15, delta = seq(0.5, 1, 0.01), cpp = TRUE,
 \item{priors}{list with prior hyperparameters.}
 
 \item{path}{a path where results are written.}
+
+\item{stepwise}{stepwise greedy search, default is off.}
 }
 \value{
 store list with results.

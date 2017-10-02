@@ -284,18 +284,25 @@ center <- function(X) {
 #' @param e bayes factor for network pruning.
 #' @param priors list with prior hyperparameters.
 #' @param path a path where results are written.
+#' @param stepwise stepwise greedy search, default is off.
 #'
 #' @return store list with results.
 #' @export
 subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, e = 20,
-                    priors = priors.spec(), path = getwd() ) {
+                    priors = priors.spec(), path = getwd(), stepwise=FALSE) {
   N=ncol(X)  # nodes
   M=2^(N-1)  # rows/models
   models = array(rep(0,(N+2)*M*N),dim=c(N+2,M,N))
   
   for (n in 1:N) {
-    tmp=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, priors=priors)
-    models[,,n]=tmp$model.store
+    if (stepwise) {
+      tmp=stepwise.forward(X, n, nbf=nbf, delta=delta, priors=priors)
+      models[,,n]=tmp$model.store.complete
+    } else {
+      tmp=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, priors=priors)
+      models[,,n]=tmp$model.store
+    }
+    
     if (!is.null(id)) {
       write(t(models[,,n]), file=file.path(path, sprintf("%s_node_%03d.txt", id, n)), ncolumns = M)
     }
@@ -305,7 +312,9 @@ subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, e = 20,
   store$models=models
   store$winner=getWinner(models,N)
   store$adj=getAdjacency(store$winner,N)
-  store$thr=pruning(store$adj, store$models, store$winner, e = e)
+  if (!stepwise) { # we cannot use pruning with stepwise because model space is incomplete
+    store$thr=pruning(store$adj, store$models, store$winner, e = e)
+  }
   
   return(store)
 }
@@ -340,10 +349,11 @@ node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=
 #' @param id identifier to select all subjects' nodes, e.g. pattern containing subject ID and session number.
 #' @param nodes number of nodes.
 #' @param e bayes factor for network pruning.
+#' @param pr pruning, default is true.
 #'
 #' @return store list with results.
 #' @export
-read.subject <- function(path, id, nodes, e = 20) {
+read.subject <- function(path, id, nodes, e = 20, pr = TRUE) {
   models = array(0,dim=c(nodes+2,2^(nodes-1),nodes))
   for (n in 1:nodes) {
     #file=sprintf("%s_node_%03d.txt", id, n)
@@ -355,7 +365,9 @@ read.subject <- function(path, id, nodes, e = 20) {
   store$models=models
   store$winner=getWinner(models,nodes)
   store$adj=getAdjacency(store$winner,nodes)
-  store$thr=pruning(store$adj, store$models, store$winner, e = e)
+  if (pr) {
+    store$thr=pruning(store$adj, store$models, store$winner, e = e)
+  }
   
   return(store)
 }
@@ -597,9 +609,11 @@ dgm.group <- function(subj) {
     models[,,,s]  = subj[[s]]$models
     
     # pruning
-    tam[,,s]  = subj[[s]]$thr$am
-    tbi[,,s]  = subj[[s]]$thr$bi
-    tlpls[,,,s]= subj[[s]]$thr$lpls
+    if (!is.null(subj[[s]]$thr)) {
+      tam[,,s]  = subj[[s]]$thr$am
+      tbi[,,s]  = subj[[s]]$thr$bi
+      tlpls[,,,s]= subj[[s]]$thr$lpls
+    }
   }
   
   group=list(am=am,lpl=lpl,df=df,tam=tam,tbi=tbi,tlpls=tlpls,
@@ -1051,8 +1065,10 @@ stepwise.forward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01),
   pars = pars[pars!=0]}}
   
 model.store[1,] = c(1:ncol(model.store)) # attach a model number
+model.store.complete = array(NA, dim = c(Nn+2, Nm))
+model.store.complete[,1:ncol(model.store)] = model.store
   
-return(model.store)}
+return(list(model.store = model.store, model.store.complete = model.store.complete))}
 
 #' Stepise backward non-exhaustive greedy search, calculates the optimum value of the discount factor.
 #'
@@ -1161,7 +1177,7 @@ stepwise.backward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01),
   
 model.store[1,] = c(1:ncol(model.store)) # attach a model number
   
-return(model.store)}
+return(list(model.store = model.store))}
 
 #' Stepise combine: combines the stepwise forward and the stepwise backward model.
 #'
