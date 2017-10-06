@@ -1,18 +1,15 @@
-# multdyn: Multiregression Dynamic Models for directed dynamic functional brain network analysis.
+# multdyn: Dynamical graphical models for finding directed dynamic network models with multivariate time series data, with emphasis on functional MRI brain network data.
 [![Build Status](https://travis-ci.org/schw4b/multdyn.png?branch=master)](https://travis-ci.org/schw4b/multdyn)
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/multdyn)](https://cran.r-project.org/package=multdyn)
 [![CRAN\_Download\_Badge](http://cranlogs.r-pkg.org/badges/grand-total/multdyn)](http://www.r-pkg.org/pkg/multdyn)
 
-The aim of this package is to study directed functional connectivity in fMRI. Multiregression Dynamic Models (MDM) belong to the family of Dynamic Bayesian Networks. MDM searches through all possible parent nodes for a specific node and provides an interpretable fit in terms of regression model for each network node (Costa et al., 2015).
+The aim of this package is to study directed dynamic functional connectivity in fMRI. Dynamic graphical models (DGM) belong to the family of Dynamic Bayesian Networks. DGM searches through all possible parent nodes for a specific node and provides an interpretable fit in terms of regression model for each network node. There is a special varinat of DGM called Multiregression Dyanmic Models which constrain the network to a acyclic graph (Costa et al., 2015), but with DGM, we do not use this constrain.
 
-Current research aims to fully characterize MDM using simulations and big data from the Human Connectome Project (HCP) in order to test validity and different aspects of reliability (test-retest reliability, out-of-sample reliability) in order to make this new method available for neuroimaging.
+Current research aims to fully characterize DGM using simulations and big data from the Human Connectome Project (HCP) in order to test validity and different aspects of reliability (test-retest reliability, out-of-sample reliability) in order to make this new method available for neuroimaging.
 
 ## References
 1. Costa, L., Smith, J., Nichols, T., Cussens, J., Duff, E. P., and Makin, T. R. (2015). Searching Multiregression Dynamic Models of resting-state fMRI networks using integer programming. *Bayesian Analysis*, 10(2), 441–478. [doi:10.1214/14-BA913](http://dx.doi.org/10.1214/14-BA913).
 2. Smith, S. M., Miller, K. L., Salimi-Khorshidi, G., Webster, M., Beckmann, C. F., Nichols, T. E., et al. (2011). Network modelling methods for FMRI. *NeuroImage*, 54(2), 875–91. [doi:10.1016/j.neuroimage.2010.08.063](http://dx.doi.org/10.1016/j.neuroimage.2010.08.063).
-
-## Reference this package
-Schwab, S., Harbord, R., Costa, L., Nichols, T.E. (2017). multdyn: A package for Multiregression Dynamic Models (MDM). Available at: https://github.com/schw4b/multdyn.
 
 ## User Guide
 
@@ -32,7 +29,7 @@ The installation with dependencies is approx. 86MB.
     library(devtools)
     install_github("schw4b/multdyn", ref = "develop")
 
-### Running a MDM example with simulated data
+### Running a DGM example with simulated data
 We load simulation data from Smith et al. (2011) of a 5-node network with 200 samples (time points) of one subject. Time series should be mean centered.
 
     library(multdyn)
@@ -122,7 +119,7 @@ Estimates for a time-series with 1200 samples (HCP), and for a 2.8GHz CPU.
 Timings are for one node only. To estimate the full network (all parents of all the nodes, the numbers above have to be multiplied by the number of nodes (e.g., a 8-node network takes 80 sec.)
 
 
-### Install or update  MDM on Buster super-computer (buster.stats.warwick.ac.uk)
+### Install or update multdyn on Buster super-computer (buster.stats.warwick.ac.uk)
 From bash terminal on buster run:
 
     $ module load git
