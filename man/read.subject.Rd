@@ -4,7 +4,7 @@
 \alias{read.subject}
 \title{Reads single subject's network from txt files.}
 \usage{
-read.subject(path, id, nodes, e = 20, pr = TRUE)
+read.subject(path, id, nodes)
 }
 \arguments{
 \item{path}{path.}
@@ -12,10 +12,6 @@ read.subject(path, id, nodes, e = 20, pr = TRUE)
 \item{id}{identifier to select all subjects' nodes, e.g. pattern containing subject ID and session number.}
 
 \item{nodes}{number of nodes.}
-
-\item{e}{bayes factor for network pruning.}
-
-\item{pr}{pruning, default is true.}
 }
 \value{
 store list with results.

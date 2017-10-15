@@ -4,10 +4,12 @@
 \alias{dgm.group}
 \title{A group is a list containing restructured data from subejcts for easier group analysis.}
 \usage{
-dgm.group(subj)
+dgm.group(subj, saveModels = TRUE)
 }
 \arguments{
 \item{subj}{a list of subjects.}
+
+\item{saveModels}{whether to save models or not.}
 }
 \value{
 group a list.

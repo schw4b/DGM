@@ -191,12 +191,12 @@ model.generator<-function(Nn,node){
 #' @export
 exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=priors.spec() ) {
   
+  ptm=proc.time()
+  
   m0 = priors$m0
   CS0 = priors$CS0
   n0 = priors$n0
   d0 = priors$d0
-  
-  ptm=proc.time()  
   
   Nn=ncol(Data) # the number of nodes
   Nm=2^(Nn-1)   # the number of models per node
@@ -252,8 +252,7 @@ exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRU
   
   runtime=(proc.time()-ptm)
   
-  output<-list(model.store=model.store,runtime=runtime, lpl_noint=lpl_noint)
-  return(output)
+  return(list(model.store=model.store,runtime=runtime, lpl_noint=lpl_noint))
 }
 
 #' Mean centers timeseries in a 2D array timeseries x nodes,
@@ -281,30 +280,42 @@ center <- function(X) {
 #' @param nbf  Log Predictive Likelihood will sum from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
-#' @param e bayes factor for network pruning.
 #' @param priors list with prior hyperparameters.
 #' @param path a path where results are written.
-#' @param stepwise stepwise greedy search, default is off.
+#' @param method ether exhaustive, foward, backward, or both.
 #'
 #' @return store list with results.
 #' @export
-subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, e = 20,
-                    priors = priors.spec(), path = getwd(), stepwise=FALSE) {
+subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE,
+                    priors = priors.spec(), path = getwd(), method = "exhaustive") {
+  
+  if (!is.element(method, c("both", "exhaustive", "forward", "backward"))) {
+    stop("Method must be either exhaustive, forward, backward or both")
+  }
+  
   N=ncol(X)  # nodes
   M=2^(N-1)  # rows/models
-  models = array(rep(0,(N+2)*M*N),dim=c(N+2,M,N))
+  models = array(rep(NA,(N+2)*M*N),dim=c(N+2,M,N))
   
   for (n in 1:N) {
-    if (stepwise) {
+    
+    if (method == "both") {
+      tmp=stepwise.combine(X, n, nbf=nbf, delta=delta, priors=priors)
+      models[,1:ncol(tmp$model.store),n]=tmp$model.store
+    } else if (method == "forward") {
       tmp=stepwise.forward(X, n, nbf=nbf, delta=delta, priors=priors)
-      models[,,n]=tmp$model.store.complete
-    } else {
+      models[,1:ncol(tmp$model.store),n]=tmp$model.store
+    } else if (method == "backward") {
+      tmp=stepwise.backward(X, n, nbf=nbf, delta=delta, priors=priors)
+      models[,1:ncol(tmp$model.store),n]=tmp$model.store
+    } else if (method == "exhaustive") {
       tmp=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, priors=priors)
       models[,,n]=tmp$model.store
     }
     
     if (!is.null(id)) {
-      write(t(models[,,n]), file=file.path(path, sprintf("%s_node_%03d.txt", id, n)), ncolumns = M)
+      write(t(models[,,n]), file=file.path(path, sprintf("%s_node_%03d.txt", id, n)), 
+            ncolumns = ncol(store$model.store))
     }
   }
   
@@ -312,9 +323,6 @@ subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, e = 20,
   store$models=models
   store$winner=getWinner(models,N)
   store$adj=getAdjacency(store$winner,N)
-  if (!stepwise) { # we cannot use pruning with stepwise because model space is incomplete
-    store$thr=pruning(store$adj, store$models, store$winner, e = e)
-  }
   
   return(store)
 }
@@ -329,17 +337,30 @@ subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, e = 20,
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
 #' @param priors list with prior hyperparameters.
 #' @param path a path where results are written.
+#' @param method can be exhaustive (default), forward, backward, or both
 #' 
 #' @return store list with results.
 #' @export
 node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=priors.spec(),
-                 path=getwd() ) {
-  N=ncol(X)  # nodes
-  M=2^(N-1)  # rows/models
+                 path=getwd(), method = "exhaustive") {
   
-  store=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, priors=priors)
+  if (!is.element(method, c("both", "exhaustive", "forward", "backward"))) {
+    stop("Method must be either exhaustive, forward, backward or both")
+  }
+  
+  if (method == "both") {
+    store=stepwise.combine(X, n, nbf=nbf, delta=delta, priors=priors)
+  } else if (method == "forward") {
+    store=stepwise.forward(X, n, nbf=nbf, delta=delta, priors=priors)
+  } else if (method == "backward") {
+    store=stepwise.backward(X, n, nbf=nbf, delta=delta, priors=priors)
+  } else if (method == "exhaustive") {
+    store=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, priors=priors)
+  }
+  
   if (!is.null(id)) {
-    write(t(store$model.store), file=file.path(path, sprintf("%s_node_%03d.txt", id, n)), ncolumns = M)
+    write(t(store$model.store), file=file.path(path, sprintf("%s_node_%03d.txt", id, n)), 
+          ncolumns = ncol(store$model.store))
   }
   return(store)
 }
@@ -348,27 +369,23 @@ node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=
 #' @param path path.
 #' @param id identifier to select all subjects' nodes, e.g. pattern containing subject ID and session number.
 #' @param nodes number of nodes.
-#' @param e bayes factor for network pruning.
-#' @param pr pruning, default is true.
 #'
 #' @return store list with results.
 #' @export
-read.subject <- function(path, id, nodes, e = 20, pr = TRUE) {
-  models = array(0,dim=c(nodes+2,2^(nodes-1),nodes))
+read.subject <- function(path, id, nodes) {
+  
+  models = list()
   for (n in 1:nodes) {
     #file=sprintf("%s_node_%03d.txt", id, n)
     #models[,,n] = as.matrix(read.table(file)) # quite slow
     file=list.files(path, pattern=glob2rx(sprintf("%s*_node_%03d.txt", id, n)))
-    models[,,n] = as.matrix(fread(file.path(path,file))) # faster, from package "data.table"
+    models[[n]] = as.matrix(fread(file.path(path,file))) # faster, from package "data.table"
   }
   store=list()
   store$models=models
   store$winner=getWinner(models,nodes)
   store$adj=getAdjacency(store$winner,nodes)
-  if (pr) {
-    store$thr=pruning(store$adj, store$models, store$winner, e = e)
-  }
-  
+
   return(store)
 }
 
@@ -382,14 +399,13 @@ read.subject <- function(path, id, nodes, e = 20, pr = TRUE) {
 #' @export
 getWinner <- function(models, nodes) {
   
-  dims=length(dim(models))
-  
-  if (dims==2) {
+  if (is.matrix(models)) {
     winner = models[,which.max(models[nodes+1,])]
-  } else if (dims==3) {
+    
+  } else if (is.list(models)) {
     winner = array(0, dim=c(nodes+2,nodes))
     for (n in 1:nodes) {
-      winner[,n]=models[,which.max(models[nodes+1,,n]),n]
+      winner[,n]=models[[n]][,which.max(models[[n]][nodes+1,])]
     }
   }
   return(winner)
@@ -588,10 +604,11 @@ getModel <- function(models, parents) {
 #' A group is a list containing restructured data from subejcts for easier group analysis.
 #'
 #' @param subj a list of subjects.
+#' @param saveModels whether to save models or not.
 #' 
 #' @return group a list.
 #' @export
-dgm.group <- function(subj) {
+dgm.group <- function(subj, saveModels=TRUE) {
   Nn=ncol(subj[[1]]$adj$am)
   N=length(subj)
   
@@ -599,14 +616,19 @@ dgm.group <- function(subj) {
   df_ = array(NA, dim=c(N,Nn))
   tlpls = array(NA, dim=c(Nn,Nn,2,N))
   winner = array(NA, dim=c(Nn+2,Nn,N))
-  models = array(NA, dim=c(Nn+2,2^(Nn-1),Nn,N))
+  if (saveModels) {
+    models = array(NA, dim=c(Nn+2,2^(Nn-1),Nn,N))
+  }
+  
   for (s in 1:N) {
     am[,,s]  = subj[[s]]$adj$am
     lpl[,,s] = subj[[s]]$adj$lpl
     df[,,s]  = subj[[s]]$adj$df
     df_[s,]  = subj[[s]]$winner[nrow(subj[[s]]$winner),]
     winner[,,s]  = subj[[s]]$winner
-    models[,,,s]  = subj[[s]]$models
+    if (saveModels) {
+      models[,,,s]  = subj[[s]]$models
+    }
     
     # pruning
     if (!is.null(subj[[s]]$thr)) {
@@ -616,8 +638,13 @@ dgm.group <- function(subj) {
     }
   }
   
+  if (saveModels) {
   group=list(am=am,lpl=lpl,df=df,tam=tam,tbi=tbi,tlpls=tlpls,
              df_=df_,winner=winner,models=models)
+  } else {
+    group=list(am=am,lpl=lpl,df=df,tam=tam,tbi=tbi,tlpls=tlpls,
+               df_=df_,winner=winner)
+  }
   return(group)
 }
 
@@ -976,6 +1003,7 @@ symmetric <- function(M) {
 #' @export
 stepwise.forward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), 
                              max.break=TRUE, priors=priors.spec()){
+  ptm=proc.time()
   
   # Define the prior hyperparameters
   m0 = priors$m0
@@ -1065,10 +1093,11 @@ stepwise.forward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01),
   pars = pars[pars!=0]}}
   
 model.store[1,] = c(1:ncol(model.store)) # attach a model number
-model.store.complete = array(NA, dim = c(Nn+2, Nm))
-model.store.complete[,1:ncol(model.store)] = model.store
-  
-return(list(model.store = model.store, model.store.complete = model.store.complete))}
+
+runtime=(proc.time()-ptm)
+
+return(list(model.store = model.store, runtime=runtime))
+}
 
 #' Stepise backward non-exhaustive greedy search, calculates the optimum value of the discount factor.
 #'
@@ -1086,6 +1115,7 @@ return(list(model.store = model.store, model.store.complete = model.store.comple
 #' @export
 stepwise.backward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), 
                               max.break=TRUE, priors=priors.spec()){
+  ptm=proc.time()
   
   # Define the prior hyperparameters
   m0 = priors$m0
@@ -1176,35 +1206,39 @@ stepwise.backward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01),
   pars = pars[pars!=0]}}
   
 model.store[1,] = c(1:ncol(model.store)) # attach a model number
-  
-return(list(model.store = model.store))}
 
-#' Stepise combine: combines the stepwise forward and the stepwise backward model.
+runtime=(proc.time()-ptm)
+  
+return(list(model.store = model.store, runtime=runtime))
+}
+
+#' Stepise combine
 #'
-#' @param forward_matrix The winning sets of parents using a Forward Selection model search. A
-#' matrix with dimension \code{Nn+2} x \code{Nn}, rows \code{1:Nn} are the parents (ones and zeros),
-#' rows \code{(Nn+1):(Nn+2)} are the LPL and discount factor. forward matrix.
-#' @param backward_matrix backward_matrix}{The winning sets of parents using a Backward Elimination
-#' model search. A matrix with dimension \code{Nn+2} x \code{Nn}, rows \code{1:Nn} are the parents
-#' (ones and zeros), rows \code{(Nn+1):(Nn+2)} are the LPL and discount factor.
+#' @param Data  Dataset with dimension number of time points \code{T} x number of nodes \code{Nn}.
+#' @param node  The node to find parents for.
+#' @param nbf   The Log Predictive Likelihood will sum from (and including) this time point. 
+#' @param delta A vector of values for the discount factor.
+#' @param max.break If \code{TRUE}, the code will break if adding / removing parents does not
+#' improve the LPL. If \code{FALSE}, the code will continue to the zero parent / all parent model.
+#' Default is \code{TRUE}.
+#' @param priors List with prior hyperparameters.
 #'
 #' @return
-#' stepwise_combine_matrix The adjacency network, LPLs and discount factors when the Forward
-#' Selection and Backward Elimination model searches are combined.
+#' model.store The parents, LPL and chosen discount factor for the subset of models scored using this method.
 #' @export
-stepwise.combine <- function(forward_matrix,backward_matrix){
+stepwise.combine <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), 
+                             max.break=TRUE, priors=priors.spec()) {
   
-  Nn = ncol(forward_matrix)
-  step_combine_matrix = array(NA,dim=c((Nn+2),Nn))
+  ptm=proc.time()
   
-  for (k in 1:Nn){
-    
-    if (forward_matrix[(Nn+1),k] >= backward_matrix[(Nn+1),k]){step_combine_matrix[,k] = forward_matrix[,k]}
-    if (forward_matrix[(Nn+1),k] < backward_matrix[(Nn+1),k]){step_combine_matrix[,k] = backward_matrix[,k]}
-    
+  fw=stepwise.forward(Data, node, nbf=nbf, delta=delta, priors=priors, max.break=max.break)
+  bw=stepwise.backward(Data, node, nbf=nbf, delta=delta, priors=priors, max.break=max.break)
+  model.store = mergeModels(fw$model.store,bw$model.store)
+  
+  runtime=(proc.time()-ptm)
+  
+  return(list(model.store=model.store, runtime=runtime))
 }
-  
-return(step_combine_matrix)}
 
 #' Function for DLM with Smoothing for unknown observational and state variances
 #' 
@@ -1290,3 +1324,25 @@ getIncompleteNodes <- function(path, ids, Nr, Nn) {
   return(jobs)
 }
 
+#' Merges forward and backward model store.
+#' @param fw forward model.
+#' @param bw backward model.
+#'
+#' @return m model store.
+#' @export
+mergeModels <- function(fw, bw) {
+  Nn = nrow(fw)-2
+  
+  a = apply(fw[2:(Nn),], 2, sort)
+  b = apply(bw[2:(Nn),], 2, sort)
+  
+  idx = array(NA, ncol(b))
+  for (i in 1:ncol(b)) {
+     idx[i] = any(apply(a, 2, function(x, want) isTRUE(all.equal(x, want)), b[,i]))
+  }
+  
+  model.store=cbind(fw, bw[,!idx])
+  return(model.store)
+}
+  
+  

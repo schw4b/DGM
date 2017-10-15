@@ -5,7 +5,7 @@
 \title{Runs exhaustive search on a single node and saves results in txt file.}
 \usage{
 node(X, n, id = NULL, nbf = 15, delta = seq(0.5, 1, 0.01), cpp = TRUE,
-  priors = priors.spec(), path = getwd())
+  priors = priors.spec(), path = getwd(), method = "exhaustive")
 }
 \arguments{
 \item{X}{array with dimensions timeseries x nodes.}
@@ -23,6 +23,8 @@ node(X, n, id = NULL, nbf = 15, delta = seq(0.5, 1, 0.01), cpp = TRUE,
 \item{priors}{list with prior hyperparameters.}
 
 \item{path}{a path where results are written.}
+
+\item{method}{can be exhaustive (default), forward, backward, or both}
 }
 \value{
 store list with results.

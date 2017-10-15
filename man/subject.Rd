@@ -5,7 +5,7 @@
 \title{Estimate subject's full network: runs exhaustive search on very node.}
 \usage{
 subject(X, id = NULL, nbf = 15, delta = seq(0.5, 1, 0.01), cpp = TRUE,
-  e = 20, priors = priors.spec(), path = getwd(), stepwise = FALSE)
+  priors = priors.spec(), path = getwd(), method = "exhaustive")
 }
 \arguments{
 \item{X}{array with dimensions timeseries x nodes.}
@@ -18,13 +18,11 @@ subject(X, id = NULL, nbf = 15, delta = seq(0.5, 1, 0.01), cpp = TRUE,
 
 \item{cpp}{boolean true (default): fast C++ implementation, false: native R code.}
 
-\item{e}{bayes factor for network pruning.}
-
 \item{priors}{list with prior hyperparameters.}
 
 \item{path}{a path where results are written.}
 
-\item{stepwise}{stepwise greedy search, default is off.}
+\item{method}{ether exhaustive, foward, backward, or both.}
 }
 \value{
 store list with results.

@@ -65,6 +65,8 @@ Build the package
 
 Install and test in R
 
+    detach("package:multdyn", unload=TRUE)
+
     R CMD REMOVE multdyn
     R CMD INSTALL multdyn_1.6.1.tar.gz
     R
