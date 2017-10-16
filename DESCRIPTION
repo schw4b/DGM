@@ -14,6 +14,7 @@ Suggests:
 Description:
     Dynamical graphical models for finding directed dynamic network models with
     multivariate time series data, with emphasis on functional MRI brain network data.
+    See also Schwab et al. (2017) <doi:10.1101/198887>
 License: GPL-3
 URL: https://github.com/schw4b/multdyn
 BugReports: https://github.com/schw4b/multdyn/issues
