@@ -293,36 +293,35 @@ subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE,
     stop("Method must be either exhaustive, forward, backward or both")
   }
   
-  N=ncol(X)  # nodes
-  M=2^(N-1)  # rows/models
-  models = array(rep(NA,(N+2)*M*N),dim=c(N+2,M,N))
+  Nn=ncol(X)  # nodes
+  models=list()
   
-  for (n in 1:N) {
+  for (n in 1:Nn) {
     
     if (method == "both") {
       tmp=stepwise.combine(X, n, nbf=nbf, delta=delta, priors=priors)
-      models[,1:ncol(tmp$model.store),n]=tmp$model.store
+      models[[n]] = tmp$model.store
     } else if (method == "forward") {
       tmp=stepwise.forward(X, n, nbf=nbf, delta=delta, priors=priors)
-      models[,1:ncol(tmp$model.store),n]=tmp$model.store
+      models[[n]] = tmp$model.store
     } else if (method == "backward") {
       tmp=stepwise.backward(X, n, nbf=nbf, delta=delta, priors=priors)
-      models[,1:ncol(tmp$model.store),n]=tmp$model.store
+      models[[n]] = tmp$model.store
     } else if (method == "exhaustive") {
       tmp=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, priors=priors)
-      models[,,n]=tmp$model.store
+      models[[n]] = tmp$model.store
     }
     
     if (!is.null(id)) {
-      write(t(models[,,n]), file=file.path(path, sprintf("%s_node_%03d.txt", id, n)), 
-            ncolumns = ncol(store$model.store))
+      write(t(models[[n]]), file=file.path(path, sprintf("%s_node_%03d.txt", id, n)), 
+            ncolumns = ncol(tmp$model.store))
     }
   }
   
   store=list()
   store$models=models
-  store$winner=getWinner(models,N)
-  store$adj=getAdjacency(store$winner,N)
+  store$winner=getWinner(models,Nn)
+  store$adj=getAdjacency(store$winner,Nn)
   
   return(store)
 }
