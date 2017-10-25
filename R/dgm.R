@@ -603,11 +603,10 @@ getModel <- function(models, parents) {
 #' A group is a list containing restructured data from subejcts for easier group analysis.
 #'
 #' @param subj a list of subjects.
-#' @param saveModels whether to save models or not.
 #' 
 #' @return group a list.
 #' @export
-dgm.group <- function(subj, saveModels=TRUE) {
+dgm.group <- function(subj) {
   Nn=ncol(subj[[1]]$adj$am)
   N=length(subj)
   
@@ -615,9 +614,6 @@ dgm.group <- function(subj, saveModels=TRUE) {
   df_ = array(NA, dim=c(N,Nn))
   tlpls = array(NA, dim=c(Nn,Nn,2,N))
   winner = array(NA, dim=c(Nn+2,Nn,N))
-  if (saveModels) {
-    models = array(NA, dim=c(Nn+2,2^(Nn-1),Nn,N))
-  }
   
   for (s in 1:N) {
     am[,,s]  = subj[[s]]$adj$am
@@ -625,9 +621,6 @@ dgm.group <- function(subj, saveModels=TRUE) {
     df[,,s]  = subj[[s]]$adj$df
     df_[s,]  = subj[[s]]$winner[nrow(subj[[s]]$winner),]
     winner[,,s]  = subj[[s]]$winner
-    if (saveModels) {
-      models[,,,s]  = subj[[s]]$models
-    }
     
     # pruning
     if (!is.null(subj[[s]]$thr)) {
@@ -637,13 +630,9 @@ dgm.group <- function(subj, saveModels=TRUE) {
     }
   }
   
-  if (saveModels) {
   group=list(am=am,lpl=lpl,df=df,tam=tam,tbi=tbi,tlpls=tlpls,
-             df_=df_,winner=winner,models=models)
-  } else {
-    group=list(am=am,lpl=lpl,df=df,tam=tam,tbi=tbi,tlpls=tlpls,
-               df_=df_,winner=winner)
-  }
+             df_=df_,winner=winner)
+  
   return(group)
 }
 
@@ -1306,7 +1295,6 @@ getIncompleteNodes <- function(path, ids, Nr, Nn) {
   
   # get info flag
   info = strsplit(f[1], "_")[[1]][6]
-  
   
   idx = rep(NA, length(ids)*Nr*Nn)
   c=1
