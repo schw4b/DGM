@@ -1232,14 +1232,16 @@ stepwise.combine <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01),
 #' given all the observations. West, M. & Harrison, J., 1997. Bayesian Forecasting
 #' and Dynamic Models. Springer New York.
 #' 
-#' @param \item{mt} = the vector or matrix of the posterior mean (location parameter), dim = \code{p x T}, 
+#' @param mt the vector or matrix of the posterior mean (location parameter), dim = \code{p x T}, 
 #' where \code{p} is the number of thetas (at any time \code{t}) and \code{T} is the number of time points
-#' @param \item{CSt} the posterior scale matrix with dim = \code{p x p x T} (unscaled by the observation variance)
-#' @param \item{RSt} the prior scale matrix with dim = \code{p x p x T} (unscaled by the observation variance)
-#' @param \item{nt}{and \code{dt} the vectors of the updated hyperparameters for the precision \code{phi} with length \code{T}
+#' @param CSt the posterior scale matrix with dim = \code{p x p x T} (unscaled by the observation variance)
+#' @param RSt the prior scale matrix with dim = \code{p x p x T} (unscaled by the observation variance)
+#' @param nt vector of the updated hyperparameters for the precision \code{phi} with length \code{T}
+#' @param dt vector of the updated hyperparameters for the precision \code{phi} with length \code{T}
+#' 
 #' @return
-# smt = the location parameter of the retrospective distribution with dimension \code{p x T}
-# sCt = the scale matrix of the retrospective distribution with dimension \code{p x p x T} 
+#' smt = the location parameter of the retrospective distribution with dimension \code{p x T}
+#' sCt = the scale matrix of the retrospective distribution with dimension \code{p x p x T} 
 #' @export
 dlm.retro <- function(mt, CSt, RSt, nt, dt) {
   
