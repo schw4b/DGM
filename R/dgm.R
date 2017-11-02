@@ -1228,58 +1228,51 @@ stepwise.combine <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01),
   return(list(model.store=model.store, runtime=runtime))
 }
 
-#' Function for DLM with Smoothing for unknown observational and state variances
+#' Calculate the location and scale parameters for the time-varying coefficients 
+#' given all the observations. West, M. & Harrison, J., 1997. Bayesian Forecasting
+#' and Dynamic Models. Springer New York.
 #' 
-#' @param mt the vector or matrix of the posterior mean (location parameter), dim = \code{p x T}.
-#' @param Ct and \code{CSt} the posterior scale matrix \code{C_{t}} is \code{C_{t} = C*_{t} x S_{t}},
-#' with dim = \code{p x p x T}, where \code{S_{t}} is a point estimate for the observation variance
-#' \code{phi^{-1}}
-#' @param Rt and \code{RSt} the prior scale matrix \code{R_{t}} is \code{R_{t} = R*_{t} x S_{t-1}},
-#' with dim = \code{p x p x T}, where \code{S_{t-1}} is a point estimate for the observation
-#' variance \code{phi^{-1}} at the previous time point.
-#' @param nt and the vectors of the updated hyperparameters for the precision \code{phi}
-#' with length \code{T}.
-#' @param dt the vectors of the updated hyperparameters for the precision \code{phi}
-#' with length \code{T}.
-#' @param Gt the matrix of state equation with dimension: p X p X T. The default is identity matrix block.
-#'
+#' @param \item{mt} = the vector or matrix of the posterior mean (location parameter), dim = \code{p x T}, 
+#' where \code{p} is the number of thetas (at any time \code{t}) and \code{T} is the number of time points
+#' @param \item{CSt} the posterior scale matrix with dim = \code{p x p x T} (unscaled by the observation variance)
+#' @param \item{RSt} the prior scale matrix with dim = \code{p x p x T} (unscaled by the observation variance)
+#' @param \item{nt}{and \code{dt} the vectors of the updated hyperparameters for the precision \code{phi} with length \code{T}
 #' @return
-#' smt the matrix of smoothing posterior mean with dimension p X T
-#  sCt the squared matrix of smoothing posterior variance with dimension p X p X T 
+# smt = the location parameter of the retrospective distribution with dimension \code{p x T}
+# sCt = the scale matrix of the retrospective distribution with dimension \code{p x p x T} 
 #' @export
-dlm_smoo <- function(mt, Ct, Rt, nt, dt, Gt = 0) {
+dlm.retro <- function(mt, CSt, RSt, nt, dt) {
   
-  # defining objects
+  # Convert vectors to matrices
   if (is.vector(mt)){
     mt = array(mt, dim=c(1,length(mt)))
-    Ct = array(Ct, dim=c(1,1,length(mt)))
-    Rt = array(Rt, dim=c(1,1,length(Rt)))     
-  }
-  if (Gt == 0){Gt = array(diag(nrow(mt)), dim=c(nrow(mt),nrow(mt),ncol(mt)))}
-  p = nrow(mt) # the number of thetas
-  Nt = ncol(mt) # the sample size
-  smt = array(0, dim=c(p,Nt))
-  sCt = array(0, dim=c(p,p,Nt)) 
+    CSt = array(CSt, dim=c(1,1,length(CSt)))
+    RSt = array(RSt, dim=c(1,1,length(RSt)))}
   
-  # in the last time point
+  p = nrow(mt) # the number of thetas at any time t
+  Nt = ncol(mt) # the number of time points
+  smt = array(NA, dim=c(p,Nt))
+  sCSt = array(NA, dim=c(p,p,Nt))
+  
+  # Values at the last time point
   smt[,Nt] = mt[,Nt]
-  sCt[,,Nt] = Ct[,,Nt] 
+  sCSt[,,Nt] = CSt[,,Nt] 
   
-  # for other time points
+  # For other time points
   for (i in (Nt-1):1){
-    RSt = Rt[,,(i+1)]*nt[i]/dt[i]
-    CSt = Ct[,,i]*nt[i]/dt[i]
-    #inv.sR = solvecov(RSt, cmax = 1e+10)$inv
-    inv.sR = solve(RSt)
-    B = CSt %*% t(Gt[,,(i+1)]) %*% inv.sR
-    smt[,i] = mt[, i] + B %*% (smt[,(i+1)] - Gt[,,(i+1)] %*% mt[,i])
-    sCS = CSt + B %*% (sCt[,,(i+1)]*nt[Nt]/dt[Nt] - RSt) %*% t(B)     
-    sCt[,,i] = sCS * dt[Nt] / nt[Nt]
-  }
+    #inv.sR = solvecov(RSt[,,(i+1)], cmax = 1e+10)$inv # overcomes the limitation when it cannot invert the matrix package:fpc
+    inv.sR = solve(RSt[,,(i+1)])
+    B = CSt[,,i] %*% inv.sR
+    smt[,i] = mt[, i] + B %*% (smt[,(i+1)] - mt[,i])
+    sCSt[,,i] = CSt[,,i] + B %*% (sCSt[,,(i+1)] - RSt[,,(i+1)]) %*% t(B)}
   
-  result <- list(smt=smt, sCt=sCt)
+  # Multiply by the observation variance
+  sCt = sCSt * (dt[Nt] / nt[Nt])
+  
+  result = list(smt=smt, sCt=sCt)
   return(result)
 }
+
 
 #' Checks results and returns job number for incomplete nodes.
 #' @param path path to results.
