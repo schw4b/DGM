@@ -384,7 +384,7 @@ read.subject <- function(path, id, nodes) {
   store$models=models
   store$winner=getWinner(models,nodes)
   store$adj=getAdjacency(store$winner,nodes)
-
+  
   return(store)
 }
 
@@ -466,7 +466,7 @@ gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0,
   
   ggplot(x, aes_string(x = "Child", y = "Parent", fill = "value")) +
     geom_tile(color = "gray60") +
-
+    
     scale_fill_gradient2(
       na.value = "transparent",
       low  = gradient[1],
@@ -476,18 +476,18 @@ gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0,
       limit = lim,
       space = "Lab",
       name = colMapLabel) + 
-
+    
     theme(#axis.ticks.x = element_blank(),
-          axis.ticks = element_blank(),
-          axis.line = element_blank(),
-          text = element_text(size=12),
-          plot.title = element_text(size=titleTextSize),
-          axis.text.x = element_text(size=axisTextSize,angle=xAngle),
-          axis.text.y = element_text(size=axisTextSize),
-          #panel.grid.major = element_line(colour="black", size = (1.5)),
-          #panel.grid.minor = element_line(size = (0.2), colour="grey")
-          ) +
-
+      axis.ticks = element_blank(),
+      axis.line = element_blank(),
+      text = element_text(size=12),
+      plot.title = element_text(size=titleTextSize),
+      axis.text.x = element_text(size=axisTextSize,angle=xAngle),
+      axis.text.y = element_text(size=axisTextSize),
+      #panel.grid.major = element_line(colour="black", size = (1.5)),
+      #panel.grid.minor = element_line(size = (0.2), colour="grey")
+    ) +
+    
     x_scale + y_scale + ggtitle(title) + guides(fill=hasColMap)
 }
 
@@ -727,7 +727,7 @@ pruning <- function(adj, models, winner, e = 20) {
       }
     }
   }
-    
+  
   thr=list()
   thr$bi=bi # bidirectional edges
   thr$lpls=lpls # lpls
@@ -789,7 +789,7 @@ perf <- function(x, true) {
   p$acc = (sum(cases[,1]) + sum(cases[,4]))/(sum(cases[,1]) + sum(cases[,2]) + sum(cases[,3]) + sum(cases[,4]))
   return(p)
 }
-  
+
 #' Scaling data. Zero centers and scales the nodes (SD=1).
 #'
 #' @param X time x node 2D matrix, or 3D with subjects as the 3rd dimension.
@@ -924,7 +924,7 @@ rand.test <- function(X, alpha=0.05, K=1000) {
     ka[,,k]=p$kappa
     ta[,,k]=p$tau
   }
-
+  
   # two sided sign. test
   stat = list()
   stat$kappa = quantile(ka[!is.na(ka)], probs=c(low, up)) # two sided
@@ -1031,60 +1031,60 @@ stepwise.forward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01),
   
   for (N in 1:(Nn-1)){
     
-  # Find all the models with the correct length and containing the previously selected parents
-  pars_add = c(1:Nn)[-c(node,pars)]
+    # Find all the models with the correct length and containing the previously selected parents
+    pars_add = c(1:Nn)[-c(node,pars)]
     
-  ms.new = array(0,dim=c((Nn+2),(Nn-N)))
-  if (length(pars>0)){ms.new[2:(length(pars)+1),] = pars}
-  ms.new[(length(pars)+2),] = pars_add
+    ms.new = array(0,dim=c((Nn+2),(Nn-N)))
+    if (length(pars>0)){ms.new[2:(length(pars)+1),] = pars}
+    ms.new[(length(pars)+2),] = pars_add
     
-  # Find the LPL and discount factor of this subset of models models
-  nms=ncol(ms.new) # How many models are being considered?
+    # Find the LPL and discount factor of this subset of models models
+    nms=ncol(ms.new) # How many models are being considered?
     
-  # Create empty arrays for the LPL scores and the deltas
-  lpl.delta=array(NA,c(nms,length(delta)))
-  lpl.max=rep(NA,nms)
-  DF.hat=rep(NA,nms)
+    # Create empty arrays for the LPL scores and the deltas
+    lpl.delta=array(NA,c(nms,length(delta)))
+    lpl.max=rep(NA,nms)
+    DF.hat=rep(NA,nms)
     
-  # Now create Ft.
-  for (i in 1:nms){
-    pars = ms.new[(2:Nn),i] 
-    pars = pars[pars!=0]
-    Ft=array(1,dim=c(Nt,length(pars)+1))
-    if (ncol(Ft)>1){Ft[,2:ncol(Ft)] = Data[,pars]}
+    # Now create Ft.
+    for (i in 1:nms){
+      pars = ms.new[(2:Nn),i] 
+      pars = pars[pars!=0]
+      Ft=array(1,dim=c(Nt,length(pars)+1))
+      if (ncol(Ft)>1){Ft[,2:ncol(Ft)] = Data[,pars]}
       
-  # Calculate the Log Predictive Likelihood for each value of delta, for the specified models
-    for (j in 1:nd){
-      lpl = dlmLplCpp(Yt,t(Ft),delta=delta[j],m0_=m0,CS0_=CS0,n0=n0,d0=d0)
-      lpl.delta[i,j]=sum(lpl[nbf:Nt])}
+      # Calculate the Log Predictive Likelihood for each value of delta, for the specified models
+      for (j in 1:nd){
+        lpl = dlmLplCpp(Yt,t(Ft),delta=delta[j],m0_=m0,CS0_=CS0,n0=n0,d0=d0)
+        lpl.delta[i,j]=sum(lpl[nbf:Nt])}
       
-    lpl.max[i] = max(lpl.delta[i,],na.rm=TRUE)
-    w = which(lpl.delta[i,]==lpl.max[i])
-    DF.hat[i] = delta[w]}
+      lpl.max[i] = max(lpl.delta[i,],na.rm=TRUE)
+      w = which(lpl.delta[i,]==lpl.max[i])
+      DF.hat[i] = delta[w]}
     
-  ms.new[(Nn+1),] = lpl.max
-  ms.new[(Nn+2),] = DF.hat
+    ms.new[(Nn+1),] = lpl.max
+    ms.new[(Nn+2),] = DF.hat
     
-  # Find the highest LPL so far
-  max.score = max(model.store[(Nn+1),]) 
-  logBF = lpl.max - max.score
-  W = which(logBF > 0)
+    # Find the highest LPL so far
+    max.score = max(model.store[(Nn+1),]) 
+    logBF = lpl.max - max.score
+    W = which(logBF > 0)
     
-  # Update model.store
-  model.store = cbind(model.store,ms.new)
+    # Update model.store
+    model.store = cbind(model.store,ms.new)
     
-  if (length(W)==0 & max.break==TRUE){break} 
-  else{W.max = which.max(logBF)
+    if (length(W)==0 & max.break==TRUE){break} 
+    else{W.max = which.max(logBF)
     
-  # Update the model parents
-  pars = ms.new[(2:Nn),W.max]
-  pars = pars[pars!=0]}}
+    # Update the model parents
+    pars = ms.new[(2:Nn),W.max]
+    pars = pars[pars!=0]}}
   
-model.store[1,] = c(1:ncol(model.store)) # attach a model number
-
-runtime=(proc.time()-ptm)
-
-return(list(model.store = model.store, runtime=runtime))
+  model.store[1,] = c(1:ncol(model.store)) # attach a model number
+  
+  runtime=(proc.time()-ptm)
+  
+  return(list(model.store = model.store, runtime=runtime))
 }
 
 #' Stepise backward non-exhaustive greedy search, calculates the optimum value of the discount factor.
@@ -1145,59 +1145,59 @@ stepwise.backward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01),
   
   for (N in 1:(Nn-1)){
     
-  # Find all the models with the correct length and missing the previously removed parents
-  pars_add = combn(pars,(Nn-(N+1)))
+    # Find all the models with the correct length and missing the previously removed parents
+    pars_add = combn(pars,(Nn-(N+1)))
     
-  ms.new = array(0,dim=c((Nn+2),(Nn-N))) 
-  if (length(pars_add>0)){ms.new[2:(nrow(pars_add)+1),] = pars_add}
+    ms.new = array(0,dim=c((Nn+2),(Nn-N))) 
+    if (length(pars_add>0)){ms.new[2:(nrow(pars_add)+1),] = pars_add}
     
-  # Find the LPL and discount factor of these models
-  nms=ncol(ms.new) # How many models are being considered?
+    # Find the LPL and discount factor of these models
+    nms=ncol(ms.new) # How many models are being considered?
     
-  # Create empty arrays for the lpl scores and the deltas
-  lpl.delta=array(NA,c(nms,length(delta)))
-  lpl.max=rep(NA,nms)
-  DF.hat=rep(NA,nms)
+    # Create empty arrays for the lpl scores and the deltas
+    lpl.delta=array(NA,c(nms,length(delta)))
+    lpl.max=rep(NA,nms)
+    DF.hat=rep(NA,nms)
     
-  # Now create Ft. 
-  for (i in 1:nms){
-    pars=ms.new[(2:Nn),i]
-    pars=pars[pars!=0]
+    # Now create Ft. 
+    for (i in 1:nms){
+      pars=ms.new[(2:Nn),i]
+      pars=pars[pars!=0]
       
-    Ft=array(1,dim=c(Nt,length(pars)+1))
-    if (ncol(Ft)>1){Ft[,2:ncol(Ft)]=Data[,pars]}
+      Ft=array(1,dim=c(Nt,length(pars)+1))
+      if (ncol(Ft)>1){Ft[,2:ncol(Ft)]=Data[,pars]}
       
-  # Calculate the log predictive likelihood for each value of delta, for the specified models
-    for (j in 1:nd){
-    lpl = dlmLplCpp(Yt,t(Ft),delta=delta[j],m0_=m0,CS0_=CS0,n0=n0,d0=d0)
-    lpl.delta[i,j]=sum(lpl[nbf:Nt])}
+      # Calculate the log predictive likelihood for each value of delta, for the specified models
+      for (j in 1:nd){
+        lpl = dlmLplCpp(Yt,t(Ft),delta=delta[j],m0_=m0,CS0_=CS0,n0=n0,d0=d0)
+        lpl.delta[i,j]=sum(lpl[nbf:Nt])}
       
-  lpl.max[i] = max(lpl.delta[i,],na.rm=TRUE)
-  w = which(lpl.delta[i,]==lpl.max[i])
-  DF.hat[i] = delta[w]}
+      lpl.max[i] = max(lpl.delta[i,],na.rm=TRUE)
+      w = which(lpl.delta[i,]==lpl.max[i])
+      DF.hat[i] = delta[w]}
     
-  ms.new[(Nn+1),] = lpl.max
-  ms.new[(Nn+2),] = DF.hat
+    ms.new[(Nn+1),] = lpl.max
+    ms.new[(Nn+2),] = DF.hat
     
-  max.score = max(model.store[(Nn+1),]) # Find the highest LPL calculated so far
-  logBF = lpl.max - max.score
-  W = which(logBF > 0)  
+    max.score = max(model.store[(Nn+1),]) # Find the highest LPL calculated so far
+    logBF = lpl.max - max.score
+    W = which(logBF > 0)  
     
-  # Update model.store
-  model.store = cbind(model.store,ms.new)
+    # Update model.store
+    model.store = cbind(model.store,ms.new)
     
-  if (length(W)==0 & max.break==TRUE){break}
-  else{W.max = which.max(logBF)
+    if (length(W)==0 & max.break==TRUE){break}
+    else{W.max = which.max(logBF)
     
- # Update the model parents 
-  pars = ms.new[(2:Nn),W.max]
-  pars = pars[pars!=0]}}
+    # Update the model parents 
+    pars = ms.new[(2:Nn),W.max]
+    pars = pars[pars!=0]}}
   
-model.store[1,] = c(1:ncol(model.store)) # attach a model number
-
-runtime=(proc.time()-ptm)
+  model.store[1,] = c(1:ncol(model.store)) # attach a model number
   
-return(list(model.store = model.store, runtime=runtime))
+  runtime=(proc.time()-ptm)
+  
+  return(list(model.store = model.store, runtime=runtime))
 }
 
 #' Stepise combine
@@ -1320,11 +1320,10 @@ mergeModels <- function(fw, bw) {
   
   idx = array(NA, ncol(b))
   for (i in 1:ncol(b)) {
-     idx[i] = any(apply(a, 2, function(x, want) isTRUE(all.equal(x, want)), b[,i]))
+    idx[i] = any(apply(a, 2, function(x, want) isTRUE(all.equal(x, want)), b[,i]))
   }
   
   model.store=cbind(fw, bw[,!idx])
   return(model.store)
 }
-  
-  
+
