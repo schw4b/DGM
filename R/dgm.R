@@ -787,6 +787,7 @@ perf <- function(x, true) {
   p$tpr = sum(cases[,1])/(sum(cases[,1]) + sum(cases[,3]))
   p$spc = sum(cases[,4])/(sum(cases[,4]) + sum(cases[,2]))
   p$acc = (sum(cases[,1]) + sum(cases[,4]))/(sum(cases[,1]) + sum(cases[,2]) + sum(cases[,3]) + sum(cases[,4]))
+  p$ppv = sum(cases[,1])/(sum(cases[,1]) + sum(cases[,2]))
   return(p)
 }
 
