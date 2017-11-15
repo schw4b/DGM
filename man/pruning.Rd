@@ -9,7 +9,7 @@ pruning(adj, models, winner, e = 20)
 \arguments{
 \item{adj}{list with network adjacency from getAdjacency().}
 
-\item{models}{matrix 3D with full model estimates.}
+\item{models}{list of models.}
 
 \item{winner}{matrix 2D with winning models.}
 

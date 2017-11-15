@@ -378,6 +378,7 @@ read.subject <- function(path, id, nodes) {
     #file=sprintf("%s_node_%03d.txt", id, n)
     #models[,,n] = as.matrix(read.table(file)) # quite slow
     file=list.files(path, pattern=glob2rx(sprintf("%s*_node_%03d.txt", id, n)))
+    # we have to use a list as model dimension is variable in stepwise.
     models[[n]] = as.matrix(fread(file.path(path,file))) # faster, from package "data.table"
   }
   store=list()
@@ -663,7 +664,7 @@ patel.group <- function(subj) {
 #' Get pruned adjacency network.
 #'
 #' @param adj list with network adjacency from getAdjacency().
-#' @param models matrix 3D with full model estimates.
+#' @param models list of models.
 #' @param winner matrix 2D with winning models.
 #' @param e bayes factor for network pruning.
 #' 
@@ -700,12 +701,12 @@ pruning <- function(adj, models, winner, e = 20) {
         # uni i->j, LPL without parent j
         p = winner[,i][2:Nn]
         p = p[p != j & p!= 0] # remove node j
-        lpls[i,j,2] = adj$lpl[i,j] + getModel(models[,,i], p)[Nn+1]
+        lpls[i,j,2] = adj$lpl[i,j] + getModel(models[[i]], p)[Nn+1]
         
         # uni j->i, LPL without parent i
         p = winner[,j][2:Nn]
         p = p[p != i & p!= 0] # remove node i
-        lpls[j,i,2] = adj$lpl[j,i] + getModel(models[,,j], p)[Nn+1]
+        lpls[j,i,2] = adj$lpl[j,i] + getModel(models[[j]], p)[Nn+1]
       }
     }
   }
