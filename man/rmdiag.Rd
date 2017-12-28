@@ -2,7 +2,7 @@
 % Please edit documentation in R/dgm.R
 \name{rmdiag}
 \alias{rmdiag}
-\title{Removes diagnoal from matrix with NAs.}
+\title{Removes diagnoal from matrix.}
 \usage{
 rmdiag(M)
 }
@@ -10,8 +10,8 @@ rmdiag(M)
 \item{M}{Matrix}
 }
 \value{
-matrix with diagnoal of NAs.
+matrix with diagnoal of 0.
 }
 \description{
-Removes diagnoal from matrix with NAs.
+Removes diagnoal from matrix.
 }

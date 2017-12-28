@@ -948,11 +948,11 @@ rmna <- function(M) {
   
 }
 
-#' Removes diagnoal from matrix with NAs.
+#' Removes diagnoal from matrix.
 #' 
 #' @param M Matrix
 #'
-#' @return matrix with diagnoal of NAs.
+#' @return matrix with diagnoal of 0.
 #' @export
 rmdiag <- function(M) {
   
