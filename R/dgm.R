@@ -444,11 +444,12 @@ getAdjacency <- function(winner, nodes) {
 #' @param axisTextSize text size of the y and x tick labels.
 #' @param xAngle orientation of the x tick labels.
 #' @param titleTextSize text size of the title.
-#'
+#' @param barWidth width of the colorbar.
+#' @param textSize width of the colorbar.
 #' @export
 gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0, 1),
                      gradient=c("white", "orange", "red"), nodeLabels=waiver(), axisTextSize=12,
-                     xAngle=0, titleTextSize=12) {
+                     xAngle=0, titleTextSize=12, barWidth = 1, textSize=12) {
   colnames(adj)=NULL
   rownames(adj)=NULL
   
@@ -463,6 +464,12 @@ gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0,
   } else {
     x_scale = scale_x_continuous(breaks = 1:ncol(adj), labels = nodeLabels)
     y_scale = scale_y_reverse(breaks = 1:ncol(adj), labels = nodeLabels)
+  }
+  
+  if (is.null(hasColMap)) {
+    myguides = guides(fill=guide_colorbar(barwidth = barWidth))
+  } else {
+    myguides = guides(fill=hasColMap)
   }
   
   ggplot(x, aes_string(x = "Child", y = "Parent", fill = "value")) +
@@ -481,7 +488,7 @@ gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0,
     theme(#axis.ticks.x = element_blank(),
       axis.ticks = element_blank(),
       axis.line = element_blank(),
-      text = element_text(size=12),
+      text = element_text(size=textSize),
       plot.title = element_text(size=titleTextSize),
       axis.text.x = element_text(size=axisTextSize,angle=xAngle),
       axis.text.y = element_text(size=axisTextSize),
@@ -489,7 +496,7 @@ gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0,
       #panel.grid.minor = element_line(size = (0.2), colour="grey")
     ) +
     
-    x_scale + y_scale + ggtitle(title) + guides(fill=hasColMap)
+    x_scale + y_scale + ggtitle(title) + myguides
 }
 
 #' Performes a binomial test with FDR correction for network edge occurrence.

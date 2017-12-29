@@ -7,7 +7,7 @@
 gplotMat(adj, title = NULL, colMapLabel = NULL, hasColMap = NULL,
   lim = c(0, 1), gradient = c("white", "orange", "red"),
   nodeLabels = waiver(), axisTextSize = 12, xAngle = 0,
-  titleTextSize = 12)
+  titleTextSize = 12, barWidth = 1, textSize = 12)
 }
 \arguments{
 \item{adj}{2D adjacency matrix.}
@@ -29,6 +29,10 @@ gplotMat(adj, title = NULL, colMapLabel = NULL, hasColMap = NULL,
 \item{xAngle}{orientation of the x tick labels.}
 
 \item{titleTextSize}{text size of the title.}
+
+\item{barWidth}{width of the colorbar.}
+
+\item{textSize}{width of the colorbar.}
 }
 \description{
 Plots network as adjacency matrix.
