@@ -1336,3 +1336,22 @@ mergeModels <- function(fw, bw) {
   return(model.store)
 }
 
+#' Removes reciprocal connections in the lower diagnoal of the network matrix.
+#' @param M adjacency matrix
+#'
+#' @return M adjacency matrix without reciprocal connections.
+#' @export
+rmRecipLow <- function(M) {
+  # get edges, just upper diagonal
+  edges = which((M*upper.tri(M))==1, arr.ind = T)
+  
+  for (i in 1:nrow(edges)) {
+    # if edge symmatric
+    if (M[edges[i,1], edges[i,2]] == 1 &&
+        M[edges[i,2], edges[i,1]] == 1) {
+      M[edges[i,2], edges[i,1]] = 0 # remove edge in lower diag.
+    }
+  }
+  
+  return(M)
+}
