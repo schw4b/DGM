@@ -12,6 +12,6 @@
 #' @param d0 prior hypermarameter
 #' @export
 dlmLplCpp <- function(Yt_, Ft_, delta, m0_, CS0_, n0, d0) {
-    .Call(`_multdyn_dlmLplCpp`, Yt_, Ft_, delta, m0_, CS0_, n0, d0)
+    .Call('_DGM_dlmLplCpp', PACKAGE = 'DGM', Yt_, Ft_, delta, m0_, CS0_, n0, d0)
 }
 

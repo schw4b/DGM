@@ -1,7 +1,7 @@
-Package: multdyn
-Version: 1.6
-Date: 2017-08-24
-Title: Multiregression Dynamic Models
+Package: DGM
+Version: 1.7.1
+Date: 2018-02-17
+Title: Dynamical Graphical Models
 Author: Simon Schwab <schw4b@gmail.com>, Ruth Harbord <r.harbord@warwick.ac.uk>,
     Lilia Costa <liliacosta@ufba.br>, Thomas Nichols <t.e.nichols@warwick.ac.uk>
 Maintainer: Simon Schwab <schw4b@gmail.com>
@@ -11,8 +11,10 @@ Imports:
 LinkingTo: Rcpp, RcppArmadillo
 Suggests:
     testthat
-Description: Multiregression Dynamic Models for directed dynamic functional brain network analysis.
+Description:
+    Dynamical graphical models for multivariate time series data to estimate directed
+    dynamic networks in functional MRI, see Schwab et al. (2017) <doi:10.1101/198887>.
 License: GPL-3
-URL: https://github.com/schw4b/multdyn
-BugReports: https://github.com/schw4b/multdyn/issues
+URL: https://github.com/schw4b/DGM
+BugReports: https://github.com/schw4b/DGM/issues
 RoxygenNote: 6.0.1

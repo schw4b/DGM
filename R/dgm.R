@@ -188,15 +188,20 @@ model.generator<-function(Nn,node){
 #' @return
 #' model.store a matrix with the model, LPL and chosen discount factor for all possible models.
 #' runtime an estimate of the run time of the function, using proc.time().
+#' 
+#' #' @examples
+#' data(utestdata)
+#' result=exhaustive.search(myts,3)
+#' 
 #' @export
 exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=priors.spec() ) {
+  
+  ptm=proc.time()
   
   m0 = priors$m0
   CS0 = priors$CS0
   n0 = priors$n0
   d0 = priors$d0
-  
-  ptm=proc.time()  
   
   Nn=ncol(Data) # the number of nodes
   Nm=2^(Nn-1)   # the number of models per node
@@ -244,16 +249,13 @@ exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRU
     }
   }
   
-  lpl_noint = 99 # TODO
-  
   # Output model.store
   model.store=rbind(models,lplmax,DF.hat)
   rownames(model.store)=NULL
   
   runtime=(proc.time()-ptm)
   
-  output<-list(model.store=model.store,runtime=runtime, lpl_noint=lpl_noint)
-  return(output)
+  return(list(model.store=model.store,runtime=runtime))
 }
 
 #' Mean centers timeseries in a 2D array timeseries x nodes,
@@ -281,31 +283,54 @@ center <- function(X) {
 #' @param nbf  Log Predictive Likelihood will sum from (and including) this time point. 
 #' @param delta a vector of potential values for the discount factor.
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
-#' @param bf bayes factor for network thresholding.
 #' @param priors list with prior hyperparameters.
 #' @param path a path where results are written.
+#' @param method ether exhaustive, foward, backward, or both.
 #'
 #' @return store list with results.
+#' 
+#' @examples
+#' data(utestdata)
+#' sub=subject(myts)
+#' sub=subject(myts, method="both")
+#' 
 #' @export
-subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, bf = 20,
-                    priors = priors.spec(), path = getwd() ) {
-  N=ncol(X)  # nodes
-  M=2^(N-1)  # rows/models
-  models = array(rep(0,(N+2)*M*N),dim=c(N+2,M,N))
+subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE,
+                    priors = priors.spec(), path = getwd(), method = "exhaustive") {
   
-  for (n in 1:N) {
-    tmp=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, priors=priors)
-    models[,,n]=tmp$model.store
+  if (!is.element(method, c("both", "exhaustive", "forward", "backward"))) {
+    stop("Method must be either exhaustive, forward, backward or both")
+  }
+  
+  Nn=ncol(X)  # nodes
+  models=list()
+  
+  for (n in 1:Nn) {
+    
+    if (method == "both") {
+      tmp=stepwise.combine(X, n, nbf=nbf, delta=delta, priors=priors)
+      models[[n]] = tmp$model.store
+    } else if (method == "forward") {
+      tmp=stepwise.forward(X, n, nbf=nbf, delta=delta, priors=priors)
+      models[[n]] = tmp$model.store
+    } else if (method == "backward") {
+      tmp=stepwise.backward(X, n, nbf=nbf, delta=delta, priors=priors)
+      models[[n]] = tmp$model.store
+    } else if (method == "exhaustive") {
+      tmp=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, priors=priors)
+      models[[n]] = tmp$model.store
+    }
+    
     if (!is.null(id)) {
-      write(t(models[,,n]), file=file.path(path, sprintf("%s_node_%03d.txt", id, n)), ncolumns = M)
+      write(t(models[[n]]), file=file.path(path, sprintf("%s_node_%03d.txt", id, n)), 
+            ncolumns = ncol(tmp$model.store))
     }
   }
   
   store=list()
   store$models=models
-  store$winner=getWinner(models,N)
-  store$adj=getAdjacency(store$winner,N)
-  store$thr=getThreshAdj(store$adj, store$models, store$winner, bf = bf)
+  store$winner=getWinner(models,Nn)
+  store$adj=getAdjacency(store$winner,Nn)
   
   return(store)
 }
@@ -320,17 +345,35 @@ subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, bf = 20
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
 #' @param priors list with prior hyperparameters.
 #' @param path a path where results are written.
+#' @param method can be exhaustive (default), forward, backward, or both
 #' 
 #' @return store list with results.
+#' 
+#' @examples
+#' data(utestdata)
+#' m=node(myts, 3, id="SUB001_5nodes")
+#' # a results file will be written.
 #' @export
 node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=priors.spec(),
-                 path=getwd() ) {
-  N=ncol(X)  # nodes
-  M=2^(N-1)  # rows/models
+                 path=getwd(), method = "exhaustive") {
   
-  store=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, priors=priors)
+  if (!is.element(method, c("both", "exhaustive", "forward", "backward"))) {
+    stop("Method must be either exhaustive, forward, backward or both")
+  }
+  
+  if (method == "both") {
+    store=stepwise.combine(X, n, nbf=nbf, delta=delta, priors=priors)
+  } else if (method == "forward") {
+    store=stepwise.forward(X, n, nbf=nbf, delta=delta, priors=priors)
+  } else if (method == "backward") {
+    store=stepwise.backward(X, n, nbf=nbf, delta=delta, priors=priors)
+  } else if (method == "exhaustive") {
+    store=exhaustive.search(X, n, nbf=nbf, delta=delta, cpp=cpp, priors=priors)
+  }
+  
   if (!is.null(id)) {
-    write(t(store$model.store), file=file.path(path, sprintf("%s_node_%03d.txt", id, n)), ncolumns = M)
+    write(t(store$model.store), file=file.path(path, sprintf("%s_node_%03d.txt", id, n)), 
+          ncolumns = ncol(store$model.store))
   }
   return(store)
 }
@@ -339,23 +382,24 @@ node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=
 #' @param path path.
 #' @param id identifier to select all subjects' nodes, e.g. pattern containing subject ID and session number.
 #' @param nodes number of nodes.
-#' @param bf bayes factor for network thresholding.
 #'
 #' @return store list with results.
+#' 
 #' @export
-read.subject <- function(path, id, nodes, bf = 20) {
-  models = array(0,dim=c(nodes+2,2^(nodes-1),nodes))
+read.subject <- function(path, id, nodes) {
+  
+  models = list()
   for (n in 1:nodes) {
     #file=sprintf("%s_node_%03d.txt", id, n)
     #models[,,n] = as.matrix(read.table(file)) # quite slow
     file=list.files(path, pattern=glob2rx(sprintf("%s*_node_%03d.txt", id, n)))
-    models[,,n] = as.matrix(fread(file.path(path,file))) # faster, from package "data.table"
+    # we have to use a list as model dimension is variable in stepwise.
+    models[[n]] = as.matrix(fread(file.path(path,file))) # faster, from package "data.table"
   }
   store=list()
   store$models=models
   store$winner=getWinner(models,nodes)
   store$adj=getAdjacency(store$winner,nodes)
-  store$thr=getThreshAdj(store$adj, store$models, store$winner, bf = bf)
   
   return(store)
 }
@@ -370,14 +414,13 @@ read.subject <- function(path, id, nodes, bf = 20) {
 #' @export
 getWinner <- function(models, nodes) {
   
-  dims=length(dim(models))
-  
-  if (dims==2) {
+  if (is.matrix(models)) {
     winner = models[,which.max(models[nodes+1,])]
-  } else if (dims==3) {
+    
+  } else if (is.list(models)) {
     winner = array(0, dim=c(nodes+2,nodes))
     for (n in 1:nodes) {
-      winner[,n]=models[,which.max(models[nodes+1,,n]),n]
+      winner[,n]=models[[n]][,which.max(models[[n]][nodes+1,])]
     }
   }
   return(winner)
@@ -410,16 +453,21 @@ getAdjacency <- function(winner, nodes) {
 #' @param title title.
 #' @param colMapLabel label for colormap.
 #' @param hasColMap FALSE turns off color map, default is NULL (on).
-#' @param lim vector with min and max value for color scaling.
+#' @param lim vector with min and max value, data outside this range will be removed.
 #' @param gradient gradient colors.
 #' @param nodeLabels node labels.
 #' @param axisTextSize text size of the y and x tick labels.
 #' @param xAngle orientation of the x tick labels.
 #' @param titleTextSize text size of the title.
-#'
+#' @param barWidth width of the colorbar.
+#' @param textSize width of the colorbar.
 #' @export
 gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0, 1),
-                     gradient=c("white", "orange", "red"), nodeLabels=waiver(), axisTextSize=12, xAngle=0, titleTextSize=12) {
+                     gradient=c("white", "orange", "red"), nodeLabels=waiver(), axisTextSize=12,
+                     xAngle=0, titleTextSize=12, barWidth = 1, textSize=12) {
+  colnames(adj)=NULL
+  rownames(adj)=NULL
+  
   x = melt(adj)
   names(x)[1] = "Parent"
   names(x)[2] = "Child"
@@ -433,10 +481,17 @@ gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0,
     y_scale = scale_y_reverse(breaks = 1:ncol(adj), labels = nodeLabels)
   }
   
+  if (is.null(hasColMap)) {
+    myguides = guides(fill=guide_colorbar(barwidth = barWidth))
+  } else {
+    myguides = guides(fill=hasColMap)
+  }
+  
   ggplot(x, aes_string(x = "Child", y = "Parent", fill = "value")) +
     geom_tile(color = "gray60") +
-
+    
     scale_fill_gradient2(
+      na.value = "transparent",
       low  = gradient[1],
       mid  = gradient[2],
       high = gradient[3],
@@ -444,19 +499,20 @@ gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0,
       limit = lim,
       space = "Lab",
       name = colMapLabel) + 
-
+    
     theme(#axis.ticks.x = element_blank(),
-          axis.ticks = element_blank(),
-          axis.line = element_blank(),
-          text = element_text(size=12),
-          plot.title = element_text(size=titleTextSize),
-          axis.text.x = element_text(size=axisTextSize,angle=xAngle),
-          axis.text.y = element_text(size=axisTextSize),
-          #panel.grid.major = element_line(colour="black", size = (1.5)),
-          #panel.grid.minor = element_line(size = (0.2), colour="grey")
-          ) +
-
-    x_scale + y_scale + ggtitle(title) + guides(fill=hasColMap)
+      axis.ticks = element_blank(),
+      axis.line = element_blank(),
+      text = element_text(size=textSize),
+      plot.title = element_text(size=titleTextSize),
+      axis.text.x = element_text(size=axisTextSize,angle=xAngle),
+      axis.text.y = element_text(size=axisTextSize),
+      panel.background = element_blank()
+      #panel.grid.major = element_line(colour="black", size = (1.5)),
+      #panel.grid.minor = element_line(size = (0.2), colour="grey")
+    ) +
+    
+    x_scale + y_scale + ggtitle(title) + myguides
 }
 
 #' Performes a binomial test with FDR correction for network edge occurrence.
@@ -574,7 +630,7 @@ getModel <- function(models, parents) {
 #' 
 #' @return group a list.
 #' @export
-mdm.group <- function(subj) {
+dgm.group <- function(subj) {
   Nn=ncol(subj[[1]]$adj$am)
   N=length(subj)
   
@@ -582,23 +638,25 @@ mdm.group <- function(subj) {
   df_ = array(NA, dim=c(N,Nn))
   tlpls = array(NA, dim=c(Nn,Nn,2,N))
   winner = array(NA, dim=c(Nn+2,Nn,N))
-  models = array(NA, dim=c(Nn+2,2^(Nn-1),Nn,N))
+  
   for (s in 1:N) {
     am[,,s]  = subj[[s]]$adj$am
     lpl[,,s] = subj[[s]]$adj$lpl
     df[,,s]  = subj[[s]]$adj$df
     df_[s,]  = subj[[s]]$winner[nrow(subj[[s]]$winner),]
     winner[,,s]  = subj[[s]]$winner
-    models[,,,s]  = subj[[s]]$models
     
-    # thresholded measures
-    tam[,,s]  = subj[[s]]$thr$am
-    tbi[,,s]  = subj[[s]]$thr$bi
-    tlpls[,,,s]= subj[[s]]$thr$lpls
+    # pruning
+    if (!is.null(subj[[s]]$thr)) {
+      tam[,,s]  = subj[[s]]$thr$am
+      tbi[,,s]  = subj[[s]]$thr$bi
+      tlpls[,,,s]= subj[[s]]$thr$lpls
+    }
   }
   
   group=list(am=am,lpl=lpl,df=df,tam=tam,tbi=tbi,tlpls=tlpls,
-             df_=df_,winner=winner,models=models)
+             df_=df_,winner=winner)
+  
   return(group)
 }
 
@@ -626,16 +684,16 @@ patel.group <- function(subj) {
   return(group)
 }
 
-#' Get thresholded adjacency network.
+#' Get pruned adjacency network.
 #'
 #' @param adj list with network adjacency from getAdjacency().
-#' @param models matrix 3D with full model estimates.
+#' @param models list of models.
 #' @param winner matrix 2D with winning models.
-#' @param bf bayes factor for network thresholding.
+#' @param e bayes factor for network pruning.
 #' 
-#' @return thr list with thresholded network adjacency.
+#' @return thr list with pruned network adjacency.
 #' @export
-getThreshAdj <- function(adj, models, winner, bf = 20) {
+pruning <- function(adj, models, winner, e = 20) {
   
   Nn = ncol(adj$am)
   # determine bidirectional edges
@@ -666,12 +724,12 @@ getThreshAdj <- function(adj, models, winner, bf = 20) {
         # uni i->j, LPL without parent j
         p = winner[,i][2:Nn]
         p = p[p != j & p!= 0] # remove node j
-        lpls[i,j,2] = adj$lpl[i,j] + getModel(models[,,i], p)[Nn+1]
+        lpls[i,j,2] = adj$lpl[i,j] + getModel(models[[i]], p)[Nn+1]
         
         # uni j->i, LPL without parent i
         p = winner[,j][2:Nn]
         p = p[p != i & p!= 0] # remove node i
-        lpls[j,i,2] = adj$lpl[j,i] + getModel(models[,,j], p)[Nn+1]
+        lpls[j,i,2] = adj$lpl[j,i] + getModel(models[[j]], p)[Nn+1]
       }
     }
   }
@@ -681,7 +739,7 @@ getThreshAdj <- function(adj, models, winner, bf = 20) {
   for (i in 1:Nn) {
     for (j in 1:Nn) {
       if (B[i,j] == 1) {
-        if (lpls[i,j,1] - bf <= max(lpls[i,j,2], lpls[j,i,2]) ) {
+        if (lpls[i,j,1] - e <= max(lpls[i,j,2], lpls[j,i,2]) ) {
           # if unidirectional lpl is larger than bidirectional with a
           # bayes factor penatly, take the simpler unidirectional model.
           if (lpls[i,j,2] > lpls[j,i,2]) {
@@ -693,11 +751,11 @@ getThreshAdj <- function(adj, models, winner, bf = 20) {
       }
     }
   }
-    
+  
   thr=list()
   thr$bi=bi # bidirectional edges
   thr$lpls=lpls # lpls
-  thr$am=am # adjacency matrix (thresholded)
+  thr$am=am # adjacency matrix (pruned)
   
   return(thr)
 }
@@ -705,14 +763,11 @@ getThreshAdj <- function(adj, models, winner, bf = 20) {
 #' Performance of estimates, such as sensitivity, specificity, and more.
 #'
 #' @param x estimated binary network matrix.
-#' @param xtrue, true binary network matrix.
+#' @param true, true binary network matrix.
 #' 
-#' @return perf vector.
+#' @return p list with results.
 #' @export
-perf <- function(x, xtrue) {
-  
-  # in case xtrue continas NA instead of 0
-  xtrue[is.na(xtrue)]=0
+perf <- function(x, true) {
   
   d = dim(x)
   Nn=d[1]
@@ -723,15 +778,18 @@ perf <- function(x, xtrue) {
     N=1
   }
   
-  perf=array(NA,dim=c(N,8))
+  subj=array(NA,dim=c(N,8))
+  cases=array(NA,dim=c(N,4))
   
   for (i in 1:N) {
-    # see https://en.wikipedia.org/wiki/Sensitivity_and_specificity
-    TP = sum(x[,,i] & xtrue)
-    FP = sum((x[,,i] - xtrue) == 1)
-    FN = sum((xtrue - x[,,i]) == 1)
-    TN = sum(!x[,,i] & !xtrue) - ncol(x[,,i])
+    TP = sum(x[,,i] & true)
+    FP = sum((x[,,i] - true) == 1)
+    FN = sum((true - x[,,i]) == 1)
+    TN = sum(!x[,,i] & !true) - ncol(x[,,i])
     
+    cases[i,]=c(TP,FP,FN,TN)
+    
+    # see https://en.wikipedia.org/wiki/Sensitivity_and_specificity
     tpr = TP/(TP+FN) # 1
     spc = TN/(TN+FP) # 2
     ppv = TP/(TP+FP) # 3
@@ -741,12 +799,22 @@ perf <- function(x, xtrue) {
     fdr = FP/(TP+FP) # 7
     acc = (TP+TN)/(TP+FP+FN+TN) # 8
     
-    perf[i,]=c(tpr,spc,ppv,npv,fpr,fnr,fdr,acc)
+    subj[i,]=c(tpr,spc,ppv,npv,fpr,fnr,fdr,acc)
   }
+  colnames(cases) = c("TP", "FP", "FN", "TN")
+  colnames(subj) = c("tpr", "spc", "ppv", "npv", "fpr", "fnr", "fdr", "acc")
   
-  return(perf)
+  p = list()
+  p$subj=subj
+  p$cases=cases
+  
+  p$tpr = sum(cases[,1])/(sum(cases[,1]) + sum(cases[,3]))
+  p$spc = sum(cases[,4])/(sum(cases[,4]) + sum(cases[,2]))
+  p$acc = (sum(cases[,1]) + sum(cases[,4]))/(sum(cases[,1]) + sum(cases[,2]) + sum(cases[,3]) + sum(cases[,4]))
+  p$ppv = sum(cases[,1])/(sum(cases[,1]) + sum(cases[,2]))
+  return(p)
 }
-  
+
 #' Scaling data. Zero centers and scales the nodes (SD=1).
 #'
 #' @param X time x node 2D matrix, or 3D with subjects as the 3rd dimension.
@@ -814,69 +882,72 @@ patel <- function(X, lower=0.1, upper=0.9, bin=0.75, TK=0, TT=0) {
   theta4 = crossprod(1-X2,1-X2)/nt # a=0, b=0
   
   # directionality tau [-1, 1]
-  tau = matrix(0, ncol(X2), ncol(X2))
+  tau = matrix(0, nn, nn)
   inds = theta2 >= theta3
   tau[inds] = 1 - (theta1[inds] + theta3[inds])/(theta1[inds] + theta2[inds])
   tau[!inds] = (theta1[!inds] + theta2[!inds])/(theta1[!inds] + theta3[!inds]) - 1
-  tau=-tau
+  #tau=-tau # inverse 
   tau[as.logical(diag(nn))]=NA
   # tau(a,b) positive, a is ascendant to b (a is parent)
   
   # functional connectivity kappa [-1, 1]
   E=(theta1+theta2)*(theta1+theta3)
-  max_theta1=min(theta1+theta2,theta1+theta3)
-  min_theta1=max(0,2*theta1+theta2+theta3-1)
+  max_theta1=pmin(theta1+theta2,theta1+theta3)
+  min_theta1=pmax(array(0,dim=c(nn,nn)),2*theta1+theta2+theta3-1)
   inds = theta1>=E
-  D = matrix(0, ncol(X2), ncol(X2))
-  D[inds]=0.5+(theta1[inds]-E[inds])/(2*(max_theta1-E[inds]))
-  D[!inds]=0.5-(theta1[!inds]-E[!inds])/(2*(E[!inds]-min_theta1))
+  D = matrix(0, nn, nn)
+  D[inds]=0.5+(theta1[inds]-E[inds])/(2*(max_theta1[inds]-E[inds]))
+  D[!inds]=0.5-(theta1[!inds]-E[!inds])/(2*(E[!inds]-min_theta1[!inds]))
   
   kappa=(theta1-E)/(D*(max_theta1-E) + (1-D)*(E-min_theta1))
   kappa[as.logical(diag(nn))]=NA
   
-  # theresholding
+  # thresholding
   tkappa = kappa
-  tkappa[kappa >= TK[1] & kappa <= TK[2]] = 0
+  tkappa[kappa >= TK[1] & kappa <= TK[2]] = 0 # this is a tow-sided test, kappa ranges from -1 to 1
   ttau = tau
   ttau[tau >= TT[1] & tau <= TT[2]] = 0
   
   # binary nets: we focus on positive associations
-  net = (tkappa > 0)*(tau > 0)  # only kappa thresholded
+  net = (tkappa > 0)*(tau < 0)  # only kappa thresholded
   net[diag(nn)==1]=0 # remove NA
-  tnet = (tkappa > 0)*(ttau > 0) # both tau and kappa thresholded
+  tnet = (tkappa > 0)*(ttau < 0) # both tau and kappa thresholded
   tnet[diag(nn)==1]=0 # remove NA
   
   PT=list(kappa=kappa, tau=tau, tkappa=tkappa, ttau=ttau, net=net, tnet=tnet)
   return(PT)
 }
 
-#' Permutation test for Patel's kappa. Creates a distribution of values
+#' Randomization test for Patel's kappa. Creates a distribution of values
 #' kappa under the null hypothesis.
 #'
 #' @param X time x node x subjects 3D matrix.
 #' @param alpha sign. level
+#' @param K number of randomizations, default is 1000.
 #'
 #' @return stat lower and upper significance thresholds.
 #' @export
-perm.test <- function(X, alpha=0.05) {
+rand.test <- function(X, alpha=0.05, K=1000) {
   
   low = alpha/2      # two sided test
   up  = 1 - alpha/2
   
   N  = dim(X)[3] # Nr. of subjects
   Nn = dim(X)[2] # Nr. of nodes
+  Nt = dim(X)[1] # Nr. of nodes
   
-  # shuffle across subjects with fixed nodes
-  ka = array(NA,dim=c(Nn,Nn,N)) # kappa null distribution
-  ta = array(NA,dim=c(Nn,Nn,N)) # kappa null distribution
-  X_= array(NA, dim=dim(X))
-  for (s in 1:N) {
+  ka = array(NA,dim=c(Nn,Nn,K)) # kappa null distribution
+  ta = array(NA,dim=c(Nn,Nn,K)) # tau null distribution
+  X_= array(NA, dim=c(Nt,Nn))
+  for (k in 1:K) {
+    s = sample(N,Nn, replace = F)
+    # shuffle across subjects with fixed nodes (because of node variance)
     for (n in 1:Nn) {
-      X_[,n,s]=X[,n,sample(N,1)] # draw a random subject (with repetition)
+      X_[,n]=X[,n,s[n]]
     }
-    p=patel(X_[,,s])
-    ka[,,s]=p$kappa
-    ta[,,s]=p$tau
+    p=patel(X_)
+    ka[,,k]=p$kappa
+    ta[,,k]=p$tau
   }
   
   # two sided sign. test
@@ -900,16 +971,33 @@ rmna <- function(M) {
   
 }
 
-#' Removes diagnoal from matrix with NAs.
+#' Removes diagnoal from matrix.
 #' 
 #' @param M Matrix
 #'
-#' @return matrix with diagnoal of NAs.
+#' @return matrix with diagnoal of 0.
 #' @export
 rmdiag <- function(M) {
   
   M[as.logical(diag(nrow(M)))]=0
   return(M)
+}
+
+#' Turns asymetric network into an symmetric network. Helper function to
+#' determine the detection of a connection while ignoring directionality.
+#' 
+#' @param M 3D matrix nodes x nodes x subjects
+#'
+#' @return 3D matrix nodes x nodes x subjects
+#' @export
+symmetric <- function(M) {
+  
+  d = dim(M)
+  R = M
+  for (i in 1:d[3]) {
+    R[,,i] = pmax(M[,,i], t(M[,,i]))
+  }
+  return(R)
 }
 
 #' Stepise forward non-exhaustive greedy search, calculates the optimum value of the discount factor.
@@ -928,6 +1016,7 @@ rmdiag <- function(M) {
 #' @export
 stepwise.forward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), 
                              max.break=TRUE, priors=priors.spec()){
+  ptm=proc.time()
   
   # Define the prior hyperparameters
   m0 = priors$m0
@@ -967,58 +1056,61 @@ stepwise.forward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01),
   
   for (N in 1:(Nn-1)){
     
-  # Find all the models with the correct length and containing the previously selected parents
-  pars_add = c(1:Nn)[-c(node,pars)]
+    # Find all the models with the correct length and containing the previously selected parents
+    pars_add = c(1:Nn)[-c(node,pars)]
     
-  ms.new = array(0,dim=c((Nn+2),(Nn-N)))
-  if (length(pars>0)){ms.new[2:(length(pars)+1),] = pars}
-  ms.new[(length(pars)+2),] = pars_add
+    ms.new = array(0,dim=c((Nn+2),(Nn-N)))
+    if (length(pars>0)){ms.new[2:(length(pars)+1),] = pars}
+    ms.new[(length(pars)+2),] = pars_add
     
-  # Find the LPL and discount factor of this subset of models models
-  nms=ncol(ms.new) # How many models are being considered?
+    # Find the LPL and discount factor of this subset of models models
+    nms=ncol(ms.new) # How many models are being considered?
     
-  # Create empty arrays for the LPL scores and the deltas
-  lpl.delta=array(NA,c(nms,length(delta)))
-  lpl.max=rep(NA,nms)
-  DF.hat=rep(NA,nms)
+    # Create empty arrays for the LPL scores and the deltas
+    lpl.delta=array(NA,c(nms,length(delta)))
+    lpl.max=rep(NA,nms)
+    DF.hat=rep(NA,nms)
     
-  # Now create Ft.
-  for (i in 1:nms){
-    pars = ms.new[(2:Nn),i] 
-    pars = pars[pars!=0]
-    Ft=array(1,dim=c(Nt,length(pars)+1))
-    if (ncol(Ft)>1){Ft[,2:ncol(Ft)] = Data[,pars]}
+    # Now create Ft.
+    for (i in 1:nms){
+      pars = ms.new[(2:Nn),i] 
+      pars = pars[pars!=0]
+      Ft=array(1,dim=c(Nt,length(pars)+1))
+      if (ncol(Ft)>1){Ft[,2:ncol(Ft)] = Data[,pars]}
       
-  # Calculate the Log Predictive Likelihood for each value of delta, for the specified models
-    for (j in 1:nd){
-      lpl = dlmLplCpp(Yt,t(Ft),delta=delta[j],m0_=m0,CS0_=CS0,n0=n0,d0=d0)
-      lpl.delta[i,j]=sum(lpl[nbf:Nt])}
+      # Calculate the Log Predictive Likelihood for each value of delta, for the specified models
+      for (j in 1:nd){
+        lpl = dlmLplCpp(Yt,t(Ft),delta=delta[j],m0_=m0,CS0_=CS0,n0=n0,d0=d0)
+        lpl.delta[i,j]=sum(lpl[nbf:Nt])}
       
-    lpl.max[i] = max(lpl.delta[i,],na.rm=TRUE)
-    w = which(lpl.delta[i,]==lpl.max[i])
-    DF.hat[i] = delta[w]}
+      lpl.max[i] = max(lpl.delta[i,],na.rm=TRUE)
+      w = which(lpl.delta[i,]==lpl.max[i])
+      DF.hat[i] = delta[w]}
     
-  ms.new[(Nn+1),] = lpl.max
-  ms.new[(Nn+2),] = DF.hat
+    ms.new[(Nn+1),] = lpl.max
+    ms.new[(Nn+2),] = DF.hat
     
-  # Find the highest LPL so far
-  max.score = max(model.store[(Nn+1),]) 
-  logBF = lpl.max - max.score
-  W = which(logBF > 0)
+    # Find the highest LPL so far
+    max.score = max(model.store[(Nn+1),]) 
+    logBF = lpl.max - max.score
+    W = which(logBF > 0)
     
-  # Update model.store
-  model.store = cbind(model.store,ms.new)
+    # Update model.store
+    model.store = cbind(model.store,ms.new)
     
-  if (length(W)==0 & max.break==TRUE){break} 
-  else{W.max = which.max(logBF)
+    if (length(W)==0 & max.break==TRUE){break} 
+    else{W.max = which.max(logBF)
     
-  # Update the model parents
-  pars = ms.new[(2:Nn),W.max]
-  pars = pars[pars!=0]}}
+    # Update the model parents
+    pars = ms.new[(2:Nn),W.max]
+    pars = pars[pars!=0]}}
   
-model.store[1,] = c(1:ncol(model.store)) # attach a model number
+  model.store[1,] = c(1:ncol(model.store)) # attach a model number
   
-return(model.store)}
+  runtime=(proc.time()-ptm)
+  
+  return(list(model.store = model.store, runtime=runtime))
+}
 
 #' Stepise backward non-exhaustive greedy search, calculates the optimum value of the discount factor.
 #'
@@ -1036,6 +1128,7 @@ return(model.store)}
 #' @export
 stepwise.backward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), 
                               max.break=TRUE, priors=priors.spec()){
+  ptm=proc.time()
   
   # Define the prior hyperparameters
   m0 = priors$m0
@@ -1077,81 +1170,204 @@ stepwise.backward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01),
   
   for (N in 1:(Nn-1)){
     
-  # Find all the models with the correct length and missing the previously removed parents
-  pars_add = combn(pars,(Nn-(N+1)))
+    # Find all the models with the correct length and missing the previously removed parents
+    pars_add = combn(pars,(Nn-(N+1)))
     
-  ms.new = array(0,dim=c((Nn+2),(Nn-N))) 
-  if (length(pars_add>0)){ms.new[2:(nrow(pars_add)+1),] = pars_add}
+    ms.new = array(0,dim=c((Nn+2),(Nn-N))) 
+    if (length(pars_add>0)){ms.new[2:(nrow(pars_add)+1),] = pars_add}
     
-  # Find the LPL and discount factor of these models
-  nms=ncol(ms.new) # How many models are being considered?
+    # Find the LPL and discount factor of these models
+    nms=ncol(ms.new) # How many models are being considered?
     
-  # Create empty arrays for the lpl scores and the deltas
-  lpl.delta=array(NA,c(nms,length(delta)))
-  lpl.max=rep(NA,nms)
-  DF.hat=rep(NA,nms)
+    # Create empty arrays for the lpl scores and the deltas
+    lpl.delta=array(NA,c(nms,length(delta)))
+    lpl.max=rep(NA,nms)
+    DF.hat=rep(NA,nms)
     
-  # Now create Ft. 
-  for (i in 1:nms){
-    pars=ms.new[(2:Nn),i]
-    pars=pars[pars!=0]
+    # Now create Ft. 
+    for (i in 1:nms){
+      pars=ms.new[(2:Nn),i]
+      pars=pars[pars!=0]
       
-    Ft=array(1,dim=c(Nt,length(pars)+1))
-    if (ncol(Ft)>1){Ft[,2:ncol(Ft)]=Data[,pars]}
+      Ft=array(1,dim=c(Nt,length(pars)+1))
+      if (ncol(Ft)>1){Ft[,2:ncol(Ft)]=Data[,pars]}
       
-  # Calculate the log predictive likelihood for each value of delta, for the specified models
-    for (j in 1:nd){
-    lpl = dlmLplCpp(Yt,t(Ft),delta=delta[j],m0_=m0,CS0_=CS0,n0=n0,d0=d0)
-    lpl.delta[i,j]=sum(lpl[nbf:Nt])}
+      # Calculate the log predictive likelihood for each value of delta, for the specified models
+      for (j in 1:nd){
+        lpl = dlmLplCpp(Yt,t(Ft),delta=delta[j],m0_=m0,CS0_=CS0,n0=n0,d0=d0)
+        lpl.delta[i,j]=sum(lpl[nbf:Nt])}
       
-  lpl.max[i] = max(lpl.delta[i,],na.rm=TRUE)
-  w = which(lpl.delta[i,]==lpl.max[i])
-  DF.hat[i] = delta[w]}
+      lpl.max[i] = max(lpl.delta[i,],na.rm=TRUE)
+      w = which(lpl.delta[i,]==lpl.max[i])
+      DF.hat[i] = delta[w]}
     
-  ms.new[(Nn+1),] = lpl.max
-  ms.new[(Nn+2),] = DF.hat
+    ms.new[(Nn+1),] = lpl.max
+    ms.new[(Nn+2),] = DF.hat
     
-  max.score = max(model.store[(Nn+1),]) # Find the highest LPL calculated so far
-  logBF = lpl.max - max.score
-  W = which(logBF > 0)  
+    max.score = max(model.store[(Nn+1),]) # Find the highest LPL calculated so far
+    logBF = lpl.max - max.score
+    W = which(logBF > 0)  
     
-  # Update model.store
-  model.store = cbind(model.store,ms.new)
+    # Update model.store
+    model.store = cbind(model.store,ms.new)
     
-  if (length(W)==0 & max.break==TRUE){break}
-  else{W.max = which.max(logBF)
+    if (length(W)==0 & max.break==TRUE){break}
+    else{W.max = which.max(logBF)
     
- # Update the model parents 
-  pars = ms.new[(2:Nn),W.max]
-  pars = pars[pars!=0]}}
+    # Update the model parents 
+    pars = ms.new[(2:Nn),W.max]
+    pars = pars[pars!=0]}}
   
-model.store[1,] = c(1:ncol(model.store)) # attach a model number
+  model.store[1,] = c(1:ncol(model.store)) # attach a model number
   
-return(model.store)}
+  runtime=(proc.time()-ptm)
+  
+  return(list(model.store = model.store, runtime=runtime))
+}
 
-#' Stepise combine: combines the stepwise forward and the stepwise backward model.
+#' Stepise combine
 #'
-#' @param forward_matrix The winning sets of parents using a Forward Selection model search. A
-#' matrix with dimension \code{Nn+2} x \code{Nn}, rows \code{1:Nn} are the parents (ones and zeros),
-#' rows \code{(Nn+1):(Nn+2)} are the LPL and discount factor. forward matrix.
-#' @param backward_matrix backward_matrix}{The winning sets of parents using a Backward Elimination
-#' model search. A matrix with dimension \code{Nn+2} x \code{Nn}, rows \code{1:Nn} are the parents
-#' (ones and zeros), rows \code{(Nn+1):(Nn+2)} are the LPL and discount factor.
+#' @param Data  Dataset with dimension number of time points \code{T} x number of nodes \code{Nn}.
+#' @param node  The node to find parents for.
+#' @param nbf   The Log Predictive Likelihood will sum from (and including) this time point. 
+#' @param delta A vector of values for the discount factor.
+#' @param max.break If \code{TRUE}, the code will break if adding / removing parents does not
+#' improve the LPL. If \code{FALSE}, the code will continue to the zero parent / all parent model.
+#' Default is \code{TRUE}.
+#' @param priors List with prior hyperparameters.
 #'
 #' @return
-#' stepwise_combine_matrix The adjacency network, LPLs and discount factors when the Forward
-#' Selection and Backward Elimination model searches are combined.
+#' model.store The parents, LPL and chosen discount factor for the subset of models scored using this method.
 #' @export
-stepwise.combine <- function(forward_matrix,backward_matrix){
+stepwise.combine <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), 
+                             max.break=TRUE, priors=priors.spec()) {
   
-  Nn = ncol(forward_matrix)
-  step_combine_matrix = array(NA,dim=c((Nn+2),Nn))
+  ptm=proc.time()
   
-  for (k in 1:Nn){
-    
-    if (forward_matrix[(Nn+1),k] >= backward_matrix[(Nn+1),k]){step_combine_matrix[,k] = forward_matrix[,k]}
-    if (forward_matrix[(Nn+1),k] < backward_matrix[(Nn+1),k]){step_combine_matrix[,k] = backward_matrix[,k]}
-    
+  fw=stepwise.forward(Data, node, nbf=nbf, delta=delta, priors=priors, max.break=max.break)
+  bw=stepwise.backward(Data, node, nbf=nbf, delta=delta, priors=priors, max.break=max.break)
+  model.store = mergeModels(fw$model.store,bw$model.store)
+  
+  runtime=(proc.time()-ptm)
+  
+  return(list(model.store=model.store, runtime=runtime))
 }
+
+#' Calculate the location and scale parameters for the time-varying coefficients 
+#' given all the observations. West, M. & Harrison, J., 1997. Bayesian Forecasting
+#' and Dynamic Models. Springer New York.
+#' 
+#' @param mt the vector or matrix of the posterior mean (location parameter), dim = \code{p x T}, 
+#' where \code{p} is the number of thetas (at any time \code{t}) and \code{T} is the number of time points
+#' @param CSt the posterior scale matrix with dim = \code{p x p x T} (unscaled by the observation variance)
+#' @param RSt the prior scale matrix with dim = \code{p x p x T} (unscaled by the observation variance)
+#' @param nt vector of the updated hyperparameters for the precision \code{phi} with length \code{T}
+#' @param dt vector of the updated hyperparameters for the precision \code{phi} with length \code{T}
+#' 
+#' @return
+#' smt = the location parameter of the retrospective distribution with dimension \code{p x T}
+#' sCt = the scale matrix of the retrospective distribution with dimension \code{p x p x T} 
+#' @export
+dlm.retro <- function(mt, CSt, RSt, nt, dt) {
   
-return(step_combine_matrix)}
+  # Convert vectors to matrices
+  if (is.vector(mt)){
+    mt = array(mt, dim=c(1,length(mt)))
+    CSt = array(CSt, dim=c(1,1,length(CSt)))
+    RSt = array(RSt, dim=c(1,1,length(RSt)))}
+  
+  p = nrow(mt) # the number of thetas at any time t
+  Nt = ncol(mt) # the number of time points
+  smt = array(NA, dim=c(p,Nt))
+  sCSt = array(NA, dim=c(p,p,Nt))
+  
+  # Values at the last time point
+  smt[,Nt] = mt[,Nt]
+  sCSt[,,Nt] = CSt[,,Nt] 
+  
+  # For other time points
+  for (i in (Nt-1):1){
+    #inv.sR = solvecov(RSt[,,(i+1)], cmax = 1e+10)$inv # overcomes the limitation when it cannot invert the matrix package:fpc
+    inv.sR = solve(RSt[,,(i+1)])
+    B = CSt[,,i] %*% inv.sR
+    smt[,i] = mt[, i] + B %*% (smt[,(i+1)] - mt[,i])
+    sCSt[,,i] = CSt[,,i] + B %*% (sCSt[,,(i+1)] - RSt[,,(i+1)]) %*% t(B)}
+  
+  # Multiply by the observation variance
+  sCt = sCSt * (dt[Nt] / nt[Nt])
+  
+  result = list(smt=smt, sCt=sCt)
+  return(result)
+}
+
+
+#' Checks results and returns job number for incomplete nodes.
+#' @param path path to results.
+#' @param ids subjects ids.
+#' @param Nr Number of runs.
+#' @param Nn Number of nodes.
+#'
+#' @return jobs job numbers
+#' @export
+getIncompleteNodes <- function(path, ids, Nr, Nn) {
+  
+  f=list.files(path, pattern=glob2rx('*.txt'))
+  
+  # get info flag
+  info = strsplit(f[1], "_")[[1]][6]
+  
+  idx = rep(NA, length(ids)*Nr*Nn)
+  c=1
+  for (i in 1:length(ids))  {
+    for (r in 1:Nr)  {
+      for (n in 1:Nn)  {
+        s = sprintf("%s_Run_%03d_Comp_%03d_%s_node_%03d.txt", ids[i], r, n, info, n)
+        idx[c] = s %in% f
+        c=c+1
+      }
+    }
+  }
+  jobs=which(!idx)
+  return(jobs)
+}
+
+#' Merges forward and backward model store.
+#' @param fw forward model.
+#' @param bw backward model.
+#'
+#' @return m model store.
+#' @export
+mergeModels <- function(fw, bw) {
+  Nn = nrow(fw)-2
+  
+  a = apply(fw[2:(Nn),], 2, sort)
+  b = apply(bw[2:(Nn),], 2, sort)
+  
+  idx = array(NA, ncol(b))
+  for (i in 1:ncol(b)) {
+    idx[i] = any(apply(a, 2, function(x, want) isTRUE(all.equal(x, want)), b[,i]))
+  }
+  
+  model.store=cbind(fw, bw[,!idx])
+  return(model.store)
+}
+
+#' Removes reciprocal connections in the lower diagnoal of the network matrix.
+#' @param M adjacency matrix
+#'
+#' @return M adjacency matrix without reciprocal connections.
+#' @export
+rmRecipLow <- function(M) {
+  # get edges, just upper diagonal
+  edges = which((M*upper.tri(M))==1, arr.ind = T)
+  
+  for (i in 1:nrow(edges)) {
+    # if edge symmatric
+    if (M[edges[i,1], edges[i,2]] == 1 &&
+        M[edges[i,2], edges[i,1]] == 1) {
+      M[edges[i,2], edges[i,1]] = 0 # remove edge in lower diag.
+    }
+  }
+  
+  return(M)
+}

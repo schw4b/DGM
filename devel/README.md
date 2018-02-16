@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/schw4b/multdyn.png?branch=develop)](https://travis-ci.org/schw4b/multdyn)
+[![Build Status](https://travis-ci.org/schw4b/DGM.png?branch=develop)](https://travis-ci.org/schw4b/DGM)
 
 # Developer Guide
 
@@ -9,10 +9,10 @@
 ## Working with Github
 
 ### Check out master
-    git clone https://github.com/schw4b/multdyn.git
+    git clone https://github.com/schw4b/DGM.git
 
 ### Configure ssh key authentication
-    git remote set-url origin git@github.com:schw4b/multdyn.git
+    git remote set-url origin git@github.com:schw4b/DGM.git
 
 ### Switch to develop branch
     git checkout develop
@@ -47,29 +47,31 @@ First, update DESCRIPTION file with new version
 
 ### Build a new package from the develop branch
 
-Get `multdyn` and change to develop branch
+Get `DGM` and change to develop branch
 
-    git clone https://github.com/schw4b/multdyn.git
-    cd multdyn
+    git clone https://github.com/schw4b/DGM.git
+    cd DGM
     git checkout develop
     cd ..
-    cp multdyn/devel/Makefile .
+    cp DGM/devel/Makefile .
 
 Build the package
 
     make clean
-    cd multdyn;rm NAMESPACE; R -e 'devtools::document()'; cd ..
+    cd DGM; R -e 'devtools::document()'; cd ..
     make namespace
     make build
-    make file=multdyn_1.5.2.tar.gz check
+    make file=DGM_1.7.tar.gz check
 
 Install and test in R
 
-    R CMD REMOVE multdyn
-    R CMD INSTALL multdyn_1.5.2.tar.gz
+    detach("package:DGM", unload=TRUE)
+
+    R CMD REMOVE DGM
+    R CMD INSTALL DGM_1.7.tar.gz
     R
 
-    library(multdyn)
+    library(DGM)
     data(utestdata)
     result=exhaustive.search(myts,3)
 
@@ -78,15 +80,15 @@ Test functions are written for the *testthat* package and can be found in the fo
 
     library(devtools)
     library(testthat)
-    load_all('~/workspace/multdyn')
+    load_all('~/workspace/DGM')
     # Run unit tests
-    test_dir('~/workspace/multdyn/tests', reporter = 'Summary')
+    test_dir('~/workspace/DGM/tests', reporter = 'Summary')
 
 ## Run benchmarks
 
     library(devtools)
     library(microbenchmark)
-    load_all('~/workspace/multdyn')
+    load_all('~/workspace/DGM')
     data("utestdata")
     microbenchmark(exhaustive.search(myts,3,cpp=F),exhaustive.search(myts,3), times=1)
 
@@ -123,7 +125,7 @@ Then, in R, do the following:
 ```
 source("~/tmp/R-devel/src/library/tools/R/sotools.R")
 source("~/tmp/R-devel/src/library/tools/R/utils.R")
-setwd("~/workspace/multdyn")
+setwd("~/workspace/DGM")
 
 package_native_routine_registration_skeleton(".")
 ```
@@ -139,14 +141,14 @@ The function will output some code, copy and paste this to `src/register.c`
 */
 
 /* .Call calls */
-extern SEXP multdyn_dlmLplCpp(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP DGM_dlmLplCpp(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
-    {"multdyn_dlmLplCpp", (DL_FUNC) &multdyn_dlmLplCpp, 7},
+    {"DGM_dlmLplCpp", (DL_FUNC) &DGM_dlmLplCpp, 7},
     {NULL, NULL, 0}
 };
 
-void R_init_multdyn(DllInfo *dll)
+void R_init_DGM(DllInfo *dll)
 {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
