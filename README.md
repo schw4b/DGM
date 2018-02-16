@@ -1,7 +1,4 @@
-# multdyn: Dynamical graphical models for finding directed dynamic network models with multivariate time series data, with emphasis on functional MRI brain network data.
-[![Build Status](https://travis-ci.org/schw4b/multdyn.png?branch=master)](https://travis-ci.org/schw4b/multdyn)
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/multdyn)](https://cran.r-project.org/package=multdyn)
-[![CRAN\_Download\_Badge](http://cranlogs.r-pkg.org/badges/grand-total/multdyn)](http://www.r-pkg.org/pkg/multdyn)
+# DGM: Dynamical graphical models for finding directed dynamic network models with multivariate time series data, with emphasis on functional MRI brain network data.
 
 The aim of this package is to study directed dynamic functional connectivity in fMRI. Dynamic graphical models (DGM) belong to the family of Dynamic Bayesian Networks. DGM searches through all possible parent nodes for a specific node and provides an interpretable fit in terms of regression model for each network node. There is a special varinat of DGM called Multiregression Dyanmic Models which constrain the network to a acyclic graph (Costa et al., 2015), but with DGM, we do not use this constrain.
 
@@ -17,22 +14,22 @@ Current research aims to fully characterize DGM using simulations and big data f
 The installation with dependencies is approx. 86MB.
 
 #### From CRAN:
-    install.packages("multdyn")
+    install.packages("DGM")
 
 #### Newest version from Github:
     install.packages("devtools")
     library(devtools)
-    install_github("schw4b/multdyn")
+    install_github("schw4b/DGM")
 
 #### Latest develop version
     install.packages("devtools")
     library(devtools)
-    install_github("schw4b/multdyn", ref = "develop")
+    install_github("schw4b/DGM", ref = "develop")
 
 ### Running a DGM example with simulated data
 We load simulation data from Smith et al. (2011) of a 5-node network with 200 samples (time points) of one subject. Time series should be mean centered.
 
-    library(multdyn)
+    library(DGM)
     data("utestdata")
     dim(myts)
     [1] 200   5
@@ -119,7 +116,7 @@ Estimates for a time-series with 1200 samples (HCP), and for a 2.8GHz CPU.
 Timings are for one node only. To estimate the full network (all parents of all the nodes, the numbers above have to be multiplied by the number of nodes (e.g., a 8-node network takes 80 sec.)
 
 
-### Install or update multdyn on Buster super-computer (buster.stats.warwick.ac.uk)
+### Install or update DGM on Buster super-computer (buster.stats.warwick.ac.uk)
 From bash terminal on buster run:
 
     $ module load git
@@ -132,5 +129,5 @@ And from R run:
     install.packages("devtools") # run only once
     # type 22 and then 1 to select http mirror (https not working)
     library(devtools)
-    install_github("schw4b/multdyn", ref = "develop")
-    library(multdyn)
+    install_github("schw4b/DGM", ref = "develop")
+    library(DGM)

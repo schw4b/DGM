@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // dlmLplCpp
 arma::rowvec dlmLplCpp(NumericVector Yt_, NumericMatrix Ft_, double delta, double m0_, double CS0_, double n0, double d0);
-RcppExport SEXP _multdyn_dlmLplCpp(SEXP Yt_SEXP, SEXP Ft_SEXP, SEXP deltaSEXP, SEXP m0_SEXP, SEXP CS0_SEXP, SEXP n0SEXP, SEXP d0SEXP) {
+RcppExport SEXP _DGM_dlmLplCpp(SEXP Yt_SEXP, SEXP Ft_SEXP, SEXP deltaSEXP, SEXP m0_SEXP, SEXP CS0_SEXP, SEXP n0SEXP, SEXP d0SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -25,11 +25,11 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_multdyn_dlmLplCpp", (DL_FUNC) &_multdyn_dlmLplCpp, 7},
+    {"_DGM_dlmLplCpp", (DL_FUNC) &_DGM_dlmLplCpp, 7},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_multdyn(DllInfo *dll) {
+RcppExport void R_init_DGM(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }
