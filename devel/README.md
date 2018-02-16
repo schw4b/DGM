@@ -61,14 +61,14 @@ Build the package
     cd DGM; R -e 'devtools::document()'; cd ..
     make namespace
     make build
-    make file=DGM_1.6.1.tar.gz check
+    make file=DGM_1.7.tar.gz check
 
 Install and test in R
 
     detach("package:DGM", unload=TRUE)
 
     R CMD REMOVE DGM
-    R CMD INSTALL DGM_1.6.1.tar.gz
+    R CMD INSTALL DGM_1.7.tar.gz
     R
 
     library(DGM)

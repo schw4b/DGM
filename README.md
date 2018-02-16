@@ -1,12 +1,14 @@
-# DGM: Dynamical graphical models for finding directed dynamic network models with multivariate time series data, with emphasis on functional MRI brain network data.
+# DGM: Dynamical graphical models for finding directed dynamic network models with multivariate time series data, with emphasis on functional MRI brain networks.
 
-The aim of this package is to study directed dynamic functional connectivity in fMRI. Dynamic graphical models (DGM) belong to the family of Dynamic Bayesian Networks. DGM searches through all possible parent nodes for a specific node and provides an interpretable fit in terms of regression model for each network node. There is a special varinat of DGM called Multiregression Dyanmic Models which constrain the network to a acyclic graph (Costa et al., 2015), but with DGM, we do not use this constrain.
+The aim of this package is to study directed dynamic functional connectivity in fuctional MRI. Dynamic graphical models (DGM) belong to the family of Dynamic Bayesian Networks. DGM is a collection of Dynamic Linear Models (DLMs) and searches through all possible parent nodes for a specific node and provides an interpretable fit in terms of regression model for each network node. There is a special variant of DGM called Multiregression Dyanmic Models which constrain the network to a acyclic graph (Costa et al., 2015), but with DGM, we do not use this constrain.
 
-Current research aims to fully characterize DGM using simulations and big data from the Human Connectome Project (HCP) in order to test validity and different aspects of reliability (test-retest reliability, out-of-sample reliability) in order to make this new method available for neuroimaging.
+Current research aims to fully characterize DGM using simulations and big data from the Human Connectome Project (HCP) in order to test validity and different aspects of reliability (test-retest reliability, out-of-sample reliability) to make this new method available for neuroimaging research.
 
-## References
-1. Costa, L., Smith, J., Nichols, T., Cussens, J., Duff, E. P., and Makin, T. R. (2015). Searching Multiregression Dynamic Models of resting-state fMRI networks using integer programming. *Bayesian Analysis*, 10(2), 441–478. [doi:10.1214/14-BA913](http://dx.doi.org/10.1214/14-BA913).
-2. Smith, S. M., Miller, K. L., Salimi-Khorshidi, G., Webster, M., Beckmann, C. F., Nichols, T. E., et al. (2011). Network modelling methods for FMRI. *NeuroImage*, 54(2), 875–91. [doi:10.1016/j.neuroimage.2010.08.063](http://dx.doi.org/10.1016/j.neuroimage.2010.08.063).
+## Reference
+Schwab S, Harbord R, Zerbi V, Elliott L, Afyouni S, Smith JQ, Woolrich MW, Smith SM, & Nichols TE (2017). Directed Functional Connectivity Using Dynamic Graphical Models. *bioRxiv*., 198887. [doi:10.1101/198887](http://dx.doi.org/10.1101/198887).
+
+## Additional References
+1. Costa L, Smith J, Nichols T, Cussens J, Duff EP, & Makin TR (2015). Searching Multiregression Dynamic Models of resting-state fMRI networks using integer programming. *Bayesian Analysis*, 10(2), 441–478. [doi:10.1214/14-BA913](http://dx.doi.org/10.1214/14-BA913).
 
 ## User Guide
 
