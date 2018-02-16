@@ -1,29 +1,28 @@
 # DGM: Dynamical graphical models for multivariate time series data to estimate directed dynamic networks in functional MRI
 
-The aim of this package is to study directed dynamic functional connectivity in fuctional MRI. Dynamic graphical models (DGM) belong to the family of Dynamic Bayesian Networks. DGM is a collection of Dynamic Linear Models (DLMs; West & Harrison, 1997) and searches through all possible parent nodes for a specific node and provides an interpretable fit in terms of regression model for each network node. There is a special variant of DGM called Multiregression Dyanmic Models which constrain the network to a acyclic graph (Costa et al., 2015; Queen & Smith, 1993), but with DGM, we do not use this constrain.
+[![Build Status](https://travis-ci.org/schw4b/DGM.png?branch=master)](https://travis-ci.org/schw4b/DGM)
+[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/DGM)](https://cran.r-project.org/package=DGM)
+[![CRAN\_Download\_Badge](http://cranlogs.r-pkg.org/badges/grand-total/DGM)](http://www.r-pkg.org/pkg/DGM)
+
+The aim of this package is to study directed dynamic functional connectivity in fuctional MRI. Dynamic graphical models (DGM) belong to the family of Dynamic Bayesian Networks. DGM is a collection of Dynamic Linear Models (DLM) [1], a dynamic mutiple regression at each node. Moreover, DGM searches through all possible parent models and provides an interpretable fit in terms of regression model for each network node. There is a special variant of DGM called Multiregression Dyanmic Models (MDM) which constrain the network to a acyclic graph [2,3], but with DGM, we do not use this constrain.
 
 Current research aims to fully characterize DGM using simulations and big data from the Human Connectome Project (HCP) in order to test validity and different aspects of reliability (test-retest reliability, out-of-sample reliability) to make this new method available for neuroimaging research.
 
 ## Reference
-Schwab, S., Harbord, R., Zerbi, V., Elliott, L., Afyouni, S., Smith, J. Q., … Nichols, T. E. (2017). Directed functional connectivity using dynamic graphical models. *bioRxiv*. https://doi.org/10.1101/198887
+Schwab, S., Harbord, R., Zerbi, V., Elliott, L., Afyouni, S., Smith, J. Q., … Nichols, T. E. (2017). Directed functional connectivity using dynamic graphical models. *bioRxiv*. https://doi.org/10.1101/198887.
 
 ## Additional References
-1. Costa, L., Smith, J., Nichols, T., Cussens, J., Duff, E. P., & Makin, T. R. (2015). Searching Multiregression Dynamic Models of Resting-State fMRI Networks Using Integer Programming. *Bayesian Analysis* , 10(2), 441–478. https://doi.org/10.1214/14-BA913.
-2. Queen, C. M., & Smith, J. Q. (1993). Multiregression Dynamic Models. *Journal of the Royal Statistical Society. Series B*, Statistical Methodology, 55(4), 849–870. Retrieved from http://www.jstor.org/stable/2345998.
-3. West, M., & Harrison, J. (1997). *Bayesian Forecasting and Dynamic Models*. Springer New York.
+1. West, M., & Harrison, J. (1997). *Bayesian Forecasting and Dynamic Models*. Springer New York.
+2. Costa, L., Smith, J., Nichols, T., Cussens, J., Duff, E. P., & Makin, T. R. (2015). Searching Multiregression Dynamic Models of Resting-State fMRI Networks Using Integer Programming. *Bayesian Analysis* , 10(2), 441–478. https://doi.org/10.1214/14-BA913.
+3. Queen, C. M., & Smith, J. Q. (1993). Multiregression Dynamic Models. *Journal of the Royal Statistical Society. Series B, Statistical Methodology*, 55(4), 849–870. Retrieved from http://www.jstor.org/stable/2345998.
 
 ## User Guide
 
 ### Installation
-The installation with dependencies is approx. 86MB.
+The installation is 2MB, with dependencies approx. 86MB.
 
 #### From CRAN:
     install.packages("DGM")
-
-#### Newest version from Github:
-    install.packages("devtools")
-    library(devtools)
-    install_github("schw4b/DGM")
 
 #### Latest develop version
     install.packages("devtools")
@@ -31,14 +30,14 @@ The installation with dependencies is approx. 86MB.
     install_github("schw4b/DGM", ref = "develop")
 
 ### Running a DGM example with simulated data
-We load simulation data from Smith et al. (2011) of a 5-node network with 200 samples (time points) of one subject. Time series should be mean centered.
+We load simulation data of a 5-node network with 200 samples (time points) of one subject. Time series should already be mean centered.
 
     library(DGM)
     data("utestdata")
     dim(myts)
     [1] 200   5
 
-Now, let's do a full search across all possible parent models of n2<sup>(n-1)</sup>. Here, with n=5, we have 16 possible models for each node.
+Now, let's do a full search across all possible parent models of the size $n2^(n-1)$. Here, with $n=5$, we have 16 possible models for each node, for example for node 3.
 
     result=exhaustive.search(myts,3)
     result$model.store
@@ -51,7 +50,7 @@ Now, let's do a full search across all possible parent models of n2<sup>(n-1)</s
     [6,] -353.6734 -348.1476 -329.9119 -359.3472 -346.9735 -348.4044 -355.495 -347.4541 -337.3578 -333.6073 -353.8772 -349.6878 -346.9843 -358.2056 -341.7462 -355.5821
     [7,]    0.5000    0.7300    0.6800    0.7700    0.7600    0.7800    0.800    0.7900    0.7300    0.7700    0.8100    0.7900    0.8300    0.8400    0.7800    0.8300
 
-The table colums are the 16 different models. First row indicates model number, rows 2-5 the parents, row 6 the log predictive likelihood (LPL), and row 7 the discount factor (delta). To get the winning model, we simply maximaze across LPLs.
+The table colums are the 16 different models. First row indicates model number, rows 2-5 the parents, row 6 the model evidence, a log likelihood, and row 7 the discount factor (delta). To get the winning model, we simply maximaze across LPLs.
 
     which.max(result$model.store[6,])
     [1] 3
@@ -59,11 +58,11 @@ The table colums are the 16 different models. First row indicates model number, 
 Model number 3 with node 2 as a parent is most likely.
 
 ### Analysis on the subject level
-We do a full search on the subject level (exhautive search on each node). The list returned contains all the models (models), the winning models (winner), the adjacency matrix of the network (adj), and a thresholded network (thr). The thresholed network is a reduced version of the network, favorizing the simpler model by comparing the Bayes factors. If the Bayes factor between the models (symetric edge vs. asymetric edge) is similar, the simpler asymetric model is favorized.
+We do a full search on the subject level (exhautive search on each node). The list returned contains all the models (models), the winning models (winner), the adjacency matrix of the network (adj).
 
     s=subject(myts)
     names(s)
-    [1] "models" "winner" "adj"    "thr"
+    [1] "models" "winner" "adj"
 
 The adj structure contains the adjacency matrix of the network (am, Fig. 1a), the LPLs (lpl, Fig. 1d), and the discount factors (df, Fig. 1e). The thr structure contains a matrix of edges that are bidirectional/symmetric (bi, Fig. 1c), the two matrices of LPLs with the first containing LPLs for bidirectional edges (Fig. 1f), the second contains adjusted LPLs (Fig. 1g) for asymetric models (after removing one or the other of the symetric edges, and the thresholded adjacency matrix (am, Fig 1b).
 
