@@ -188,6 +188,10 @@ model.generator<-function(Nn,node){
 #' @return
 #' model.store a matrix with the model, LPL and chosen discount factor for all possible models.
 #' runtime an estimate of the run time of the function, using proc.time().
+#' 
+#' #' @examples
+#' result=exhaustive.search(myts,3)
+#' 
 #' @export
 exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=priors.spec() ) {
   
@@ -285,6 +289,11 @@ center <- function(X) {
 #' @param method ether exhaustive, foward, backward, or both.
 #'
 #' @return store list with results.
+#' 
+#' @examples
+#' sub=subject(myts)
+#' sub=subject(myts, method="both")
+#' 
 #' @export
 subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE,
                     priors = priors.spec(), path = getwd(), method = "exhaustive") {
@@ -339,6 +348,11 @@ subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE,
 #' @param method can be exhaustive (default), forward, backward, or both
 #' 
 #' @return store list with results.
+#' 
+#' @examples
+#' # Example with a big lookup table that consists of two columns: subject id and node numbers:
+#' m=node(d, TABLE[l,2], id=sprintf("%d_%s", TABLE[l,1], INFO), path = PATH_RES, method="both")
+#' 
 #' @export
 node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=priors.spec(),
                  path=getwd(), method = "exhaustive") {
@@ -370,6 +384,10 @@ node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=
 #' @param nodes number of nodes.
 #'
 #' @return store list with results.
+#' 
+#' @examples
+#' sub = read.subject(PATH_NET, sprintf("%s_Run_%03d", SUBJECTS[s], r), Nn)#' 
+#' 
 #' @export
 read.subject <- function(path, id, nodes) {
   
@@ -492,6 +510,7 @@ gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0,
       plot.title = element_text(size=titleTextSize),
       axis.text.x = element_text(size=axisTextSize,angle=xAngle),
       axis.text.y = element_text(size=axisTextSize),
+      panel.background = element_blank()
       #panel.grid.major = element_line(colour="black", size = (1.5)),
       #panel.grid.minor = element_line(size = (0.2), colour="grey")
     ) +
