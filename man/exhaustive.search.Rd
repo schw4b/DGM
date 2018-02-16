@@ -23,6 +23,10 @@ exhaustive.search(Data, node, nbf = 15, delta = seq(0.5, 1, 0.01),
 \value{
 model.store a matrix with the model, LPL and chosen discount factor for all possible models.
 runtime an estimate of the run time of the function, using proc.time().
+
+#' @examples
+data(utestdata)
+result=exhaustive.search(myts,3)
 }
 \description{
 A function for an exhaustive search, calculates the optimum value of the discount factor.

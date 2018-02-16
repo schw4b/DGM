@@ -190,6 +190,7 @@ model.generator<-function(Nn,node){
 #' runtime an estimate of the run time of the function, using proc.time().
 #' 
 #' #' @examples
+#' data(utestdata)
 #' result=exhaustive.search(myts,3)
 #' 
 #' @export
@@ -291,6 +292,7 @@ center <- function(X) {
 #' @return store list with results.
 #' 
 #' @examples
+#' data(utestdata)
 #' sub=subject(myts)
 #' sub=subject(myts, method="both")
 #' 
@@ -350,9 +352,9 @@ subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE,
 #' @return store list with results.
 #' 
 #' @examples
-#' # Example with a big lookup table that consists of two columns: subject id and node numbers:
-#' m=node(d, TABLE[l,2], id=sprintf("%d_%s", TABLE[l,1], INFO), path = PATH_RES, method="both")
-#' 
+#' data(utestdata)
+#' m=node(myts, 3, id="SUB001_5nodes")
+#' # a results file will be written.
 #' @export
 node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=priors.spec(),
                  path=getwd(), method = "exhaustive") {
@@ -384,9 +386,6 @@ node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=
 #' @param nodes number of nodes.
 #'
 #' @return store list with results.
-#' 
-#' @examples
-#' sub = read.subject(PATH_NET, sprintf("%s_Run_%03d", SUBJECTS[s], r), Nn)#' 
 #' 
 #' @export
 read.subject <- function(path, id, nodes) {

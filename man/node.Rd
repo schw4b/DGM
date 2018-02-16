@@ -32,3 +32,8 @@ store list with results.
 \description{
 Runs exhaustive search on a single node and saves results in txt file.
 }
+\examples{
+data(utestdata)
+m=node(myts, 3, id="SUB001_5nodes")
+# a results file will be written.
+}

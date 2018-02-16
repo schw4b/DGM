@@ -30,3 +30,9 @@ store list with results.
 \description{
 Estimate subject's full network: runs exhaustive search on very node.
 }
+\examples{
+data(utestdata)
+sub=subject(myts)
+sub=subject(myts, method="both")
+
+}

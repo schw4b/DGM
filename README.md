@@ -1,12 +1,12 @@
 # DGM: Dynamical graphical models for multivariate time series data to estimate directed dynamic networks in functional MRI
 
 [![Build Status](https://travis-ci.org/schw4b/DGM.png?branch=master)](https://travis-ci.org/schw4b/DGM)
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/DGM)](https://cran.r-project.org/package=DGM)
-[![CRAN\_Download\_Badge](http://cranlogs.r-pkg.org/badges/grand-total/DGM)](http://www.r-pkg.org/pkg/DGM)
+[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/DGM)](https://cran.r-project.org/package=DGM)
+[![CRAN\_Download\_Badge](https://cranlogs.r-pkg.org/badges/grand-total/DGM)](http://www.r-pkg.org/pkg/DGM)
 
 The aim of this package is to study directed dynamic functional connectivity in fuctional MRI. Dynamic graphical models (DGM) belong to the family of Dynamic Bayesian Networks. DGM is a collection of Dynamic Linear Models (DLM) [1], a dynamic mutiple regression at each node. Moreover, DGM searches through all possible parent models and provides an interpretable fit in terms of regression model for each network node. There is a special variant of DGM called Multiregression Dyanmic Models (MDM) which constrain the network to a acyclic graph [2,3], but with DGM, we do not use this constrain.
 
-Current research aims to fully characterize DGM using simulations and big data from the Human Connectome Project (HCP) in order to test validity and different aspects of reliability (test-retest reliability, out-of-sample reliability) to make this new method available for neuroimaging research.
+Current research aims to fully characterize DGM using simulations and big data from the Human Connectome Project (HCP) in order to test validity and reliability to make this new method available for neuroimaging research.
 
 ## Reference
 Schwab, S., Harbord, R., Zerbi, V., Elliott, L., Afyouni, S., Smith, J. Q., … Nichols, T. E. (2017). Directed functional connectivity using dynamic graphical models. *bioRxiv*. https://doi.org/10.1101/198887.
@@ -37,7 +37,7 @@ We load simulation data of a 5-node network with 200 samples (time points) of on
     dim(myts)
     [1] 200   5
 
-Now, let's do a full search across all possible parent models of the size $n2^(n-1)$. Here, with $n=5$, we have 16 possible models for each node, for example for node 3.
+Now, let's do a full search across all possible parent models of the size n2<sup>(n-1)</sup>. Here, with n=5, we have 16 possible models for each node, for example for node 3.
 
     result=exhaustive.search(myts,3)
     result$model.store
@@ -50,26 +50,24 @@ Now, let's do a full search across all possible parent models of the size $n2^(n
     [6,] -353.6734 -348.1476 -329.9119 -359.3472 -346.9735 -348.4044 -355.495 -347.4541 -337.3578 -333.6073 -353.8772 -349.6878 -346.9843 -358.2056 -341.7462 -355.5821
     [7,]    0.5000    0.7300    0.6800    0.7700    0.7600    0.7800    0.800    0.7900    0.7300    0.7700    0.8100    0.7900    0.8300    0.8400    0.7800    0.8300
 
-The table colums are the 16 different models. First row indicates model number, rows 2-5 the parents, row 6 the model evidence, a log likelihood, and row 7 the discount factor (delta). To get the winning model, we simply maximaze across LPLs.
+The columns are the 16 different models. First row indicates model number, rows 2-5 the parents, row 6 the model evidence, a log likelihood, and row 7 the discount factor delta, reflecting the smoothness of the time-varying regression coefficent (theta). To get the winning model, we simply maximaze across model evidence.
 
     which.max(result$model.store[6,])
     [1] 3
 
 Model number 3 with node 2 as a parent is most likely.
 
-### Analysis on the subject level
-We do a full search on the subject level (exhautive search on each node). The list returned contains all the models (models), the winning models (winner), the adjacency matrix of the network (adj).
+### Analysis on the subject-level
+We do a full search on the subject level (exhautive search on each node). The list returned contains all the models (`models`), the winning models (`winner`), the adjacency matrix of the network (`adj`).
 
     s=subject(myts)
     names(s)
     [1] "models" "winner" "adj"
 
-The adj structure contains the adjacency matrix of the network (am, Fig. 1a), the LPLs (lpl, Fig. 1d), and the discount factors (df, Fig. 1e). The thr structure contains a matrix of edges that are bidirectional/symmetric (bi, Fig. 1c), the two matrices of LPLs with the first containing LPLs for bidirectional edges (Fig. 1f), the second contains adjusted LPLs (Fig. 1g) for asymetric models (after removing one or the other of the symetric edges, and the thresholded adjacency matrix (am, Fig 1b).
+The `adj` structure contains the adjacency matrix of the network (am), the model evidence (lpl), and the discount factors delta (df).
 
     names(s$adj)
     [1] "am"  "lpl" "df"
-    names(s$thr)
-    [1] "bi"   "lpls" "am"
 
 ### Plot network as adjacency matrix
 The full network and a thresholded network can be plotted as follows
@@ -117,20 +115,3 @@ Estimates for a time-series with 1200 samples (HCP), and for a 2.8GHz CPU.
 | 25            | 58 days |
 
 Timings are for one node only. To estimate the full network (all parents of all the nodes, the numbers above have to be multiplied by the number of nodes (e.g., a 8-node network takes 80 sec.)
-
-
-### Install or update DGM on Buster super-computer (buster.stats.warwick.ac.uk)
-From bash terminal on buster run:
-
-    $ module load git
-    $ module load gcc/4.9.1
-    $ module load R/3.2.4
-    $ R
-
-And from R run:
-
-    install.packages("devtools") # run only once
-    # type 22 and then 1 to select http mirror (https not working)
-    library(devtools)
-    install_github("schw4b/DGM", ref = "develop")
-    library(DGM)
