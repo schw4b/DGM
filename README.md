@@ -79,8 +79,7 @@ The full network structure can be plotted as follows:
 ## Computation time
 
 Estimates for a time-series with 1200 samples with a 2.6GHz CPU.
-
-![timing](https://user-images.githubusercontent.com/11832548/36321171-c9b209b0-1340-11e8-9258-ff5170236912.png)
+![timing](https://user-images.githubusercontent.com/11832548/36321632-527edb5a-1342-11e8-933b-9dc55652b2a1.png)
 
 Timings are for one node only. To estimate the full network (all parents of all the nodes, the numbers above have to be multiplied by the number of nodes.
 
