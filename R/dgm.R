@@ -249,15 +249,13 @@ exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRU
     }
   }
   
-  lpl_noint = 99 # TODO
-  
   # Output model.store
   model.store=rbind(models,lplmax,DF.hat)
   rownames(model.store)=NULL
   
   runtime=(proc.time()-ptm)
   
-  return(list(model.store=model.store,runtime=runtime, lpl_noint=lpl_noint))
+  return(list(model.store=model.store,runtime=runtime))
 }
 
 #' Mean centers timeseries in a 2D array timeseries x nodes,
