@@ -1,8 +1,8 @@
 # DGM: Dynamical graphical models for multivariate time series data to estimate directed dynamic networks in functional MRI
 
 [![Build Status](https://travis-ci.org/schw4b/DGM.png?branch=master)](https://travis-ci.org/schw4b/DGM)
-[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/DGM)](https://cran.r-project.org/package=DGM)
-[![CRAN\_Download\_Badge](https://cranlogs.r-pkg.org/badges/grand-total/DGM)](http://www.r-pkg.org/pkg/DGM)
+[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/DGM)](https://cran.r-project.org/package=DGM)
+[![CRAN\_Download\_Badge](http://cranlogs.r-pkg.org/badges/grand-total/DGM)](http://www.r-pkg.org/pkg/DGM)
 
 The aim of this package is to study directed dynamic functional connectivity in fuctional MRI. Dynamic graphical models (DGM) belong to the family of Dynamic Bayesian Networks. DGM is a collection of Dynamic Linear Models (DLM) [1], a dynamic mutiple regression at each node. Moreover, DGM searches through all possible parent models and provides an interpretable fit in terms of regression model for each network node. There is a special variant of DGM called Multiregression Dyanmic Models (MDM) which constrain the network to a acyclic graph [2,3], but with DGM, we do not use this constrain.
 
@@ -64,54 +64,24 @@ We do a full search on the subject level (exhautive search on each node). The li
     names(s)
     [1] "models" "winner" "adj"
 
-The `adj` structure contains the adjacency matrix of the network (am), the model evidence (lpl), and the discount factors delta (df).
+The `adj` structure contains the adjacency matrix of the network (`am`), the model evidence (`lpl`), and the discount factors delta (`df`).
 
     names(s$adj)
     [1] "am"  "lpl" "df"
 
 ### Plot network as adjacency matrix
-The full network and a thresholded network can be plotted as follows
+The full network structure can be plotted as follows:
 
-    p1 = gplotMat(s$adj$am, hasColMap = F, title = "network")
-    p2 = gplotMat(s$thr$am, hasColMap = F, title = "thresholded net")
-    p3 = gplotMat(s$thr$bi, hasColMap = F, title = "symmetric edges")
+    gplotMat(s$adj$am, hasColMap = F, title = "network")
 
-    p4 = gplotMat(s$adj$lpl, title = "Log-pred. likelihood (LPL)",
-                  lim =  c(min(s$adj$lpl, na.rm = T), max(s$adj$lpl, na.rm = T)))
-    p5 = gplotMat(s$adj$df, title = "discount factor (df)", lim = c(0.5, 1))
-    p6 = gplotMat(s$thr$lpls[, , 1], title = expression(bold(LPL(i,j) +
-    LPL(j,i))), lim = c(min(s$thr$lpls[, , 1], na.rm = T), max(s$thr$lpls[, , 1], na.rm = T)))
+![Network structure](https://user-images.githubusercontent.com/11832548/36321076-73cc9cb8-1340-11e8-81dc-0977a4b37523.png)
 
-    difference = s$thr$lpls[, , 2] - t(s$thr$lpls[, , 2])
-    p7 = gplotMat(difference, title = expression(bold(LPL[adj](i,j) - LPL[adj](j,i))), lim = c(min(difference, na.rm = T), max(difference, na.rm = T)))
+## Computation time
 
-    top = plot_grid(p1, p2, p3, ncol = 3, labels = c("a", "b", "c"))
-    bot = plot_grid(p4, p5, p6, p7, ncol = 2, labels = c("d", "e", "f", "g"))
-    plot_grid(top, bot, ncol = 1, rel_heights = c(0.5, 1))
+Estimates for a time-series with 1200 samples with a 2.6GHz CPU.
 
-![Network example](https://cloud.githubusercontent.com/assets/11832548/24162907/e7cfecb8-0e60-11e7-8e01-22e6d5404f05.png)
-Figure 1
+![timing](https://user-images.githubusercontent.com/11832548/36321171-c9b209b0-1340-11e8-9258-ff5170236912.png)
 
-## HPC guide (high performance computing)
+Timings are for one node only. To estimate the full network (all parents of all the nodes, the numbers above have to be multiplied by the number of nodes.
 
-### Timing estmates
-Estimates for a time-series with 1200 samples (HCP), and for a 2.8GHz CPU.
-
-| No. of nodes  | Time     |
-| ------------- |:--------:|
-| 3             | 0.2 sec  |
-| 4             | 0.5 sec  |
-| 5             | 1 sec  |
-| 6             | 2.2 sec  |
-| 7             | 4.8 sec  |
-| 8             | 10 sec  |
-| 9             | 22 sec  |
-| 10            | 48 sec  |
-| 11            | 1 min 46 sec  |
-| 12            | 3 min 44 sec  |
-| 13            | 8 min  8 sec  |
-| 15            | 38 min |
-| 20            | 30 hours |
-| 25            | 58 days |
-
-Timings are for one node only. To estimate the full network (all parents of all the nodes, the numbers above have to be multiplied by the number of nodes (e.g., a 8-node network takes 80 sec.)
+The greedy search, a network discovery optimization, is now available since DGM version 1.7 that can estimate 100-200 nodes within less than a day.
