@@ -31,8 +31,8 @@ store list with results.
 Estimate subject's full network: runs exhaustive search on very node.
 }
 \examples{
-data(utestdata)
+\donttest{
 sub=subject(myts)
 sub=subject(myts, method="both")
-
+}
 }

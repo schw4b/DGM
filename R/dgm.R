@@ -189,10 +189,10 @@ model.generator<-function(Nn,node){
 #' model.store a matrix with the model, LPL and chosen discount factor for all possible models.
 #' runtime an estimate of the run time of the function, using proc.time().
 #' 
-#' #' @examples
-#' data(utestdata)
+#' @examples
+#' \donttest{
 #' result=exhaustive.search(myts,3)
-#' 
+#' }
 #' @export
 exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=priors.spec() ) {
   
@@ -290,10 +290,10 @@ center <- function(X) {
 #' @return store list with results.
 #' 
 #' @examples
-#' data(utestdata)
+#' \donttest{
 #' sub=subject(myts)
 #' sub=subject(myts, method="both")
-#' 
+#' }
 #' @export
 subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE,
                     priors = priors.spec(), path = getwd(), method = "exhaustive") {
@@ -345,14 +345,14 @@ subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE,
 #' @param cpp boolean true (default): fast C++ implementation, false: native R code.
 #' @param priors list with prior hyperparameters.
 #' @param path a path where results are written.
-#' @param method can be exhaustive (default), forward, backward, or both
+#' @param method can be exhaustive (default), forward, backward, or both.
 #' 
 #' @return store list with results.
 #' 
 #' @examples
-#' data(utestdata)
+#' \donttest{
 #' m=node(myts, 3, id="SUB001_5nodes")
-#' # a results file will be written.
+#' }
 #' @export
 node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=priors.spec(),
                  path=getwd(), method = "exhaustive") {
@@ -1371,3 +1371,21 @@ rmRecipLow <- function(M) {
   
   return(M)
 }
+
+#' Quick diagnostics on delta.
+#' @param path path to results files.
+#' @param id subject identifier.
+#' @param nodes number of nodes.
+
+#' @return x array node model's delta
+#' @export
+diag.delta <- function(path, id, nodes) {
+  
+  s = read.subject(path=path, id=id, nodes=nodes)
+  x=t(as.matrix(s$winner[nodes+2,], 1, nodes))
+  rownames(x) = 'delta'
+  colnames(x) = seq(1,nodes)
+  
+  return(x)
+}
+
