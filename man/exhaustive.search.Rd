@@ -28,7 +28,7 @@ runtime an estimate of the run time of the function, using proc.time().
 A function for an exhaustive search, calculates the optimum value of the discount factor.
 }
 \examples{
-\donttest{
+data("utestdata")
 result=exhaustive.search(myts,3)
-}
+
 }

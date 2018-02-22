@@ -17,6 +17,10 @@
 #'  \link{exhaustive.search}, \link{node}, \link{subject}}.
 #'  
 #' @references West, M. & Harrison, J., 1997. Bayesian Forecasting and Dynamic Models. Springer New York.
+#' 
+#' @examples
+#' pr=priors.spec()
+#' pr=priors.spec(n0=0.002)
 priors.spec <- function(m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001) {
   
   priors = list(m0 = m0, CS0 = CS0, n0 = n0, d0 = d0)
@@ -52,6 +56,14 @@ priors.spec <- function(m0 = 0, CS0 = 3, n0 = 0.001, d0 = 0.001) {
 #' \item{lpl}{the vector of the Log Predictive Likelihood with length \code{T}.}
 #' 
 #' @references West, M. & Harrison, J., 1997. Bayesian Forecasting and Dynamic Models. Springer New York.
+#' 
+#' @examples
+#' data("utestdata")
+#' Yt = myts[,1]
+#' Ft = t(cbind(1,myts[,2:5]))
+#' m = dlm.lpl(Yt, Ft, 0.7)
+#' 
+#' 
 dlm.lpl <- function(Yt, Ft, delta, priors = priors.spec() ) {
   
   m0 = priors$m0
@@ -144,7 +156,9 @@ dlm.lpl <- function(Yt, Ft, delta, priors = priors.spec() ) {
 #' @return
 #' output.model = a matrix with dimensions (Nn-1) x number of models, where number of models = 2^(Nn-1).
 #' 
-#' @export
+#' @examples 
+#' m=model.generator(5,1)
+#' 
 model.generator<-function(Nn,node){
   
   # Create the model 'no parents' (the first column of the matrix is all zeros)
@@ -162,7 +176,7 @@ model.generator<-function(Nn,node){
       # Expand the array so that unconnected edges are represented by zeros  
       empt.new=array(0,dim=c((Nn-1),ncol(m)))
       empt.new[1:k,]=m
-      
+
       # Bind the matrices together; the next set of models are added to this matrix
       model=cbind(empt,empt.new)
       empt=model
@@ -190,10 +204,9 @@ model.generator<-function(Nn,node){
 #' runtime an estimate of the run time of the function, using proc.time().
 #' 
 #' @examples
-#' \donttest{
+#' data("utestdata")
 #' result=exhaustive.search(myts,3)
-#' }
-#' @export
+#' 
 exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=priors.spec() ) {
   
   ptm=proc.time()
@@ -264,7 +277,12 @@ exhaustive.search <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), cpp=TRU
 #' @param X 2D array with dimensions timeseries x nodes.
 #'
 #' @return M 2D array.
-#' @export
+#' 
+#' @examples
+#' data("utestdata")
+#' myts=center(myts)
+#' 
+#' 
 center <- function(X) {
   d = dim(X)
   M = matrix(NA, d[1], d[2])
@@ -290,11 +308,11 @@ center <- function(X) {
 #' @return store list with results.
 #' 
 #' @examples
-#' \donttest{
-#' sub=subject(myts)
-#' sub=subject(myts, method="both")
-#' }
-#' @export
+#' data("utestdata")
+#' # select only 3-nodes to speed-up this example
+#' sub=subject(myts[,1:3]) 
+#' sub=subject(myts[,1:3], method="both")
+#' 
 subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE,
                     priors = priors.spec(), path = getwd(), method = "exhaustive") {
   
@@ -351,9 +369,10 @@ subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE,
 #' 
 #' @examples
 #' \donttest{
+#' data("utestdata")
 #' m=node(myts, 3, id="SUB001_5nodes")
 #' }
-#' @export
+#' 
 node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=priors.spec(),
                  path=getwd(), method = "exhaustive") {
   
@@ -385,7 +404,12 @@ node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=
 #'
 #' @return store list with results.
 #' 
-#' @export
+#' @examples
+#' \donttest{
+#' read.subject(path='~/myData', id='ID00012', nodes=5)
+#' }
+#' 
+#' 
 read.subject <- function(path, id, nodes) {
   
   models = list()
@@ -411,7 +435,7 @@ read.subject <- function(path, id, nodes) {
 #' @param nodes number of nodes.
 #'
 #' @return winner array with highest scored model(s).
-#' @export
+#' 
 getWinner <- function(models, nodes) {
   
   if (is.matrix(models)) {
@@ -432,7 +456,7 @@ getWinner <- function(models, nodes) {
 #' @param nodes number of nodes.
 #'
 #' @return adj, 2D adjacency matrix.
-#' @export
+#' 
 getAdjacency <- function(winner, nodes) {
   
   am = array(rep(0,nodes*nodes),dim=c(nodes,nodes))
@@ -461,7 +485,17 @@ getAdjacency <- function(winner, nodes) {
 #' @param titleTextSize text size of the title.
 #' @param barWidth width of the colorbar.
 #' @param textSize width of the colorbar.
-#' @export
+#' 
+#' @examples
+#' # Generate some sample binary 5-node network structures for N=20, then compute
+#' # proportion at each edge
+#' N=20
+#' x = array(rbinom(n=5*5*N, size=1, prob=0.30), dim=c(5,5,N))
+#' A = apply(x, c(1,2), mean)
+#' \donttest{
+#' gplotMat(A, title = "network", colMapLabel = '%', barWidth = 0.3)
+#' }
+#' 
 gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0, 1),
                      gradient=c("white", "orange", "red"), nodeLabels=waiver(), axisTextSize=12,
                      xAngle=0, titleTextSize=12, barWidth = 1, textSize=12) {
@@ -522,7 +556,16 @@ gplotMat <- function(adj, title=NULL, colMapLabel=NULL, hasColMap=NULL, lim=c(0,
 #' @param fdr false discovery rate (FDR) control, default is 0.05.
 #'
 #' @return store list with results.
-#' @export
+#'
+#' @examples
+#' # Generate some sample binary 5-node network structures for N=20, then perform
+#' # significance testing.
+#' N=20
+#' x = rmdiag(array(rbinom(n=5*5*N, size=1, prob=0.10), dim=c(5,5,N)))
+#' x[1,2,2:N]=1; x[2,3,seq(1,N,2)]=1 # add some consitent edges
+#' A = apply(x, c(1,2), mean)
+#' l = binom.nettest(x)
+#'
 binom.nettest <- function(adj, alter="two.sided", fdr=0.05) {
   
   mydim=dim(adj)
@@ -576,7 +619,16 @@ binom.nettest <- function(adj, alter="two.sided", fdr=0.05) {
 #' @param V No. of volumes.
 #' 
 #' @return M 3D matrix, time series x nodes x subjects.
-#' @export
+#' 
+#' @examples 
+#' # Let's say subjects are concatenated in a 2D matrix
+#' # (samples x nodes), with each having 200 samples.
+#' # generate some sample data
+#' N=20
+#' Nn=5
+#' x = array(rnorm(200*N*Nn), dim=c(200*N,Nn))
+#' ts = reshapeTs(x,N,200)
+#' 
 reshapeTs <- function(ts, N, V) {
   NC = ncol(ts)
   M = array(NA, dim=c(V,NC,N))
@@ -587,12 +639,18 @@ reshapeTs <- function(ts, N, V) {
   return(M)
 }
 
-#' Correlation of time series.
+#' Mean correlation of time series across subjects.
 #'
 #' @param ts a 3D time series time series x nodes x subjects.
 #' 
 #' @return M correlation matrix.
-#' @export
+#' 
+#' @examples
+#' # create some sample data with 200 samples,
+#' # 5 nodes, and 2 subjects
+#' ts = array(rnorm(200*5*2), dim=c(200,5,2))
+#' M = corTs(ts)
+#' 
 corTs <- function(ts) {
   d=dim(ts)
   N=d[3] # No. subjects
@@ -611,7 +669,13 @@ corTs <- function(ts) {
 #' @param parents a vector with parent nodes.
 #' 
 #' @return mod specific parent model.
-#' @export
+#' 
+#' @examples
+#' data("utestdata")
+#' r=exhaustive.search(myts,3)
+#' # get model with parents 1, 2, and 4.
+#' m=getModel(r$model.store,c(1,2,4))
+#' 
 getModel <- function(models, parents) {
   Nn = nrow(models) - 2 # No. of nodes
   Nm = ncol(models) # No. of models
@@ -629,7 +693,16 @@ getModel <- function(models, parents) {
 #' @param subj a list of subjects.
 #' 
 #' @return group a list.
-#' @export
+#' 
+#' @examples
+#' # create some sample data with 200 samples,
+#' # 3 nodes, and 2 subjects
+#' ts = array(rnorm(200*3*2), dim=c(200,3,2))
+#' mysubs=list()
+#' mysubs[[1]]=subject(ts[,,1])
+#' mysubs[[2]]=subject(ts[,,2])
+#' g=dgm.group(mysubs)
+#' 
 dgm.group <- function(subj) {
   Nn=ncol(subj[[1]]$adj$am)
   N=length(subj)
@@ -665,7 +738,15 @@ dgm.group <- function(subj) {
 #' @param subj a list of subjects.
 #' 
 #' @return group a list.
-#' @export
+#' 
+#' @examples
+#' # create some sample data with 200 samples,
+#' # 3 nodes, and 2 subjects
+#' ts = array(rnorm(200*3*2), dim=c(200,3,2))
+#' mysubs=list()
+#' mysubs[[1]]=patel(ts[,,1])
+#' mysubs[[2]]=patel(ts[,,2])
+#' g=patel.group(mysubs)
 patel.group <- function(subj) {
   Nn=ncol(subj[[1]]$kappa)
   N=length(subj)
@@ -692,7 +773,12 @@ patel.group <- function(subj) {
 #' @param e bayes factor for network pruning.
 #' 
 #' @return thr list with pruned network adjacency.
-#' @export
+#'
+#' @examples
+#' data("utestdata")
+#' # select only 3-nodes to speed-up this example
+#' sub=subject(myts[,1:3])
+#' p=pruning(sub$adj, sub$models, sub$winner)
 pruning <- function(adj, models, winner, e = 20) {
   
   Nn = ncol(adj$am)
@@ -766,7 +852,11 @@ pruning <- function(adj, models, winner, e = 20) {
 #' @param true, true binary network matrix.
 #' 
 #' @return p list with results.
-#' @export
+#' 
+#' @examples
+#' trueNet=matrix(c(0,0,0,1,0,0,0,1,0),3,3)
+#' am=matrix(c(0,0,0,1,0,1,0,1,0),3,3)
+#' p=perf(am, trueNet)
 perf <- function(x, true) {
   
   d = dim(x)
@@ -820,7 +910,12 @@ perf <- function(x, true) {
 #' @param X time x node 2D matrix, or 3D with subjects as the 3rd dimension.
 #'
 #' @return S centered and scaled matrix.
-#' @export
+#' 
+#' @examples
+#' # create some sample data
+#' ts = array(rnorm(200*5, mean=5, sd=10), dim=c(200,5))
+#' ts = scaleTs(ts)
+#' 
 scaleTs <- function(X) {
   D=dim(X)
   if (length(D)==2) {
@@ -860,7 +955,11 @@ scaleTs <- function(X) {
 #' @param TT significance threshold for direction tau.
 #'
 #' @return PT list with strengths kappa, direction tau, and net structure.
-#' @export
+#' 
+#' @examples
+#' # Generate some sample data
+#' x=array(rnorm(200*5), dim=c(200,5))
+#' p=patel(x)
 patel <- function(X, lower=0.1, upper=0.9, bin=0.75, TK=0, TT=0) {
   
   nt=nrow(X)
@@ -926,7 +1025,19 @@ patel <- function(X, lower=0.1, upper=0.9, bin=0.75, TK=0, TT=0) {
 #' @param K number of randomizations, default is 1000.
 #'
 #' @return stat lower and upper significance thresholds.
-#' @export
+#' 
+#' @examples
+#' # create some sample data with 200 samples,
+#' # 3 nodes, and 2 subjects
+#' ts = array(rnorm(200*3*5), dim=c(200,3,5))
+#' mysubs=list()
+#' mysubs[[1]]=patel(ts[,,1])
+#' mysubs[[2]]=patel(ts[,,2])
+#' mysubs[[3]]=patel(ts[,,3])
+#' mysubs[[4]]=patel(ts[,,4])
+#' mysubs[[5]]=patel(ts[,,5])
+#' g=patel.group(mysubs)
+#' r=rand.test(rmdiag(g$kappa), K=100)
 rand.test <- function(X, alpha=0.05, K=1000) {
   
   low = alpha/2      # two sided test
@@ -963,7 +1074,11 @@ rand.test <- function(X, alpha=0.05, K=1000) {
 #' @param M Matrix
 #'
 #' @return matrix with NAs removed.
-#' @export
+#' 
+#' @examples 
+#' M=array(NA, dim=c(3,3))
+#' M[1,2]=0.9
+#' M=rmna(M)
 rmna <- function(M) {
   
   M[is.na(M)] = 0
@@ -971,12 +1086,16 @@ rmna <- function(M) {
   
 }
 
-#' Removes diagnoal from matrix.
+#' Removes diagonal of NA's from matrix.
 #' 
 #' @param M Matrix
 #'
-#' @return matrix with diagnoal of 0.
-#' @export
+#' @return matrix with diagonal of 0's.
+#' 
+#' @examples 
+#' M=array(rnorm(3*3), dim=c(3,3))
+#' M[as.logical(diag(3))] = NA
+#' M=rmna(M)
 rmdiag <- function(M) {
   
   M[as.logical(diag(nrow(M)))]=0
@@ -989,7 +1108,12 @@ rmdiag <- function(M) {
 #' @param M 3D matrix nodes x nodes x subjects
 #'
 #' @return 3D matrix nodes x nodes x subjects
-#' @export
+#' 
+#' @examples 
+#' M=array(NA, dim=c(3,3,2))
+#' M[,,1]=matrix(c(0,0,0,1,0,0,0,1,0),3,3)
+#' M[,,2]=matrix(c(0,0,0,1,0,0,0,0,0),3,3)
+#' M_=symmetric(M)
 symmetric <- function(M) {
   
   d = dim(M)
@@ -1013,7 +1137,7 @@ symmetric <- function(M) {
 #'
 #' @return
 #' model.store The parents, LPL and chosen discount factor for the subset of models scored using this method.
-#' @export
+#' 
 stepwise.forward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), 
                              max.break=TRUE, priors=priors.spec()){
   ptm=proc.time()
@@ -1125,7 +1249,7 @@ stepwise.forward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01),
 #'
 #' @return
 #' model.store The parents, LPL and chosen discount factor for the subset of models scored using this method.
-#' @export
+#' 
 stepwise.backward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), 
                               max.break=TRUE, priors=priors.spec()){
   ptm=proc.time()
@@ -1238,7 +1362,7 @@ stepwise.backward <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01),
 #'
 #' @return
 #' model.store The parents, LPL and chosen discount factor for the subset of models scored using this method.
-#' @export
+#' 
 stepwise.combine <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01), 
                              max.break=TRUE, priors=priors.spec()) {
   
@@ -1267,7 +1391,7 @@ stepwise.combine <- function(Data, node, nbf=15, delta=seq(0.5,1,0.01),
 #' @return
 #' smt = the location parameter of the retrospective distribution with dimension \code{p x T}
 #' sCt = the scale matrix of the retrospective distribution with dimension \code{p x p x T} 
-#' @export
+#' 
 dlm.retro <- function(mt, CSt, RSt, nt, dt) {
   
   # Convert vectors to matrices
@@ -1308,7 +1432,7 @@ dlm.retro <- function(mt, CSt, RSt, nt, dt) {
 #' @param Nn Number of nodes.
 #'
 #' @return jobs job numbers
-#' @export
+#' 
 getIncompleteNodes <- function(path, ids, Nr, Nn) {
   
   f=list.files(path, pattern=glob2rx('*.txt'))
@@ -1336,7 +1460,7 @@ getIncompleteNodes <- function(path, ids, Nr, Nn) {
 #' @param bw backward model.
 #'
 #' @return m model store.
-#' @export
+#' 
 mergeModels <- function(fw, bw) {
   Nn = nrow(fw)-2
   
@@ -1356,7 +1480,7 @@ mergeModels <- function(fw, bw) {
 #' @param M adjacency matrix
 #'
 #' @return M adjacency matrix without reciprocal connections.
-#' @export
+#' 
 rmRecipLow <- function(M) {
   # get edges, just upper diagonal
   edges = which((M*upper.tri(M))==1, arr.ind = T)
@@ -1378,7 +1502,7 @@ rmRecipLow <- function(M) {
 #' @param nodes number of nodes.
 
 #' @return x array node model's delta
-#' @export
+#' 
 diag.delta <- function(path, id, nodes) {
   
   s = read.subject(path=path, id=id, nodes=nodes)

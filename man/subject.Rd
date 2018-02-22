@@ -31,8 +31,9 @@ store list with results.
 Estimate subject's full network: runs exhaustive search on very node.
 }
 \examples{
-\donttest{
-sub=subject(myts)
-sub=subject(myts, method="both")
-}
+data("utestdata")
+# select only 3-nodes to speed-up this example
+sub=subject(myts[,1:3]) 
+sub=subject(myts[,1:3], method="both")
+
 }

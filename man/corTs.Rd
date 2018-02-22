@@ -2,7 +2,7 @@
 % Please edit documentation in R/dgm.R
 \name{corTs}
 \alias{corTs}
-\title{Correlation of time series.}
+\title{Mean correlation of time series across subjects.}
 \usage{
 corTs(ts)
 }
@@ -13,5 +13,12 @@ corTs(ts)
 M correlation matrix.
 }
 \description{
-Correlation of time series.
+Mean correlation of time series across subjects.
+}
+\examples{
+# create some sample data with 200 samples,
+# 5 nodes, and 2 subjects
+ts = array(rnorm(200*5*2), dim=c(200,5,2))
+M = corTs(ts)
+
 }

@@ -31,6 +31,10 @@ Specify the priors. Without inputs, defaults will be used.
 At time \code{t=0}, \code{(theta_{0} | D_{0}, phi) ~ N(m_{0},C*_{0} x phi^{-1})},
  where \code{D_{0}} denotes the set of initial information.
 }
+\examples{
+pr=priors.spec()
+pr=priors.spec(n0=0.002)
+}
 \references{
 West, M. & Harrison, J., 1997. Bayesian Forecasting and Dynamic Models. Springer New York.
 }

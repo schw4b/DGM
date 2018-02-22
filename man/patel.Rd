@@ -25,3 +25,8 @@ PT list with strengths kappa, direction tau, and net structure.
 \description{
 Patel.
 }
+\examples{
+# Generate some sample data
+x=array(rnorm(200*5), dim=c(200,5))
+p=patel(x)
+}

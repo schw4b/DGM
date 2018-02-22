@@ -2,7 +2,7 @@
 % Please edit documentation in R/dgm.R
 \name{rmdiag}
 \alias{rmdiag}
-\title{Removes diagnoal from matrix.}
+\title{Removes diagonal of NA's from matrix.}
 \usage{
 rmdiag(M)
 }
@@ -10,8 +10,13 @@ rmdiag(M)
 \item{M}{Matrix}
 }
 \value{
-matrix with diagnoal of 0.
+matrix with diagonal of 0's.
 }
 \description{
-Removes diagnoal from matrix.
+Removes diagonal of NA's from matrix.
+}
+\examples{
+M=array(rnorm(3*3), dim=c(3,3))
+M[as.logical(diag(3))] = NA
+M=rmna(M)
 }

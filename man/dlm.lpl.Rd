@@ -38,6 +38,14 @@ the parent nodes.}
 \description{
 Calculate the log predictive likelihood for a specified set of parents and a fixed delta.
 }
+\examples{
+data("utestdata")
+Yt = myts[,1]
+Ft = t(cbind(1,myts[,2:5]))
+m = dlm.lpl(Yt, Ft, 0.7)
+
+
+}
 \references{
 West, M. & Harrison, J., 1997. Bayesian Forecasting and Dynamic Models. Springer New York.
 }
