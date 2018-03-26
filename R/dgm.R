@@ -1513,3 +1513,23 @@ diag.delta <- function(path, id, nodes) {
   return(x)
 }
 
+#' Threshold correlation matrix to match a given number of edges.
+#' @param R correlation matrix.
+#' @param n number of edges.
+
+#' @return A thresholded matrix
+#' 
+cor2adj <- function(R, n) {
+  
+  # if uneven change to even
+  if (n %% 2) {
+    n = n + sample(c(-1,1),1)
+  }
+
+  l = length(R)
+  v=quantile(abs(R), probs = 1-n/l)
+  A = R
+  A[R < v & R > -v] = 0
+  
+  return(A)
+}
