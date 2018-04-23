@@ -401,6 +401,7 @@ node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=
 #' @param path path.
 #' @param id identifier to select all subjects' nodes, e.g. pattern containing subject ID and session number.
 #' @param nodes number of nodes.
+#' @param models can be set to false to save memory.
 #'
 #' @return store list with results.
 #' 
@@ -410,7 +411,7 @@ node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=
 #' }
 #' 
 #' 
-read.subject <- function(path, id, nodes) {
+read.subject <- function(path, id, nodes, models=TRUE) {
   
   models = list()
   for (n in 1:nodes) {
@@ -421,7 +422,9 @@ read.subject <- function(path, id, nodes) {
     models[[n]] = as.matrix(fread(file.path(path,file))) # faster, from package "data.table"
   }
   store=list()
-  store$models=models
+  if (modelSpace) {
+    store$models=models
+  }
   store$winner=getWinner(models,nodes)
   store$adj=getAdjacency(store$winner,nodes)
   
