@@ -36,7 +36,7 @@ First, update DESCRIPTION file with new version
 ## Package building for CRAN
 
 ### Required packages
-  
+
     sudo apt-get install libcurl4-openssl-dev libxml2-dev
 
     install.packages("devtools")
@@ -61,6 +61,10 @@ Get `DGM` and change to develop branch
     git checkout develop
     cd ..
     cp DGM/devel/Makefile .
+
+For first time building, you may need these packages installed:
+
+    apt-get install liblapack-dev libblas-dev
 
 Build the package
 

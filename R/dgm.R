@@ -1520,7 +1520,7 @@ diag.delta <- function(path, id, nodes) {
 #' @param R correlation matrix.
 #' @param n number of edges.
 
-#' @return A thresholded matrix
+#' @return A thresholded matrix.
 #' 
 cor2adj <- function(R, n) {
   
@@ -1537,14 +1537,15 @@ cor2adj <- function(R, n) {
   return(A)
 }
 
-#' Comparing two population proportions on the network (two-sided) with FDR correction.
-#' @param x1 network matrix with successes in group 1
-#' @param n1 sample size group 1
-#' @param x2 network matrix with successes in group 2
-#' @param n2 sample size group 2
-#' @param alpha alpha level for uncorrected test
+#' Comparing two population proportions on the network with FDR correction.
+#' @param x1 network matrix with successes in group 1.
+#' @param n1 sample size group 1.
+#' @param x2 network matrix with successes in group 2.
+#' @param n2 sample size group 2.
+#' @param alpha alpha level for uncorrected test.
+#' @param fdr alpha level for FDR.
 #' 
-#' @return store List with test statistics and p-values
+#' @return store List with test statistics and p-values.
 #' 
 prop.nettest <- function(x1, n1, x2, n2, alpha=0.05, fdr=0.05) {
   
@@ -1575,6 +1576,57 @@ prop.nettest <- function(x1, n1, x2, n2, alpha=0.05, fdr=0.05) {
   store$pval_fdr=pval_fdr
   store$z_fdr=z_fdr
   store$z_uncorr=z_uncorr
+  
+  return(store)
+}
+
+
+#' Comparing connectivity strenght of two groups with FDR correction.
+#' @param s matrix with Nn x Nn x N.
+#' @param g group assignment, vector of type factor of size N.
+#' @param fdr FDR alpha level.
+#' @param alpha alpha level for uncorrected test.
+#' 
+#' @return store List with test statistics and p-values.
+#' 
+ttest.nettest <- function(s, g, alpha=0.05, fdr=0.05) {
+  
+  Nn = dim(s)[1]
+  N  = dim(s)[3]
+  
+  t = array(NA, c(Nn, Nn))
+  t.pval = array(NA, c(Nn, Nn))
+  
+  for (i in 1:Nn) {
+    for  (j in 1:Nn){
+      if (!all(is.na(s[i,j,]))) { # if not NaN
+        tmp=t.test(s[i,j,] ~ g, var.equal=TRUE)
+        #tmp=wilcox.test(s[i,j,] ~ g)
+        t[i,j] = tmp$statistic
+        t.pval[i,j] = tmp$p.value
+      }
+    }
+  }
+  t.df = tmp$parameter
+  
+  # FDR
+  t.pval_fdr = t.pval
+  t.pval_fdr[!is.na(t.pval)] = p.adjust(t.pval[!(is.na(t.pval))], method = "fdr")
+  
+  t_fdr=t
+  t_fdr[t.pval_fdr>=fdr]=NA
+  
+  t_uncorr=t
+  t_uncorr[t.pval>=alpha]=NA
+  
+  store=list()
+  store$t=t
+  store$t.pval=t.pval
+  
+  store$t_fdr=t_fdr
+  store$t.pval_fdr=t.pval_fdr
+  
+  store$t_uncorr=t_uncorr
   
   return(store)
 }

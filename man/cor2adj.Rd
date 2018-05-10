@@ -12,7 +12,7 @@ cor2adj(R, n)
 \item{n}{number of edges.}
 }
 \value{
-A thresholded matrix
+A thresholded matrix.
 }
 \description{
 Threshold correlation matrix to match a given number of edges.

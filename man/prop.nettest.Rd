@@ -2,24 +2,26 @@
 % Please edit documentation in R/dgm.R
 \name{prop.nettest}
 \alias{prop.nettest}
-\title{Comparing two population proportions on the network (two-sided) with FDR correction.}
+\title{Comparing two population proportions on the network with FDR correction.}
 \usage{
 prop.nettest(x1, n1, x2, n2, alpha = 0.05, fdr = 0.05)
 }
 \arguments{
-\item{x1}{network matrix with successes in group 1}
+\item{x1}{network matrix with successes in group 1.}
 
-\item{n1}{sample size group 1}
+\item{n1}{sample size group 1.}
 
-\item{x2}{network matrix with successes in group 2}
+\item{x2}{network matrix with successes in group 2.}
 
-\item{n2}{sample size group 2}
+\item{n2}{sample size group 2.}
 
-\item{alpha}{alpha level for uncorrected test}
+\item{alpha}{alpha level for uncorrected test.}
+
+\item{fdr}{alpha level for FDR.}
 }
 \value{
-store List with test statistics and p-values
+store List with test statistics and p-values.
 }
 \description{
-Comparing two population proportions on the network (two-sided) with FDR correction.
+Comparing two population proportions on the network with FDR correction.
 }
