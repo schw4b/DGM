@@ -401,7 +401,7 @@ node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=
 #' @param path path.
 #' @param id identifier to select all subjects' nodes, e.g. pattern containing subject ID and session number.
 #' @param nodes number of nodes.
-#' @param models can be set to false to save memory.
+#' @param modelStore can be set to false to save memory.
 #'
 #' @return store list with results.
 #' 
@@ -411,7 +411,7 @@ node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=
 #' }
 #' 
 #' 
-read.subject <- function(path, id, nodes, models=TRUE) {
+read.subject <- function(path, id, nodes, modelStore=TRUE) {
   
   models = list()
   for (n in 1:nodes) {
@@ -422,7 +422,7 @@ read.subject <- function(path, id, nodes, models=TRUE) {
     models[[n]] = as.matrix(fread(file.path(path,file))) # faster, from package "data.table"
   }
   store=list()
-  if (modelSpace) {
+  if (modelStore) {
     store$models=models
   }
   store$winner=getWinner(models,nodes)
@@ -1535,4 +1535,46 @@ cor2adj <- function(R, n) {
   A[R < v & R > -v] = 0
   
   return(A)
+}
+
+#' Comparing two population proportions on the network (two-sided) with FDR correction.
+#' @param x1 network matrix with successes in group 1
+#' @param n1 sample size group 1
+#' @param x2 network matrix with successes in group 2
+#' @param n2 sample size group 2
+#' @param alpha alpha level for uncorrected test
+#' 
+#' @return store List with test statistics and p-values
+#' 
+prop.nettest <- function(x1, n1, x2, n2, alpha=0.05, fdr=0.05) {
+  
+  # # Verified test with example from
+  # # https://onlinecourses.science.psu.edu/stat500/node/55
+  # x1 =  52; n1 =  69
+  # x2 = 120; n2 = 131
+
+  p1 = x1/n1
+  p2 = x2/n2
+  
+  p = (x1+x2)/(n1+n2)
+  z = (p1 - p2)/sqrt(p*(1-p)*(1/n1 + 1/n2))
+  pval = 2*pnorm(-abs(z)) # get two-sided p-value
+  
+  # FDR
+  pval_fdr=array(p.adjust(pval, method = "fdr"), dim=dim(pval))
+  
+  z_fdr=z
+  z_fdr[pval_fdr>=fdr]=NA
+  
+  z_uncorr=z
+  z_uncorr[pval>=alpha]=NA
+  
+  store=list()
+  store$z=z
+  store$pval=pval
+  store$pval_fdr=pval_fdr
+  store$z_fdr=z_fdr
+  store$z_uncorr=z_uncorr
+  
+  return(store)
 }

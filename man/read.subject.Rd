@@ -4,7 +4,7 @@
 \alias{read.subject}
 \title{Reads single subject's network from txt files.}
 \usage{
-read.subject(path, id, nodes)
+read.subject(path, id, nodes, modelStore = TRUE)
 }
 \arguments{
 \item{path}{path.}
@@ -12,6 +12,8 @@ read.subject(path, id, nodes)
 \item{id}{identifier to select all subjects' nodes, e.g. pattern containing subject ID and session number.}
 
 \item{nodes}{number of nodes.}
+
+\item{modelStore}{can be set to false to save memory.}
 }
 \value{
 store list with results.
