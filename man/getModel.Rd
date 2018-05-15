@@ -2,7 +2,7 @@
 % Please edit documentation in R/dgm.R
 \name{getModel}
 \alias{getModel}
-\title{Get specific parent model from all models.}
+\title{Extract specific parent model with assocated df and ME from complete model space.}
 \usage{
 getModel(models, parents)
 }
@@ -15,7 +15,7 @@ getModel(models, parents)
 mod specific parent model.
 }
 \description{
-Get specific parent model from all models.
+Extract specific parent model with assocated df and ME from complete model space.
 }
 \examples{
 data("utestdata")

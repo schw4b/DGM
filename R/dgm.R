@@ -666,7 +666,7 @@ corTs <- function(ts) {
   return(M)
 }
 
-#' Get specific parent model from all models.
+#' Extract specific parent model with assocated df and ME from complete model space.
 #'
 #' @param models a 2D model matrix.
 #' @param parents a vector with parent nodes.
@@ -689,6 +689,27 @@ getModel <- function(models, parents) {
     }
   }
   return(mod)
+}
+
+#' Get model number from a set of parents.
+#'
+#' @param models a 2D model matrix.
+#' @param parents a vector with parent nodes.
+#' 
+#' @return nr model number.
+getModelNr <- function(models, parents) {
+  Nn = nrow(models) + 1 # No. of nodes
+  Nm = ncol(models) # No. of models
+  
+  parents = c(parents, rep(0, Nn-length(parents)-1)) # add fill zeros
+  for (m in 1:Nm) {
+    if (all(models[,m] == parents)) {
+      nr = m
+      break;
+    }
+  }
+  
+  return(nr)
 }
 
 #' A group is a list containing restructured data from subejcts for easier group analysis.
