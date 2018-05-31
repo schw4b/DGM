@@ -24,6 +24,9 @@ The installation is 2MB, with dependencies approx. 86MB.
 #### From CRAN:
     install.packages("DGM")
 
+Before installing DGM and all it dependencies sometimes you have to upgrade the C++ compiler on the cluster
+    scl enable devtoolset-4 bash
+
 #### Latest develop version
     install.packages("devtools")
     library(devtools)

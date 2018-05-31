@@ -15,6 +15,7 @@ namespace:
 	echo "importFrom(reshape2, melt)" >> ./DGM/NAMESPACE
 	echo "importFrom(ggplot2, ggplot, aes_string, geom_tile, scale_fill_gradient2, theme, element_blank, element_text, scale_y_reverse, scale_x_continuous, ggtitle, guides, waiver, guide_colorbar)" >> ./DGM/NAMESPACE
 	echo "importFrom(stats, pnorm, t.test)" >> ./DGM/NAMESPACE
+	echo "importFrom(coin, oneway_test, approximate, statistic, pvalue)" >> ./DGM/NAMESPACE
 	sed -i '1s/^/importFrom(Rcpp, evalCpp)\n/' ./DGM/NAMESPACE	
 	sed -i '1s/^/exportPattern("^[[:alpha:]]+")\n/' ./DGM/NAMESPACE
 	sed -i '1s/^/useDynLib(DGM, .registration = TRUE)\n/' ./DGM/NAMESPACE

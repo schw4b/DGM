@@ -4,16 +4,21 @@
 \alias{ttest.nettest}
 \title{Comparing connectivity strenght of two groups with FDR correction.}
 \usage{
-ttest.nettest(s, g, alpha = 0.05, fdr = 0.05)
+ttest.nettest(m, g, alpha = 0.05, fdr = 0.05, perm = FALSE,
+  n_perm = 9999)
 }
 \arguments{
-\item{s}{matrix with Nn x Nn x N.}
+\item{m}{matrix with Nn x Nn x N.}
 
 \item{g}{group assignment, vector of type factor of size N.}
 
 \item{alpha}{alpha level for uncorrected test.}
 
 \item{fdr}{FDR alpha level.}
+
+\item{perm}{optional permuation test, default is false.}
+
+\item{n_perm}{number of permutations.}
 }
 \value{
 store List with test statistics and p-values.

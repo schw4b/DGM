@@ -1603,51 +1603,64 @@ prop.nettest <- function(x1, n1, x2, n2, alpha=0.05, fdr=0.05) {
 
 
 #' Comparing connectivity strenght of two groups with FDR correction.
-#' @param s matrix with Nn x Nn x N.
+#' @param m matrix with Nn x Nn x N.
 #' @param g group assignment, vector of type factor of size N.
 #' @param fdr FDR alpha level.
 #' @param alpha alpha level for uncorrected test.
+#' @param perm optional permuation test, default is false.
+#' @param n_perm number of permutations.
 #' 
 #' @return store List with test statistics and p-values.
 #' 
-ttest.nettest <- function(s, g, alpha=0.05, fdr=0.05) {
+ttest.nettest <- function(m, g, alpha=0.05, fdr=0.05, perm=FALSE, n_perm=9999) {
   
-  Nn = dim(s)[1]
-  N  = dim(s)[3]
+  Nn = dim(m)[1]
+  N  = dim(m)[3]
   
-  t = array(NA, c(Nn, Nn))
-  t.pval = array(NA, c(Nn, Nn))
+  stat = array(NA, c(Nn, Nn))
+  pval = array(NA, c(Nn, Nn))
+  df = array(NA, c(Nn, Nn))
   
   for (i in 1:Nn) {
     for  (j in 1:Nn){
-      if (!all(is.na(s[i,j,]))) { # if not NaN
-        tmp=t.test(s[i,j,] ~ g, var.equal=TRUE)
-        #tmp=wilcox.test(s[i,j,] ~ g)
-        t[i,j] = tmp$statistic
-        t.pval[i,j] = tmp$p.value
+      if (!all(is.na(m[i,j,]))) { # if not NaN
+        
+        if (!perm) {
+          tmp = t.test(m[i,j,] ~ g, var.equal=TRUE)
+          stat[i,j] = tmp$statistic
+          pval[i,j] = tmp$p.value
+          df[i,j] = tmp$parameter
+          
+        } else if (perm) {
+          # using package "coin" here
+          tmp = oneway_test(m[i,j,] ~ g, distribution = approximate(B=n_perm))
+          stat[i,j] = statistic(tmp)
+          pval[i,j] = pvalue(tmp)
+        }
+        
       }
     }
   }
-  t.df = tmp$parameter
   
   # FDR
-  t.pval_fdr = t.pval
-  t.pval_fdr[!is.na(t.pval)] = p.adjust(t.pval[!(is.na(t.pval))], method = "fdr")
+  pval_fdr = pval
+  idx = !is.na(pval)
+  pval_fdr[idx] = p.adjust(pval[idx], method = "fdr")
   
-  t_fdr=t
-  t_fdr[t.pval_fdr>=fdr]=NA
+  stat_fdr=stat
+  stat_fdr[pval_fdr>=fdr]=NA
   
-  t_uncorr=t
-  t_uncorr[t.pval>=alpha]=NA
+  stat_uncorr=stat
+  stat_uncorr[pval>=alpha]=NA
   
   store=list()
-  store$t=t
-  store$t.pval=t.pval
+  store$stat=stat
+  store$pval=pval
   
-  store$t_fdr=t_fdr
-  store$t.pval_fdr=t.pval_fdr
+  store$stat_fdr=stat_fdr
+  store$pval_fdr=pval_fdr
   
-  store$t_uncorr=t_uncorr
+  store$stat_uncorr=stat_uncorr
   
   return(store)
 }
