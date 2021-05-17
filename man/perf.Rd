@@ -17,3 +17,8 @@ p list with results.
 \description{
 Performance of estimates, such as sensitivity, specificity, and more.
 }
+\examples{
+trueNet=matrix(c(0,0,0,1,0,0,0,1,0),3,3)
+am=matrix(c(0,0,0,1,0,1,0,1,0),3,3)
+p=perf(am, trueNet)
+}

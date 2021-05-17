@@ -21,3 +21,9 @@ thr list with pruned network adjacency.
 \description{
 Get pruned adjacency network.
 }
+\examples{
+data("utestdata")
+# select only 3-nodes to speed-up this example
+sub=subject(myts[,1:3])
+p=pruning(sub$adj, sub$models, sub$winner)
+}

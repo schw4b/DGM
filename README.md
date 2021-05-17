@@ -1,8 +1,8 @@
 # DGM: Dynamical graphical models for multivariate time series data to estimate directed dynamic networks in functional MRI
 
 [![Build Status](https://travis-ci.org/schw4b/DGM.png?branch=master)](https://travis-ci.org/schw4b/DGM)
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/DGM)](https://cran.r-project.org/package=DGM)
-[![CRAN\_Download\_Badge](http://cranlogs.r-pkg.org/badges/grand-total/DGM)](http://www.r-pkg.org/pkg/DGM)
+[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/DGM)](https://cran.r-project.org/package=DGM)
+[![CRAN\_Download\_Badge](https://cranlogs.r-pkg.org/badges/grand-total/DGM)](http://www.r-pkg.org/pkg/DGM)
 
 The aim of this package is to study directed dynamic functional connectivity in fuctional MRI. Dynamic graphical models (DGM) belong to the family of Dynamic Bayesian Networks. DGM is a collection of Dynamic Linear Models (DLM) [1], a dynamic mutiple regression at each node. Moreover, DGM searches through all possible parent models and provides an interpretable fit in terms of regression model for each network node. There is a special variant of DGM called Multiregression Dyanmic Models (MDM) which constrain the network to a acyclic graph [2,3], but with DGM, we do not use this constrain.
 
@@ -23,6 +23,9 @@ The installation is 2MB, with dependencies approx. 86MB.
 
 #### From CRAN:
     install.packages("DGM")
+
+Before installing DGM and all it dependencies sometimes you have to upgrade the C++ compiler on the cluster
+    scl enable devtoolset-4 bash
 
 #### Latest develop version
     install.packages("devtools")

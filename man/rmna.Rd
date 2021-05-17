@@ -15,3 +15,8 @@ matrix with NAs removed.
 \description{
 Removes NAs from matrix.
 }
+\examples{
+M=array(NA, dim=c(3,3))
+M[1,2]=0.9
+M=rmna(M)
+}

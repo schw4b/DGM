@@ -36,13 +36,20 @@ First, update DESCRIPTION file with new version
 ## Package building for CRAN
 
 ### Required packages
+
+    sudo apt-get install libcurl4-openssl-dev libxml2-dev
+
     install.packages("devtools")
     install.packages("roxygen2")
+    install.packages("testthat")
+
+Install these packages if you have not installed DGM before.
+
     install.packages("data.table")
     install.packages("reshape2")
     install.packages("ggplot2")
     install.packages("RcppArmadillo")
-    install.packages("testthat")
+
 
 
 ### Build a new package from the develop branch
@@ -54,6 +61,10 @@ Get `DGM` and change to develop branch
     git checkout develop
     cd ..
     cp DGM/devel/Makefile .
+
+For first time building, you may need these packages installed:
+
+    apt-get install liblapack-dev libblas-dev
 
 Build the package
 

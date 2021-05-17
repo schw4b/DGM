@@ -1,19 +1,19 @@
 Package: DGM
-Version: 1.7.1
-Date: 2018-02-17
-Title: Dynamical Graphical Models
+Version: 1.7.3
+Date: 2018-05-10
+Title: Dynamic Graphical Models
 Author: Simon Schwab <schw4b@gmail.com>, Ruth Harbord <r.harbord@warwick.ac.uk>,
     Lilia Costa <liliacosta@ufba.br>, Thomas Nichols <t.e.nichols@warwick.ac.uk>
 Maintainer: Simon Schwab <schw4b@gmail.com>
 Depends: R (>= 3.2.0)
 Imports:
-    Rcpp (>= 0.11.0), data.table (>= 1.10.0), reshape2 (>= 1.4.2), ggplot2 (>= 2.2.1)
+    Rcpp (>= 0.11.0), data.table (>= 1.10.0), reshape2 (>= 1.4.2), ggplot2 (>= 2.2.1), coin (>= 1.2)
 LinkingTo: Rcpp, RcppArmadillo
 Suggests:
     testthat
 Description:
-    Dynamical graphical models for multivariate time series data to estimate directed
-    dynamic networks in functional MRI, see Schwab et al. (2017) <doi:10.1101/198887>.
+    Dynamic graphical models for multivariate time series data to estimate directed
+    dynamic networks in functional magnetic resonance imaging (fMRI), see Schwab et al. (2017) <doi:10.1101/198887>.
 License: GPL-3
 URL: https://github.com/schw4b/DGM
 BugReports: https://github.com/schw4b/DGM/issues

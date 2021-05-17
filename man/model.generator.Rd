@@ -17,3 +17,7 @@ output.model = a matrix with dimensions (Nn-1) x number of models, where number 
 \description{
 A function to generate all the possible models.
 }
+\examples{
+m=model.generator(5,1)
+
+}

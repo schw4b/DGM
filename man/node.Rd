@@ -24,7 +24,7 @@ node(X, n, id = NULL, nbf = 15, delta = seq(0.5, 1, 0.01), cpp = TRUE,
 
 \item{path}{a path where results are written.}
 
-\item{method}{can be exhaustive (default), forward, backward, or both}
+\item{method}{can be exhaustive (default), forward, backward, or both.}
 }
 \value{
 store list with results.
@@ -33,7 +33,9 @@ store list with results.
 Runs exhaustive search on a single node and saves results in txt file.
 }
 \examples{
-data(utestdata)
+\donttest{
+data("utestdata")
 m=node(myts, 3, id="SUB001_5nodes")
-# a results file will be written.
+}
+
 }
