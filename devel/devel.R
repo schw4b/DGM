@@ -15,8 +15,8 @@ install.packages("RcppArmadillo")
 # @load package with devtools ----
 setwd('~/workspace')
 library(devtools)
-load_all('mdm')
-# unload("mdm/")
+load_all('DGM')
+# unload("DGM/")
 # @Source a C++ function ----
 library(Rcpp)
 sourceCpp("mdm/src/dlmFilt.cpp")

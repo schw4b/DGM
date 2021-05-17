@@ -4,8 +4,17 @@
 \alias{node}
 \title{Runs exhaustive search on a single node and saves results in txt file.}
 \usage{
-node(X, n, id = NULL, nbf = 15, delta = seq(0.5, 1, 0.01), cpp = TRUE,
-  priors = priors.spec(), path = getwd(), method = "exhaustive")
+node(
+  X,
+  n,
+  id = NULL,
+  nbf = 15,
+  delta = seq(0.5, 1, 0.01),
+  cpp = TRUE,
+  priors = priors.spec(),
+  path = getwd(),
+  method = "exhaustive"
+)
 }
 \arguments{
 \item{X}{array with dimensions timeseries x nodes.}
@@ -31,11 +40,4 @@ store list with results.
 }
 \description{
 Runs exhaustive search on a single node and saves results in txt file.
-}
-\examples{
-\donttest{
-data("utestdata")
-m=node(myts, 3, id="SUB001_5nodes")
-}
-
 }

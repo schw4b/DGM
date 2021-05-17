@@ -21,10 +21,3 @@ store list with results.
 \description{
 Reads single subject's network from txt files.
 }
-\examples{
-\donttest{
-read.subject(path='~/myData', id='ID00012', nodes=5)
-}
-
-
-}

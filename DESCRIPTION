@@ -1,6 +1,6 @@
 Package: DGM
 Version: 1.7.3
-Date: 2018-05-10
+Date: 2021-05-17
 Title: Dynamic Graphical Models
 Author: Simon Schwab <schw4b@gmail.com>, Ruth Harbord <r.harbord@warwick.ac.uk>,
     Lilia Costa <liliacosta@ufba.br>, Thomas Nichols <t.e.nichols@warwick.ac.uk>
@@ -17,4 +17,5 @@ Description:
 License: GPL-3
 URL: https://github.com/schw4b/DGM
 BugReports: https://github.com/schw4b/DGM/issues
-RoxygenNote: 6.0.1
+RoxygenNote: 7.1.1
+Encoding: UTF-8

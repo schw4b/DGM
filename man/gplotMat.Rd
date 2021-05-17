@@ -4,10 +4,20 @@
 \alias{gplotMat}
 \title{Plots network as adjacency matrix.}
 \usage{
-gplotMat(adj, title = NULL, colMapLabel = NULL, hasColMap = NULL,
-  lim = c(0, 1), gradient = c("white", "orange", "red"),
-  nodeLabels = waiver(), axisTextSize = 12, xAngle = 0,
-  titleTextSize = 12, barWidth = 1, textSize = 12)
+gplotMat(
+  adj,
+  title = NULL,
+  colMapLabel = NULL,
+  hasColMap = NULL,
+  lim = c(0, 1),
+  gradient = c("white", "orange", "red"),
+  nodeLabels = waiver(),
+  axisTextSize = 12,
+  xAngle = 0,
+  titleTextSize = 12,
+  barWidth = 1,
+  textSize = 12
+)
 }
 \arguments{
 \item{adj}{2D adjacency matrix.}

@@ -4,8 +4,16 @@
 \alias{subject}
 \title{Estimate subject's full network: runs exhaustive search on very node.}
 \usage{
-subject(X, id = NULL, nbf = 15, delta = seq(0.5, 1, 0.01), cpp = TRUE,
-  priors = priors.spec(), path = getwd(), method = "exhaustive")
+subject(
+  X,
+  id = NULL,
+  nbf = 15,
+  delta = seq(0.5, 1, 0.01),
+  cpp = TRUE,
+  priors = priors.spec(),
+  path = getwd(),
+  method = "exhaustive"
+)
 }
 \arguments{
 \item{X}{array with dimensions timeseries x nodes.}

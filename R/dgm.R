@@ -367,12 +367,6 @@ subject <- function(X, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE,
 #' 
 #' @return store list with results.
 #' 
-#' @examples
-#' \donttest{
-#' data("utestdata")
-#' m=node(myts, 3, id="SUB001_5nodes")
-#' }
-#' 
 node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=priors.spec(),
                  path=getwd(), method = "exhaustive") {
   
@@ -404,11 +398,6 @@ node <- function(X, n, id=NULL, nbf=15, delta=seq(0.5,1,0.01), cpp=TRUE, priors=
 #' @param modelStore can be set to false to save memory.
 #'
 #' @return store list with results.
-#' 
-#' @examples
-#' \donttest{
-#' read.subject(path='~/myData', id='ID00012', nodes=5)
-#' }
 #' 
 #' 
 read.subject <- function(path, id, nodes, modelStore=TRUE) {

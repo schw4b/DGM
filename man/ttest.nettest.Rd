@@ -4,8 +4,7 @@
 \alias{ttest.nettest}
 \title{Comparing connectivity strenght of two groups with FDR correction.}
 \usage{
-ttest.nettest(m, g, alpha = 0.05, fdr = 0.05, perm = FALSE,
-  n_perm = 9999)
+ttest.nettest(m, g, alpha = 0.05, fdr = 0.05, perm = FALSE, n_perm = 9999)
 }
 \arguments{
 \item{m}{matrix with Nn x Nn x N.}

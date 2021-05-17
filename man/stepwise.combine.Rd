@@ -4,8 +4,14 @@
 \alias{stepwise.combine}
 \title{Stepise combine}
 \usage{
-stepwise.combine(Data, node, nbf = 15, delta = seq(0.5, 1, 0.01),
-  max.break = TRUE, priors = priors.spec())
+stepwise.combine(
+  Data,
+  node,
+  nbf = 15,
+  delta = seq(0.5, 1, 0.01),
+  max.break = TRUE,
+  priors = priors.spec()
+)
 }
 \arguments{
 \item{Data}{Dataset with dimension number of time points \code{T} x number of nodes \code{Nn}.}
