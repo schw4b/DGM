@@ -13,7 +13,8 @@ Suggests:
     testthat
 Description:
     Dynamic graphical models for multivariate time series data to estimate directed
-    dynamic networks in functional magnetic resonance imaging (fMRI), see Schwab et al. (2017) <doi:10.1101/198887>.
+    dynamic networks in functional magnetic resonance imaging (fMRI), see Schwab et
+    al. (2017) <doi:10.1016/j.neuroimage.2018.03.074>.
 License: GPL-3
 URL: https://github.com/schw4b/DGM
 BugReports: https://github.com/schw4b/DGM/issues

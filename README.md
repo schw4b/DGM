@@ -4,12 +4,12 @@
 [![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/DGM)](https://cran.r-project.org/package=DGM)
 [![CRAN\_Download\_Badge](https://cranlogs.r-pkg.org/badges/grand-total/DGM)](https://www.r-pkg.org/pkg/DGM)
 
-The aim of this package is to study directed dynamic functional connectivity in fuctional MRI. Dynamic graphical models (DGM) belong to the family of Dynamic Bayesian Networks. DGM is a collection of Dynamic Linear Models (DLM) [1], a dynamic mutiple regression at each node. Moreover, DGM searches through all possible parent models and provides an interpretable fit in terms of regression model for each network node. There is a special variant of DGM called Multiregression Dyanmic Models (MDM) which constrain the network to a acyclic graph [2,3], but with DGM, we do not use this constrain.
+The aim of this package is to study directed dynamic functional connectivity in functional MRI. Dynamic graphical models (DGM) belong to the family of Dynamic Bayesian Networks. DGM is a collection of Dynamic Linear Models (DLM) [1], a dynamic multiple regression at each node. Moreover, DGM searches through all possible parent models and provides an interpretable fit in terms of regression model for each network node. There is a special variant of DGM called Multiregression Dynamic Models (MDM) which constrain the network to a acyclic graph [2,3], but with DGM, we do not use this constrain.
 
 Current research aims to fully characterize DGM using simulations and big data from the Human Connectome Project (HCP) in order to test validity and reliability to make this new method available for neuroimaging research.
 
 ## Reference
-Schwab, S., Harbord, R., Zerbi, V., Elliott, L., Afyouni, S., Smith, J. Q., … Nichols, T. E. (2017). Directed functional connectivity using dynamic graphical models. *bioRxiv*. https://doi.org/10.1101/198887.
+Schwab, S., Harbord, R., Zerbi, V., Elliott, L., Afyouni, S., Smith, J. Q., … Nichols, T. E. (2018). Directed functional connectivity using dynamic graphical models. *NeuroImage*. [doi:10.1016/j.neuroimage.2018.03.074](https://doi.org/10.1016/j.neuroimage.2018.03.074).
 
 ## Additional References
 1. West, M., & Harrison, J. (1997). *Bayesian Forecasting and Dynamic Models*. Springer New York.
@@ -53,7 +53,7 @@ Now, let's do a full search across all possible parent models of the size n2<sup
     [6,] -353.6734 -348.1476 -329.9119 -359.3472 -346.9735 -348.4044 -355.495 -347.4541 -337.3578 -333.6073 -353.8772 -349.6878 -346.9843 -358.2056 -341.7462 -355.5821
     [7,]    0.5000    0.7300    0.6800    0.7700    0.7600    0.7800    0.800    0.7900    0.7300    0.7700    0.8100    0.7900    0.8300    0.8400    0.7800    0.8300
 
-The columns are the 16 different models. First row indicates model number, rows 2-5 the parents, row 6 the model evidence, a log likelihood, and row 7 the discount factor delta, reflecting the smoothness of the time-varying regression coefficent (theta). To get the winning model, we simply maximaze across model evidence.
+The columns are the 16 different models. First row indicates model number, rows 2-5 the parents, row 6 the model evidence, a log likelihood, and row 7 the discount factor delta, reflecting the smoothness of the time-varying regression coefficient (theta). To get the winning model, we simply maximize across model evidence.
 
     which.max(result$model.store[6,])
     [1] 3
