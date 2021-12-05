@@ -103,7 +103,7 @@ arma::rowvec dlmLplCpp(NumericVector Yt_, NumericMatrix Ft_, double delta, doubl
     
     // Log Predictive Likelihood 
     // in the original R code the asignment was to lpl(t) and the first values was discarded, so we use here lpl(t-1)
-    lpl(t-1) = lgamma((nt(t-1)+1)/2)-lgamma(nt(t-1)/2)-0.5*log(PI*nt(t-1)*Qt(t))-((nt(t-1)+1)/2)*log(1+(1/nt(t-1))*(et*et)/Qt(t));
+    lpl(t-1) = lgamma((nt(t-1)+1)/2)-lgamma(nt(t-1)/2)-0.5*log(M_PI*nt(t-1)*Qt(t))-((nt(t-1)+1)/2)*log(1+(1/nt(t-1))*(et*et)/Qt(t));
   }
   
   // Debug print to console
